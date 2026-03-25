@@ -1,0 +1,19 @@
+# Disk images and CHD files (too large for git)
+*.chd
+*.img
+*.tar
+*.iso
+*.bin
+
+# Extracted raw data (regenerable from tools)
+extracted/
+carnevil/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
