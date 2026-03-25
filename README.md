@@ -92,9 +92,8 @@ The Midway Seattle platform is actually a great target for this:
 
 ## Related Projects
 
-This is part of the [sp00nznet](https://github.com/sp00nznet) recompilation ecosystem:
-- **[pcrecomp](https://github.com/sp00nznet/pcrecomp)** -- Unified x86 PC recompilation toolbox (Soldier of Fortune, X-Wing Alliance, Civilization, etc.)
-- **[N64Recomp](https://github.com/N64Recomp/N64Recomp)** -- MIPS static recompilation for N64 (same CPU family!)
+- **[pcrecomp](https://github.com/sp00nznet/pcrecomp)** -- Our unified x86 PC recompilation toolbox (Soldier of Fortune, X-Wing Alliance, Civilization, etc.)
+- **[N64Recomp](https://github.com/N64Recomp/N64Recomp)** -- MIPS static recompilation for N64 by Mr-Wiseguy. Same CPU family -- we'll be borrowing heavily from its MIPS-IV lifter.
 
 ## Requirements
 
