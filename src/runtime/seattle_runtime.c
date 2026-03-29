@@ -1060,28 +1060,65 @@ int main(int argc, char** argv) {
         if (!any_nonzero) fprintf(stderr, "  (all zero - device init FAILED)\n");
     }
 
-    /* Run a few frames without fibers to let game reach attract mode */
-    printf("  Phase 1b: Running %d warm-up frames...\n", 20);
+    /* Phase 1b: Run ONE frame to populate RTOS tables, then call device init,
+     * then run remaining warm-up frames. */
+    printf("  Phase 1b: Warm-up...\n");
     fflush(stdout);
-    for (int wf = 0; wf < 20; wf++) {
+
+    /* Frame 0: populates VEC[64] function table and VEC[60] callbacks */
+    {
         uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
         (*vblank)++;
         (*tick) += 16667;
 
+        /* Save heap state BEFORE main_loop (the big 1.75MB alloc happens here) */
+        uint32_t heap_pre = *(uint32_t*)(g_rdram + 0x001A1E90);
+        uint32_t hp = heap_pre & 0x1FFFFFFF;
+        uint32_t hs[2] = {0};
+        if (hp < RAM_SIZE - 8) { hs[0] = *(uint32_t*)(g_rdram + hp); hs[1] = *(uint32_t*)(g_rdram + hp + 4); }
+
         ctx.r4 = ctx.r2;
         func_800C4524(g_rdram, &ctx);
 
-        /* Run registered RTOS rendering callbacks */
-        {
-            extern void rtos_run_callbacks(uint8_t* rdram);
-            rtos_run_callbacks(g_rdram);
+        /* NOW call rtos_80005100 with the heap still large (before big alloc sticks).
+         * Temporarily restore heap so DMA buffer alloc succeeds. */
+        *(uint32_t*)(g_rdram + 0x001A1E90) = heap_pre;
+        if (hp < RAM_SIZE - 8) { *(uint32_t*)(g_rdram + hp) = hs[0]; *(uint32_t*)(g_rdram + hp + 4) = hs[1]; }
+
+        fprintf(stderr, "[init] Heap restored for device init: %u KB free\n",
+                (hs[0] & ~1u) / 1024);
+    }
+
+    /* NOTE: rtos_80005100 device init removed - the func_table entries from VEC[64]
+     * are periodic callbacks (VBlank/timer), NOT device init functions.
+     * The actual device init needs to happen through CMOS validation and
+     * the game's own init sequence (date confirmation screen). */
+
+    /* Continue warm-up frames (19 more).
+     * Simulate button presses to dismiss date confirmation/setup screen. */
+    for (int wf = 1; wf < 20; wf++) {
+        /* Press service credit + start buttons on frames 5-8 to dismiss menus */
+        if (wf >= 5 && wf <= 8) {
+            /* Active LOW: clear bits to "press" buttons */
+            g_input.ioasic_buttons = 0xFFFFFFFF & ~((1<<10) | (1<<2) | (1<<0)); /* service + P1 start + P1 trigger */
+            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons;
+        } else {
+            g_input.ioasic_buttons = 0xFFFFFFFF; /* all released */
+            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons;
         }
-        /* NOTE: No heap restore - the first few frames do permanent allocations
-         * (1.75MB rendering buffer). Restoring the heap would destroy them. */
+        uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
+        uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
+        (*vblank)++;
+        (*tick) += 16667;
+        ctx.r4 = ctx.r2;
+        func_800C4524(g_rdram, &ctx);
+        extern void rtos_run_callbacks(uint8_t* rdram);
+        rtos_run_callbacks(g_rdram);
     }
     fprintf(stderr, "[debug] After warm-up: r2=0x%08X\n", (uint32_t)ctx.r2);
 
+    /* MOVED: Device init now happens after FIRST warm-up frame (see below) */
     /* After warm-up: VEC[64] has populated the function pointer table.
      * Now call rtos_80005100 to run the device init loop.
      * The status table tells it which function to call for each device slot. */
