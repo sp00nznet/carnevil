@@ -1250,6 +1250,12 @@ int main(int argc, char** argv) {
         /* Force PIC serial number EVERY frame (game clears it during init) */
         *(uint32_t*)(g_rdram + 0x001E6504) = 486;
 
+        /* Force rendering context pointer EVERY frame.
+         * func_8015E2F4 (147 callers) loads from 0x8022A444. If 0, all rendering bails.
+         * Value is used as index into 70KB stride array at 0x801E6A20.
+         * Index 0 → entry[0] which has our Voodoo ready flag at [+0x11178]=4. */
+        *(uint32_t*)(g_rdram + 0x0022A444) = 0;
+
         /* Restore heap to post-init snapshot (preserves permanent allocs) */
         if (frame > 0 && heap_snapshot_head != 0) {
             *(uint32_t*)(g_rdram + 0x001A1E90) = heap_snapshot_head;
