@@ -1120,7 +1120,9 @@ int main(int argc, char** argv) {
              * After computing the entry address, the function checks:
              *   entry[+0x11178] == 4  (Voodoo "ready" state flag)
              * If not 4, rendering is skipped. */
-            *(uint32_t*)(g_rdram + 0x0022A454) = 0; /* index 0 */
+            /* Set BOTH possible render_ptr addresses */
+            *(uint32_t*)(g_rdram + 0x0022A444) = 1; /* func_8015E2F4 loads from A444! */
+            *(uint32_t*)(g_rdram + 0x0022A454) = 1; /* func_80120020 uses A454 */
 
             /* Entry 0 at physical 0x001E6A20, size 70316 bytes.
              * Set the "Voodoo ready" flag at entry[+0x11178] = 4.
@@ -1218,7 +1220,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "[debug] malloc needs: %u KB (0x1C0020 bytes)\n", 0x1C0020 / 1024);
     }
 
-    int max_frames = 2000;
+    int max_frames = 5000; /* Run longer - attract mode may need 60+ seconds */
 
     /* Heap management: save heap state AFTER first frame's permanent allocs.
      * Frame 0 does the 1.75MB render buffer alloc.
@@ -1366,8 +1368,9 @@ int main(int argc, char** argv) {
             uint32_t rbuf = *(uint32_t*)(g_rdram + 0x001DFED4);
             uint32_t render_ptr = *(uint32_t*)(g_rdram + 0x0022A454);
             uint32_t voodoo_base = *(uint32_t*)(g_rdram + 0x001AA660);
-            fprintf(stderr, "[debug] Render buf=0x%08X, render_ptr@0x0022A454=0x%08X, voodoo_base=0x%08X\n",
-                    rbuf, render_ptr, voodoo_base);
+            uint32_t render_ptr2 = *(uint32_t*)(g_rdram + 0x0022A444);
+            fprintf(stderr, "[debug] Render buf=0x%08X ptr@A454=0x%08X ptr@A444=0x%08X vbase=0x%08X\n",
+                    rbuf, render_ptr, render_ptr2, voodoo_base);
 
             /* Check if the 70KB rendering context at 0x001E6A20 has any data */
             int ctx_nz = 0;
