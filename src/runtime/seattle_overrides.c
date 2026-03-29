@@ -402,6 +402,15 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x6903: if (resp) *resp = 0x0001; break; /* Sound OK */
             case 0x6905: break;                             /* Sound command (play) */
             case 0x6907: if (resp) *resp = 0x0000; break; /* Volume */
+            case 0x6909: {
+                /* DCS2 sound data read - simulate handshake.
+                 * The game sends commands via 0x7405/0x6905 and polls for response.
+                 * DCS2 ready response = 0x55AA (85/170). */
+                static int sp = 0;
+                sp++;
+                if (resp) *resp = (sp > 50) ? 0x55AA : 0x0000;
+                break;
+            }
             case 0x690E: if (resp) *resp = 0x0000; break; /* Sound test */
             case 0x690F: break;                             /* Sound data */
             case 0x6910: if (resp) *resp = 0x0000; break; /* Sound param */
@@ -413,8 +422,19 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x7000: if (resp) *resp = 0x0001; break; /* System OK */
             case 0x7001: if (resp) *resp = 486;   break; /* IOASIC upper = PIC serial (486=39") */
             case 0x7002: if (resp) *resp = 487;   break; /* Board ID (game subtracts 1 → 486) */
-            case 0x740B: if (resp) *resp = 486; break; /* PIC serial number (486=39" cabinet) */
-            case 0x7403: if (resp) *resp = 486; break; /* PIC query - also return serial */
+            case 0x7403: if (resp) *resp = 486; break; /* PIC query - return serial */
+            case 0x7405: if (resp) *resp = 0x0000; break; /* IOASIC output - acknowledge */
+            case 0x7406: {
+                /* IOASIC data transfer. The game writes data then polls.
+                 * On real hardware, 0x7406 is the IOASIC "read input" command
+                 * which returns the DIP switch + coin door status.
+                 * Return the IOASIC status with all inputs "released" (0xFFFF). */
+                static int ip = 0;
+                ip++;
+                if (resp) *resp = 0xFFFF; /* all inputs released */
+                break;
+            }
+            case 0x740B: if (resp) *resp = 486; break; /* PIC serial number (486=39") */
             case 0x6300: if (resp) *resp = 0x0000; break; /* PIC init */
             case 0x6301: if (resp) *resp = 0x0000; break; /* PIC challenge */
             case 0x6302: if (resp) *resp = 0x0000; break; /* PIC verify */
@@ -433,11 +453,24 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             }
         }
     } else {
-        /* Unknown command - log it */
-        if (dev_io_count <= 50) {
-            fprintf(stderr, "[dev_io] UNKNOWN cmd=0x%04X dev=%d data=0x%08X\n", cmd, dev_id, data);
-        }
+        /* Unknown command - return success/ready */
         if (resp) *resp = 0x0000;
+    }
+
+    /* Anti-spin protection: if the same dev_io call happens >10000 times,
+     * force the game to progress by returning different values. */
+    {
+        static uint32_t last_cmd = 0;
+        static int repeat_count = 0;
+        if (cmd == last_cmd) {
+            repeat_count++;
+            if (repeat_count > 10000 && resp) {
+                *resp = 0x55AA; /* force "ready" response to break polling loops */
+            }
+        } else {
+            repeat_count = 0;
+            last_cmd = cmd;
+        }
     }
 
     ctx->r2 = 0;
@@ -952,4 +985,13 @@ RECOMP_FUNC void func_80161140(uint8_t* rdram, recomp_context* ctx) {
                 (uint32_t)ctx->r2,
                 *(uint32_t*)(rdram + 0x001AA660),
                 *(uint32_t*)(rdram + 0x0022A454));
+}
+
+/* Override func_800F25E0 (CMOS validation) to return success.
+ * The original returns error code -3 because our CMOS data doesn't
+ * match the expected checksum format. Returning 0 = valid. */
+RECOMP_FUNC void func_800F25E0(uint8_t* rdram, recomp_context* ctx) {
+    static int c = 0; c++;
+    if (c <= 3) fprintf(stderr, "[cmos] Bypassing CMOS validation (returning 0=OK)\n");
+    ctx->r2 = 0; /* success - CMOS is valid */
 }
