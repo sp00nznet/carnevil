@@ -983,10 +983,39 @@ int main(int argc, char** argv) {
          * a1 = display mode index: s0 in the function, used for resolution switch.
          *   Check: s0 - 2 must be < 11 (unsigned), so s0 must be 2..12
          *   Mode 4 = 512x384 at 0x80155968 in the switch table */
-        /* Instead of calling func_80155888 (which has too many dependencies),
-         * directly initialize the Voodoo through PCI config writes.
-         * This sets up the Voodoo 1 for 512x384 @ 16bpp rendering. */
+        /* Call the REAL func_80155888 with correct args.
+         * Now we know the jump table layout is correct. */
         {
+            recomp_func_t* disp_init = get_function(0x80155888);
+            if (disp_init) {
+                /* Re-populate descriptor (warm-up frame clears BSS) */
+            *(uint32_t*)(g_rdram + 0x001E52B0) = 0x08100000; /* entry[+0] = PCI base */
+            *(uint32_t*)(g_rdram + 0x001E52B8) = 0x00800000; /* entry[+8] = LFB base */
+            *(uint32_t*)(g_rdram + 0x001A3354) = 1;           /* device count */
+            *(uint32_t*)(g_rdram + 0x001E0350) = 0x801E52B0;  /* entry pointer */
+            *(uint32_t*)(g_rdram + 0x00236810) = 0x00800000;  /* LFB base cache */
+            fprintf(stderr, "[init] Re-populated descriptor after warm-up\n");
+
+            fprintf(stderr, "[init] Pre-check: dev_count=0x%08X desc[0]=0x%08X entry_ptr=0x%08X\n",
+                    *(uint32_t*)(g_rdram + 0x001A3354),
+                    *(uint32_t*)(g_rdram + 0x001E52B0),
+                    *(uint32_t*)(g_rdram + 0x001E0350));
+            fprintf(stderr, "[init] Calling func_80155888(pci=0x08100000, mode=7, fbi=2, tmu=4)...\n");
+                recomp_context vc = ctx;
+                vc.r4 = 0x08100000;  /* a0 = PCI base */
+                vc.r5 = 7;           /* a1 = display mode (512x384) */
+                vc.r6 = 2;           /* a2 = FBI_MEM (2MB) */
+                vc.r7 = 4;           /* a3 = TMU0_MEM (4MB) */
+                uint32_t sp = (uint32_t)vc.r29 & 0x1FFFFFFF;
+                if (sp + 20 < RAM_SIZE) *(uint32_t*)(g_rdram + sp + 16) = 0; /* sp[16] = TMU1 = 0 */
+                disp_init(g_rdram, &vc);
+                fprintf(stderr, "[init] func_80155888 returned: r2=0x%08X, writes=%u\n",
+                        (uint32_t)vc.r2, voodoo_get_write_count());
+                fprintf(stderr, "[init] Voodoo base at 0x801AA660 = 0x%08X\n",
+                        *(uint32_t*)(g_rdram + 0x001AA660));
+            }
+
+            /* Also do direct Voodoo PCI init as backup */
             fprintf(stderr, "[init] Direct Voodoo PCI init (512x384)...\n");
             extern void seattle_io_write32(uint32_t, uint32_t);
 
