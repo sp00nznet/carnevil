@@ -920,3 +920,36 @@ RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
                 size, size, heap_head, free_sz, result, result == 0 ? " FAILED!" : "");
     }
 }
+
+/* Override func_80161140 (Voodoo PCI driver init).
+ * Populate the device descriptor table BEFORE calling the real function
+ * so it can find the Voodoo during PCI scan. */
+extern RECOMP_FUNC void func_80161140_real(uint8_t* rdram, recomp_context* ctx);
+RECOMP_FUNC void func_80161140(uint8_t* rdram, recomp_context* ctx) {
+    /* Populate full descriptor entry including float values.
+     * entry[+24] and [+28] are floats read by func_800C42D8 for display init. */
+    uint32_t e = 0x001E52B0;
+    memset(rdram + e, 0, 152);
+    *(uint32_t*)(rdram + e + 0)  = 0x08100000;
+    *(uint32_t*)(rdram + e + 8)  = 0x00800000;
+    *(uint32_t*)(rdram + e + 20) = 0x00200000;
+    *(uint32_t*)(rdram + e + 24) = 0x40000000; /* 2.0f (FBI_MEM as float) */
+    *(uint32_t*)(rdram + e + 28) = 0x40800000; /* 4.0f (TMU0_MEM as float) */
+    *(uint32_t*)(rdram + e + 32) = 512;
+    *(uint32_t*)(rdram + e + 36) = 384;
+    *(uint32_t*)(rdram + e + 40) = 60;
+    *(uint32_t*)(rdram + 0x001A3354) = 1;
+    *(uint32_t*)(rdram + 0x001E0350) = 0x801E52B0;
+    *(uint32_t*)(rdram + 0x00236810) = 0x00800000;
+
+    static int c = 0; c++;
+    if (c <= 3) fprintf(stderr, "[pci_drv] func_80161140: populated descriptor, calling real...\n");
+
+    func_80161140_real(rdram, ctx);
+
+    if (c <= 3)
+        fprintf(stderr, "[pci_drv] func_80161140: r2=0x%08X base=0x%08X render=0x%08X\n",
+                (uint32_t)ctx->r2,
+                *(uint32_t*)(rdram + 0x001AA660),
+                *(uint32_t*)(rdram + 0x0022A454));
+}

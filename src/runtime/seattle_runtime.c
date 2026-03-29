@@ -124,7 +124,14 @@ uint32_t seattle_io_read32(uint32_t paddr) {
         uint32_t voodoo_offset = (paddr >= 0x08100000)
             ? (paddr - 0x08100000)
             : (paddr - 0x00800000);
-        return voodoo_read(&g_voodoo, voodoo_offset);
+        uint32_t rv = voodoo_read(&g_voodoo, voodoo_offset);
+        static int vrd_log = 0;
+        vrd_log++;
+        if (vrd_log <= 20 && voodoo_offset > 0) {
+            fprintf(stderr, "[voodoo_rd] paddr=0x%08X off=0x%06X val=0x%08X\n",
+                    paddr, voodoo_offset, rv);
+        }
+        return rv;
     }
 
     /* IOASIC */
@@ -988,19 +995,49 @@ int main(int argc, char** argv) {
         {
             recomp_func_t* disp_init = get_function(0x80155888);
             if (disp_init) {
-                /* Re-populate descriptor (warm-up frame clears BSS) */
-            *(uint32_t*)(g_rdram + 0x001E52B0) = 0x08100000; /* entry[+0] = PCI base */
-            *(uint32_t*)(g_rdram + 0x001E52B8) = 0x00800000; /* entry[+8] = LFB base */
-            *(uint32_t*)(g_rdram + 0x001A3354) = 1;           /* device count */
-            *(uint32_t*)(g_rdram + 0x001E0350) = 0x801E52B0;  /* entry pointer */
-            *(uint32_t*)(g_rdram + 0x00236810) = 0x00800000;  /* LFB base cache */
-            fprintf(stderr, "[init] Re-populated descriptor after warm-up\n");
+                /* Re-populate descriptor (warm-up frame clears BSS).
+             * Entry struct is 152 bytes at 0x001E52B0.
+             * Fields used by func_80155888 and the rendering code: */
+            {
+                uint32_t e = 0x001E52B0;
+                memset(g_rdram + e, 0, 152);
+                *(uint32_t*)(g_rdram + e + 0)  = 0x08100000; /* PCI register base (BAR0) */
+                *(uint32_t*)(g_rdram + e + 4)  = 0x121A;     /* vendor ID (3dfx) */
+                *(uint32_t*)(g_rdram + e + 8)  = 0x00800000; /* LFB/framebuffer base (BAR1) */
+                *(uint32_t*)(g_rdram + e + 12) = 0x00000001; /* device type (Voodoo 1) */
+                *(uint32_t*)(g_rdram + e + 16) = 0x00000008; /* PCI device number */
+                *(uint32_t*)(g_rdram + e + 20) = 0x00200000; /* FBI memory size (2MB) */
+                *(uint32_t*)(g_rdram + e + 24) = 0x00400000; /* TMU0 memory size (4MB) */
+                *(uint32_t*)(g_rdram + e + 28) = 0x00000000; /* TMU1 memory size (0) */
+                *(uint32_t*)(g_rdram + e + 32) = 512;        /* width */
+                *(uint32_t*)(g_rdram + e + 36) = 384;        /* height */
+                *(uint32_t*)(g_rdram + e + 40) = 60;         /* refresh rate */
+                *(uint32_t*)(g_rdram + e + 44) = 0x00000001; /* initialized flag */
+                *(uint32_t*)(g_rdram + 0x001A3354) = 1;      /* device count */
+                *(uint32_t*)(g_rdram + 0x001E0350) = 0x801E52B0; /* entry pointer */
+                *(uint32_t*)(g_rdram + 0x00236810) = 0x00800000; /* LFB cache */
+            }
+            fprintf(stderr, "[init] Populated Voodoo descriptor with full entry data\n");
 
             fprintf(stderr, "[init] Pre-check: dev_count=0x%08X desc[0]=0x%08X entry_ptr=0x%08X\n",
                     *(uint32_t*)(g_rdram + 0x001A3354),
                     *(uint32_t*)(g_rdram + 0x001E52B0),
                     *(uint32_t*)(g_rdram + 0x001E0350));
-            fprintf(stderr, "[init] Calling func_80155888(pci=0x08100000, mode=7, fbi=2, tmu=4)...\n");
+            /* Call the FULL PCI driver init (func_80161140) which calls display init
+             * AND sets up the rendering context. */
+            {
+                recomp_func_t* pci_drv = get_function(0x80161140);
+                if (pci_drv) {
+                    fprintf(stderr, "[init] Calling Voodoo PCI driver (func_80161140)...\n");
+                    recomp_context pc = ctx;
+                    pci_drv(g_rdram, &pc);
+                    fprintf(stderr, "[init] PCI driver: r2=0x%08X writes=%u base=0x%08X render=0x%08X\n",
+                            (uint32_t)pc.r2, voodoo_get_write_count(),
+                            *(uint32_t*)(g_rdram + 0x001AA660),
+                            *(uint32_t*)(g_rdram + 0x0022A454));
+                }
+            }
+            fprintf(stderr, "[init] Also calling func_80155888(pci=0x08100000, mode=7, fbi=2, tmu=4)...\n");
                 recomp_context vc = ctx;
                 vc.r4 = 0x08100000;  /* a0 = PCI base */
                 vc.r5 = 7;           /* a1 = display mode (512x384) */

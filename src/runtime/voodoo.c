@@ -68,25 +68,15 @@ uint32_t voodoo_read(voodoo_state_t* voodoo, uint32_t offset) {
 
     switch (reg) {
     case VOODOO_STATUS: {
-        /* Toggle retrace bit to simulate VSync */
         voodoo->frame_count++;
-        if (voodoo->frame_count & 1) {
+        if (voodoo->frame_count & 1)
             voodoo->status |= VOODOO_STATUS_RETRACE;
-        } else {
+        else
             voodoo->status &= ~VOODOO_STATUS_RETRACE;
-        }
-        /* Ensure GPU always appears idle: clear all busy bits, max FIFO free */
         voodoo->status &= ~(VOODOO_STATUS_FBI_BUSY | VOODOO_STATUS_TREX_BUSY |
                            VOODOO_STATUS_SST_BUSY | VOODOO_STATUS_SWAPBUF_PEND);
         voodoo->status |= VOODOO_STATUS_PCIFIFO_FREE_MASK |
                           (0xFFFF << VOODOO_STATUS_MEMFIFO_FREE_SHIFT);
-
-        static int status_reads = 0;
-        status_reads++;
-        if (status_reads <= 5 || status_reads % 10000 == 0) {
-            fprintf(stderr, "[voodoo] status read #%d = 0x%08X\n",
-                    status_reads, voodoo->status);
-        }
         return voodoo->status;
     }
 
@@ -99,9 +89,8 @@ uint32_t voodoo_read(voodoo_state_t* voodoo, uint32_t offset) {
     case VOODOO_BACKPORCH: return voodoo->backporch;
 
     default:
-        if ((reg >> 2) < 256) {
-            return voodoo->regs[reg >> 2];
-        }
+        ; /* empty statement for MSVC C11 compliance */
+        if ((reg >> 2) < 256) return voodoo->regs[reg >> 2];
         return 0;
     }
 }
