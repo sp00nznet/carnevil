@@ -1093,10 +1093,18 @@ int main(int argc, char** argv) {
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
         (*vblank)++;
         (*tick) += 16667;
-        ctx.r4 = ctx.r2;
-        func_800C4524(g_rdram, &ctx);
-        extern void rtos_run_callbacks(uint8_t* rdram);
-        rtos_run_callbacks(g_rdram);
+        if (wf == 0) {
+            /* First warm-up frame: call full main_loop for init (allocs DMA buffers) */
+            ctx.r4 = ctx.r2;
+            func_800C4524(g_rdram, &ctx);
+        }
+        /* All frames: run process dispatcher + callbacks */
+        {
+            extern void func_80151718(uint8_t*, recomp_context*);
+            func_80151718(g_rdram, &ctx);
+            extern void rtos_run_callbacks(uint8_t* rdram);
+            rtos_run_callbacks(g_rdram);
+        }
     }
     fprintf(stderr, "[debug] After warm-up: r2=0x%08X\n", (uint32_t)ctx.r2);
 
@@ -1163,8 +1171,14 @@ int main(int argc, char** argv) {
             }
         }
 
-        ctx.r4 = ctx.r2;
-        func_800C4524(g_rdram, &ctx);
+        /* Run per-frame: process dispatcher + callbacks (NOT full main_loop).
+         * main_loop (func_800C4524) redoes init and re-allocs 1.75MB every call. */
+        {
+            extern void func_80151718(uint8_t*, recomp_context*);
+            func_80151718(g_rdram, &ctx);
+            extern void rtos_run_callbacks(uint8_t* rdram);
+            rtos_run_callbacks(g_rdram);
+        }
 
         /* func_800C50AC is the attract mode main loop - it never returns.
          * It enters naturally through the game's task/callback system.

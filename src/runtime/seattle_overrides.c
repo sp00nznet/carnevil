@@ -557,6 +557,23 @@ RECOMP_FUNC void static_0_80142DF8(uint8_t* rdram, recomp_context* ctx) {
     while (len < 200 && fmt[len] != 0 && fmt[len] >= 0x0A && fmt[len] < 0x7F) len++;
     if (len == 0 || len >= 200) { ctx->r2 = 0; return; }
 
+    /* Trace DMA buffer allocation failures */
+    static int dma_err_log = 0;
+    if (len > 10 && strstr(fmt, "DMA buffer") && dma_err_log < 3) {
+        dma_err_log++;
+        fprintf(stderr, "[DMA_ERR] fmt_addr=0x%08X fmt=\"%.60s\" a2=0x%08X\n",
+                fmt_addr, fmt, (uint32_t)ctx->r6);
+        /* Dump the stack to find the caller */
+        uint32_t sp_phys = (uint32_t)ctx->r29 & 0x1FFFFFFF;
+        fprintf(stderr, "[DMA_ERR] SP=0x%08X, stack:\n", (uint32_t)ctx->r29);
+        for (int si = 0; si < 8; si++) {
+            uint32_t sv = (sp_phys + si*4 < 0x00800000) ?
+                *(uint32_t*)(rdram + sp_phys + si*4) : 0;
+            if (sv >= 0x800C0000 && sv < 0x801C0000)
+                fprintf(stderr, "  SP[%+d] = 0x%08X (code ptr!)\n", si*4, sv);
+        }
+    }
+
     /* Simple printf: handle %s, %d, %x, %08x, skip unknown formats */
     uint32_t args[8];
     args[0] = (uint32_t)ctx->r6;  /* a2 */
@@ -882,4 +899,24 @@ RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
                 *(uint32_t*)(rdram + 0x001E6504));
     *(uint32_t*)(rdram + 0x001E6504) = 486;
     ctx->r2 = 0;
+}
+
+/* Override func_80143A40 (heap malloc) to trace allocation failures.
+ * Original renamed to func_80143A40_real in funcs_30.c */
+extern RECOMP_FUNC void func_80143A40_real(uint8_t* rdram, recomp_context* ctx);
+RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t size = (uint32_t)ctx->r4;
+    uint32_t heap_head = *(uint32_t*)(rdram + 0x001A1E90);
+    uint32_t hp = heap_head & 0x1FFFFFFF;
+    uint32_t free_sz = (hp < 0x00800000 - 4) ? (*(uint32_t*)(rdram + hp) & ~1u) : 0;
+
+    func_80143A40_real(rdram, ctx);
+
+    uint32_t result = (uint32_t)ctx->r2;
+    static int alloc_log = 0;
+    alloc_log++;
+    if (result == 0 || alloc_log <= 5 || size > 100000) {
+        fprintf(stderr, "[malloc] size=%u (0x%X) heap=0x%08X free=%u -> 0x%08X%s\n",
+                size, size, heap_head, free_sz, result, result == 0 ? " FAILED!" : "");
+    }
 }
