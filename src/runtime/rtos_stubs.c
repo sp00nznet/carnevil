@@ -103,8 +103,17 @@ RECOMP_FUNC void rtos_800060BC(uint8_t* rdram, recomp_context* ctx) {
     if (c <= 10) fprintf(stderr, "[rtos_cb] Register slot %d: func=0x%08X enable=%d\n",
         slot, func, enable);
 
+    /* Store callback in RDRAM at 0x800146E0 + slot*4 (matching real RTOS behavior).
+     * The real rtos_800060BC stores at: *(0x80010000 + 18144 + slot*4) = func */
+    if (slot < 8) {
+        uint32_t tbl_phys = 0x000146E0 + slot * 4;
+        if (tbl_phys + 4 < 0x00800000) {
+            *(uint32_t*)(rdram + tbl_phys) = func;
+        }
+    }
+
+    /* Also store in our C-side tracking array */
     if (slot < MAX_RTOS_CALLBACKS) {
-        /* Add to the list for this slot (don't overwrite) */
         int idx = rtos_callbacks[slot].count;
         if (idx < MAX_CBS_PER_SLOT) {
             rtos_callbacks[slot].func_vram[idx] = func;
@@ -222,4 +231,30 @@ RECOMP_FUNC void rtos_8000F774(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
     if (c <= 20)
         fprintf(stderr, "[pci_ovr] Read: dev=%d reg=0x%02X -> 0x%08X\n", dev, reg, (uint32_t)ctx->r2);
+}
+
+/* Instrumented wrapper for rtos_80006220 (VEC[64] = device callback registration)
+ * This is the REAL function that populates 0x800146A0 function pointer table. */
+extern RECOMP_FUNC void rtos_80006220(uint8_t* rdram, recomp_context* ctx);
+void rtos_80006220_wrapper(uint8_t* rdram, recomp_context* ctx) {
+    static int c = 0; c++;
+    uint32_t slot = (uint32_t)ctx->r4;
+    uint32_t func = (uint32_t)ctx->r5;
+    
+    /* Log before */
+    if (c <= 10) {
+        uint32_t tbl_before = *(uint32_t*)(rdram + 0x000146A0 + (slot < 8 ? slot * 4 : 0));
+        fprintf(stderr, "[rtos_reg] VEC[64] slot=%d func=0x%08X (before: tbl=0x%08X) #%d\n",
+                slot, func, tbl_before, c);
+    }
+    
+    /* Call the real function */
+    rtos_80006220(rdram, ctx);
+    
+    /* Log after */
+    if (c <= 10) {
+        uint32_t tbl_after = *(uint32_t*)(rdram + 0x000146A0 + (slot < 8 ? slot * 4 : 0));
+        fprintf(stderr, "[rtos_reg] VEC[64] AFTER: tbl[%d]=0x%08X r2=0x%08X\n",
+                slot, tbl_after, (uint32_t)ctx->r2);
+    }
 }

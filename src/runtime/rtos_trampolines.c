@@ -160,7 +160,8 @@ RECOMP_FUNC void static_0_800C4284(uint8_t* rdram, recomp_context* ctx) {
 }
 
 /* vec[64] static_0_800C428C -> rtos_80006220 (2 calls) */
+extern void rtos_80006220_wrapper(uint8_t* rdram, recomp_context* ctx);
 RECOMP_FUNC void static_0_800C428C(uint8_t* rdram, recomp_context* ctx) {
-    rtos_80006220(rdram, ctx);
+    rtos_80006220_wrapper(rdram, ctx);
 }
 

@@ -908,43 +908,26 @@ int main(int argc, char** argv) {
         fprintf(stderr, "[init] Set PCI init flag and bus base address\n");
     }
 
-    /* Pre-populate RTOS data tables from MAME dump values.
-     * These tables are in RTOS BSS and get filled during the RTOS boot sequence.
-     * Since we don't run the full RTOS boot, we fill them manually. */
+    /* RTOS tables:
+     * 0x800146A0: Function pointer table - populated by VEC[64] during main_loop
+     * 0x800146C0: Status/index table - maps device slots to func_table indices
+     *             Populated by RTOS boot. We set initial values so rtos_80005100 can work.
+     * 0x800146E0: Callback table - populated by VEC[60] (rtos_800060BC)
+     *
+     * The status table entries map each of 8 device slots to a function pointer index.
+     * -1 means "no device". On real hardware, PCI scan fills this. */
     {
-        /* Device init function table at 0x800146A0 (phys 0x0146A0) */
-        *(uint32_t*)(g_rdram + 0x0146A0) = 0x800C6030; /* device init 0 */
-        *(uint32_t*)(g_rdram + 0x0146AC) = 0x8013F678; /* device init 3 */
-
-        /* Device status table at 0x800146C0 */
-        *(uint32_t*)(g_rdram + 0x0146C0) = 0xFFFFFFFF;
-        *(uint32_t*)(g_rdram + 0x0146C4) = 0xFFFFFFFF;
-        *(uint32_t*)(g_rdram + 0x0146C8) = 0x00000001;
-        *(uint32_t*)(g_rdram + 0x0146CC) = 0x00000003;
-        *(uint32_t*)(g_rdram + 0x0146D0) = 0x00000002;
-        *(uint32_t*)(g_rdram + 0x0146D4) = 0x00000004;
-        *(uint32_t*)(g_rdram + 0x0146DC) = 0xFFFFFFFF;
-
-        fprintf(stderr, "[init] Pre-populated RTOS device tables from MAME dump\n");
+        /* Status table: each entry = the slot number that maps to this position.
+         * VEC[64] registration (rtos_80006220) searches this table for entries
+         * matching the target slot. It stores the func ptr only when it finds
+         * a matching entry. So we need: status[i] = i for each slot we want. */
+        for (int i = 0; i < 8; i++)
+            *(uint32_t*)(g_rdram + 0x000146C0 + i * 4) = (uint32_t)i;
     }
 
-    /* Try running RTOS device init (rtos_80005100) to populate the device table.
-     * This function initializes hardware subsystems (Galileo, Voodoo, IOASIC, DCS).
-     * a0 = device bitmask (0x7F00 = all major devices on Seattle)
-     * a1 = config struct pointer (use our config at 0x800B6E30) */
-    {
-        recomp_func_t* rtos_dev_init = get_function(0x80005100);
-        if (rtos_dev_init) {
-            fprintf(stderr, "[init] Calling RTOS device init (rtos_80005100)...\n");
-            recomp_context dev_ctx = {0};
-            dev_ctx.mips3_float_mode = 1;
-            dev_ctx.r29 = 0x80800000ULL - 0x10000; /* stack below our other allocations */
-            dev_ctx.r4 = 0x00007F00; /* device bitmask: all major devices */
-            dev_ctx.r5 = 0x800B6E30; /* config struct in RTOS BSS */
-            rtos_dev_init(g_rdram, &dev_ctx);
-            fprintf(stderr, "[init] RTOS device init returned: r2=0x%08X\n", (uint32_t)dev_ctx.r2);
-        }
-    }
+    /* Don't call rtos_80005100 here - the function table it uses isn't populated yet.
+     * VEC[64] (rtos_80006220) registers callbacks during the game's main_loop.
+     * The device init happens naturally through the game's own init sequence. */
 
     /* Check device table state before entry point */
     {
@@ -1098,6 +1081,46 @@ int main(int argc, char** argv) {
          * (1.75MB rendering buffer). Restoring the heap would destroy them. */
     }
     fprintf(stderr, "[debug] After warm-up: r2=0x%08X\n", (uint32_t)ctx.r2);
+
+    /* After warm-up: VEC[64] has populated the function pointer table.
+     * Now call rtos_80005100 to run the device init loop.
+     * The status table tells it which function to call for each device slot. */
+    {
+        /* Check what's in the function pointer table now */
+        fprintf(stderr, "[debug] Function pointer table after warm-up:\n");
+        for (int i = 0; i < 8; i++) {
+            uint32_t fp = *(uint32_t*)(g_rdram + 0x000146A0 + i * 4);
+            uint32_t cb = *(uint32_t*)(g_rdram + 0x000146E0 + i * 4);
+            if (fp || cb) {
+                fprintf(stderr, "  [%d] func=0x%08X callback=0x%08X\n", i, fp, cb);
+            }
+        }
+
+        /* Set status table entries to point to valid function indices.
+         * Slot 2 → func_table[0] (VBlank), Slot 3 → func_table[3] (timer) */
+        *(uint32_t*)(g_rdram + 0x000146C0 + 2 * 4) = 0; /* device slot 2 uses func_table[0] */
+        *(uint32_t*)(g_rdram + 0x000146C0 + 3 * 4) = 3; /* device slot 3 uses func_table[3] */
+
+        /* Call rtos_80005100 with bitmask for slots 2 and 3 (bits 10,11 = 0x0C00) */
+        recomp_func_t* dev_init = get_function(0x80005100);
+        if (dev_init) {
+            fprintf(stderr, "[init] Calling rtos_80005100 device init (bitmask=0x0C00)...\n");
+            recomp_context dc = ctx;
+            dc.r4 = 0x00000C00; /* bits 10+11 = slots 2+3 */
+            dc.r5 = 0x800B6E30; /* config struct */
+            dev_init(g_rdram, &dc);
+            fprintf(stderr, "[init] Device init returned: r2=0x%08X\n", (uint32_t)dc.r2);
+
+            /* Check device I/O table */
+            uint32_t dt = 0x000B83E8;
+            for (int i = 0; i < 4; i++) {
+                uint32_t flags = *(uint32_t*)(g_rdram + dt + i * 36 + 16);
+                if (flags) {
+                    fprintf(stderr, "  dev_table[%d] flags=0x%08X\n", i, flags);
+                }
+            }
+        }
+    }
 
     /* Phase 2: Start frame loop */
     fprintf(stderr, "[debug] Starting frame loop with %d fibers\n",
