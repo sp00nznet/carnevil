@@ -3,11 +3,13 @@
 *.img
 *.tar
 *.iso
-*.bin
 
 # Extracted raw data (regenerable from tools)
 extracted/
 carnevil/
+
+# Recompilation output
+recomp_out/
 
 # Python
 __pycache__/
