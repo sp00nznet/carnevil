@@ -1037,6 +1037,22 @@ int main(int argc, char** argv) {
                             *(uint32_t*)(g_rdram + 0x0022A454));
                 }
             }
+            /* Call func_80120020 which sets the rendering pointer at 0x0022A454.
+             * This function is normally called by the Voodoo PCI driver after detection.
+             * It expects v0 != 0 (device found flag). */
+            {
+                recomp_func_t* render_setup = get_function(0x80120020);
+                if (render_setup) {
+                    recomp_context rs = ctx;
+                    rs.r2 = 1;  /* v0 = device found flag */
+                    rs.r4 = 0x08100000; /* a0 = PCI base (in case it needs it) */
+                    rs.r5 = 0x801E52B0; /* a1 = descriptor entry ptr */
+                    fprintf(stderr, "[init] Calling func_80120020 (render ptr setup)...\n");
+                    render_setup(g_rdram, &rs);
+                    fprintf(stderr, "[init] render_ptr = 0x%08X\n",
+                            *(uint32_t*)(g_rdram + 0x0022A454));
+                }
+            }
             fprintf(stderr, "[init] Also calling func_80155888(pci=0x08100000, mode=7, fbi=2, tmu=4)...\n");
                 recomp_context vc = ctx;
                 vc.r4 = 0x08100000;  /* a0 = PCI base */
@@ -1352,6 +1368,23 @@ int main(int argc, char** argv) {
             uint32_t voodoo_base = *(uint32_t*)(g_rdram + 0x001AA660);
             fprintf(stderr, "[debug] Render buf=0x%08X, render_ptr@0x0022A454=0x%08X, voodoo_base=0x%08X\n",
                     rbuf, render_ptr, voodoo_base);
+
+            /* Check if the 70KB rendering context at 0x001E6A20 has any data */
+            int ctx_nz = 0;
+            for (uint32_t ca = 0x001E6A20; ca < 0x001E6A20 + 70316 && ca < RAM_SIZE; ca += 4) {
+                uint32_t cv = *(uint32_t*)(g_rdram + ca);
+                if (cv != 0) {
+                    ctx_nz++;
+                    if (ctx_nz <= 30) {
+                        fprintf(stderr, "  ctx[+0x%05X] = 0x%08X\n", ca - 0x001E6A20, cv);
+                    }
+                }
+            }
+            fprintf(stderr, "[debug] Rendering context: %d non-zero words\n", ctx_nz);
+
+            /* Also check the entry[0x11178] ready flag */
+            uint32_t ready = *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178);
+            fprintf(stderr, "[debug] Voodoo ready flag entry[0x11178] = %u\n", ready);
         }
 
         /* Check display list buffer */
