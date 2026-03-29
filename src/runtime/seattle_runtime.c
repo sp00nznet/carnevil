@@ -887,6 +887,13 @@ int main(int argc, char** argv) {
             *(uint32_t*)(g_rdram + 0x00236810) = 0x00800000; /* LFB base from entry[+8] */
 
             fprintf(stderr, "[init] Populated Voodoo descriptor: BAR0=0x08100000, BAR1=0x00800000\n");
+
+        /* PIC serial number at 0x801E6504 (phys 0x001E6504).
+         * The game checks this against 528 (25"), 469, or 486 (39") in an
+         * infinite loop at 0x800C515C. If it doesn't match, the game hangs!
+         * CarnEvil uses 486 for the 39" cabinet (matches our PIC file). */
+        *(uint32_t*)(g_rdram + 0x001E6504) = 486;
+        fprintf(stderr, "[init] Set PIC serial at 0x801E6504 = 486\n");
         }
 
         /* Voodoo display init is called AFTER entry point (env strings need to be parsed first) */
@@ -1026,27 +1033,26 @@ int main(int argc, char** argv) {
                 *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
                 fprintf(stderr, "[init] Re-set Voodoo base to 0x08100000\n");
             }
-            /* CRITICAL: rendering state index at 0x0022A454.
-             * func_8015E2F4 (147 callers) loads this, uses it as an INDEX
-             * into a rendering state array at 0x801E6A20.
-             * If zero, the function uses entry[0] at 0x801E6A20.
-             * We need: index=1 (non-zero to pass the bail check) and populate the entry. */
-            *(uint32_t*)(g_rdram + 0x0022A454) = 1; /* index 1 */
+            /* CRITICAL: rendering state at 0x0022A454.
+             * func_8015E2F4 (147 callers) loads this as an INDEX into a
+             * 70,316-byte-stride rendering context array at 0x801E6A20.
+             * Index 0 → entry at 0x001E6A20, Index 1 → entry at 0x001F7CCC.
+             *
+             * After computing the entry address, the function checks:
+             *   entry[+0x11178] == 4  (Voodoo "ready" state flag)
+             * If not 4, rendering is skipped. */
+            *(uint32_t*)(g_rdram + 0x0022A454) = 0; /* index 0 */
 
-            /* Populate rendering state entry at 0x801E6A20.
-             * Each entry stores Voodoo register base and rendering config.
-             * func_8015E2F4 computes offset = index * stride and reads from base + offset.
-             * For index 1, populate entries starting at appropriate offset.
-             * Also populate index 0 as fallback. */
-            uint32_t render_array = 0x001E6A20;
-            /* Store the Voodoo PCI base within the first few entries */
-            for (int ri = 0; ri < 4; ri++) {
-                uint32_t re = render_array + ri * 4;
-                if (re + 4 < RAM_SIZE) {
-                    *(uint32_t*)(g_rdram + re) = 0x08100000; /* Voodoo PCI base */
-                }
+            /* Entry 0 at physical 0x001E6A20, size 70316 bytes.
+             * Set the "Voodoo ready" flag at entry[+0x11178] = 4.
+             * Physical address: 0x001E6A20 + 0x11178 = 0x001F7B98 */
+            uint32_t entry0 = 0x001E6A20;
+            if (entry0 + 0x11178 + 4 < RAM_SIZE) {
+                *(uint32_t*)(g_rdram + entry0 + 0x11178) = 4;
+                /* Also store the Voodoo PCI base at the beginning of the entry */
+                *(uint32_t*)(g_rdram + entry0 + 0) = 0x08100000;
+                fprintf(stderr, "[init] Set Voodoo ready flag at entry[0x11178]=4\n");
             }
-            fprintf(stderr, "[init] Set rendering state index=1, populated array at 0x801E6A20\n");
         }
     }
 
@@ -1133,6 +1139,9 @@ int main(int argc, char** argv) {
         input_poll(&g_input);
         input_write_to_ram(g_rdram, &g_input);
 
+        /* Force PIC serial number EVERY frame (game clears it during init) */
+        *(uint32_t*)(g_rdram + 0x001E6504) = 486;
+
         /* Restore heap to post-init snapshot (preserves permanent allocs) */
         if (frame > 0 && heap_snapshot_head != 0) {
             *(uint32_t*)(g_rdram + 0x001A1E90) = heap_snapshot_head;
@@ -1146,10 +1155,12 @@ int main(int argc, char** argv) {
         ctx.r4 = ctx.r2;
         func_800C4524(g_rdram, &ctx);
 
-        /* After each frame: do a Voodoo fastfill with a cycling color
-         * to prove the pipeline works and make something visible */
+        /* func_800C50AC is the attract mode main loop - it never returns.
+         * It enters naturally through the game's task/callback system.
+         * The PIC serial (IOASIC cmd 0x7001 = 486) is now correct. */
+
+        /* FastFill as fallback */
         {
-            /* Color format for Voodoo color1: 0x00RRGGBB (RGB888) */
             int r = (frame * 3) & 0xFF;
             int g = ((frame * 5) + 100) & 0xFF;
             int b = ((frame * 7) + 200) & 0xFF;

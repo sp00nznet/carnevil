@@ -348,8 +348,15 @@ RECOMP_FUNC void static_0_801451F0(uint8_t* rdram, recomp_context* ctx) {
         }
     }
 
-    /* Return the device handle (1-based index or positive value) */
-    ctx->r2 = (dev_idx >= 0) ? (gpr)(dev_idx + 1) : 1;
+    /* Return the device handle.
+     * For "pic:" device: the handle value gets stored at 0x801E6504 and
+     * compared against PIC serial numbers (528, 469, 486). The game loops
+     * forever if it doesn't match. Return 486 (39" cabinet serial). */
+    if (strstr(devname, "pic")) {
+        ctx->r2 = 486;
+    } else {
+        ctx->r2 = (dev_idx >= 0) ? (gpr)(dev_idx + 1) : 1;
+    }
 }
 
 /* vec[25] = static_0_800C4154 -> rtos_8000BEB0
@@ -384,6 +391,8 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
     if (data_phys > 0 && data_phys + 4 <= 0x00800000)
         resp = (int32_t*)(rdram + data_phys);
 
+    /* Handle all commands regardless of device ID - the PIC device
+     * uses handles (like 486) that don't match our device table indices */
     if ((cmd & 0xFF00) == 0x6900) {
         /* DCS2 Sound commands */
         switch (cmd) {
@@ -402,9 +411,10 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
         /* IOASIC / PIC / system commands */
         switch (cmd) {
             case 0x7000: if (resp) *resp = 0x0001; break; /* System OK */
-            case 0x7001: if (resp) *resp = 0x0001; break; /* IOASIC version */
-            case 0x740B: if (resp) *resp = 0x0000; break; /* PIC status */
-            case 0x7403: if (resp) *resp = 0x0000; break; /* PIC query */
+            case 0x7001: if (resp) *resp = 486;   break; /* IOASIC upper = PIC serial (486=39") */
+            case 0x7002: if (resp) *resp = 487;   break; /* Board ID (game subtracts 1 → 486) */
+            case 0x740B: if (resp) *resp = 486; break; /* PIC serial number (486=39" cabinet) */
+            case 0x7403: if (resp) *resp = 486; break; /* PIC query - also return serial */
             case 0x6300: if (resp) *resp = 0x0000; break; /* PIC init */
             case 0x6301: if (resp) *resp = 0x0000; break; /* PIC challenge */
             case 0x6302: if (resp) *resp = 0x0000; break; /* PIC verify */
@@ -662,8 +672,21 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
 
     rtos_event_counter++;
 
-    if (rtos_event_counter <= 5) {
-        fprintf(stderr, "[rtos] event_wait(channel=%d) -> counter=%u\n", channel, rtos_event_counter);
+    if (rtos_event_counter <= 5 || channel > 100) {
+        static int high_ch_log = 0;
+        if (channel > 100) high_ch_log++;
+        if (rtos_event_counter <= 5 || high_ch_log <= 5)
+            fprintf(stderr, "[rtos] event_wait(channel=%d) -> counter=%u\n", channel, rtos_event_counter);
+    }
+
+    /* For high-numbered channels (rendering sync), return immediately.
+     * These are waited on from non-fiber code (our test render call). */
+    if (channel > 100) {
+        /* Store return value at buf_addr */
+        if (buf_phys < 0x00800000 - 4)
+            *(uint32_t*)(rdram + buf_phys) = 181; /* echo the channel as the value */
+        ctx->r2 = 0;
+        return;
     }
 
     /* Yield the current fiber to let other tasks run */
@@ -845,5 +868,18 @@ RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
          * after func_80144EB8. The infinite loop (pause_self) follows,
          * but pause_self will yield again. */
     }
+    ctx->r2 = 0;
+}
+
+/* func_80151618: sync/yield function called in the PIC check infinite loop.
+ * The loop at 0x800C515C-0x800C5164 calls this repeatedly until
+ * the PIC serial at 0x801E6504 matches 528, 469, or 486.
+ * We force-set the PIC serial to 486 each call to break the loop. */
+RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
+    static int c = 0; c++;
+    if (c <= 5 || c % 10000 == 0)
+        fprintf(stderr, "[yield] func_80151618 #%d PIC=%u\n", c,
+                *(uint32_t*)(rdram + 0x001E6504));
+    *(uint32_t*)(rdram + 0x001E6504) = 486;
     ctx->r2 = 0;
 }
