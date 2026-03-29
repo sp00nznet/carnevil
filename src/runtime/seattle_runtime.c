@@ -1238,6 +1238,11 @@ int main(int argc, char** argv) {
         (*vblank)++;
         (*tick) += 16667;
         (*sync1)++;
+        /* Advance sync2 alongside sync1 to simulate frame completion.
+         * On real hardware, sync2 increments when a frame finishes rendering.
+         * Without it advancing, the game's state machine stalls (waits for
+         * rendering to catch up before transitioning to attract mode). */
+        (*sync2) = (*sync1) - 1;
 
         input_poll(&g_input);
         input_write_to_ram(g_rdram, &g_input);
@@ -1255,13 +1260,50 @@ int main(int argc, char** argv) {
             }
         }
 
-        /* Run per-frame: process dispatcher + callbacks (NOT full main_loop).
-         * main_loop (func_800C4524) redoes init and re-allocs 1.75MB every call. */
+        /* Call the per-frame functions from main_loop individually.
+         * main_loop always re-runs its init (malloc 1.75MB) which we can't allow.
+         * The per-frame sequence from main_loop 0x800C46E8+:
+         * 1. func_80151B74(args) - state machine / mode registration
+         * 2. func_80151528() - sync
+         * 3. func_800C4A08() - create tasks
+         * 4. func_80151528() - sync
+         * 5. func_80151718() - process dispatcher
+         * 6. func_801438D0(0) - cleanup */
         {
+            extern void func_80151B74(uint8_t*, recomp_context*);
+            extern void func_80151528(uint8_t*, recomp_context*);
+            extern void func_800C4A08(uint8_t*, recomp_context*);
             extern void func_80151718(uint8_t*, recomp_context*);
-            func_80151718(g_rdram, &ctx);
+            extern void func_801438D0(uint8_t*, recomp_context*);
+
+            /* func_80151B74 args: a0=game_name, a1=0, a2=mode_func, a3=0, sp[16..24]=0
+             * game_name at 0x8016DAB8, mode_func at 0x800C50AC */
+            ctx.r4 = 0x8016DAB8; /* game name string */
+            ctx.r5 = 0;
+            ctx.r6 = 0x800C50AC; /* mode function (attract mode) */
+            ctx.r7 = 0;
+            uint32_t sp_phys = (uint32_t)ctx.r29 & 0x1FFFFFFF;
+            if (sp_phys + 24 < RAM_SIZE) {
+                *(uint32_t*)(g_rdram + sp_phys + 16) = 0;
+                *(uint32_t*)(g_rdram + sp_phys + 20) = 0;
+                *(uint32_t*)(g_rdram + sp_phys + 24) = 0;
+            }
+            func_80151B74(g_rdram, &ctx);
+
+            func_80151528(g_rdram, &ctx);
+            func_800C4A08(g_rdram, &ctx); /* create tasks */
+            func_80151528(g_rdram, &ctx);
+            func_80151718(g_rdram, &ctx); /* process dispatcher */
+
             extern void rtos_run_callbacks(uint8_t* rdram);
             rtos_run_callbacks(g_rdram);
+
+            /* Directly invoke attract mode function to advance game state.
+             * It loops internally but pause_self catches the infinite loop. */
+            if (frame > 5 && frame % 3 == 0) {
+                recomp_func_t* attract = get_function(0x800C50AC);
+                if (attract) attract(g_rdram, &ctx);
+            }
         }
 
         /* func_800C50AC is the attract mode main loop - it never returns.
