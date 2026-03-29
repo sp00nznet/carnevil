@@ -703,7 +703,21 @@ int main(int argc, char** argv) {
 
     memset(g_rdram, 0, RAM_SIZE);
     memset(&io, 0, sizeof(io));
-    io.io_log_enabled = 0; /* set to 1 for verbose I/O logging */
+    io.io_log_enabled = 0;
+
+    /* Load CMOS/NVRAM from MAME dump so the game skips the date confirmation screen.
+     * Without valid CMOS, the game shows "CMOS: BAD" and waits for operator input.
+     * The MAME NVRAM contains validated settings from a successful boot. */
+    {
+        FILE* cmos_f = fopen("extracted/cmos_nvram.bin", "rb");
+        if (cmos_f) {
+            size_t n = fread(io.cmos, 1, sizeof(io.cmos), cmos_f);
+            fclose(cmos_f);
+            fprintf(stderr, "[init] Loaded CMOS/NVRAM: %zu bytes\n", n);
+        } else {
+            fprintf(stderr, "[init] No CMOS file (extracted/cmos_nvram.bin) - game may show setup screen\n");
+        }
+    }
     voodoo_init(&g_voodoo);
     /* Dark blue fill as baseline - game rendering should overwrite this */
     for (int i = 0; i < 512 * 384; i++)
@@ -1060,44 +1074,12 @@ int main(int argc, char** argv) {
         if (!any_nonzero) fprintf(stderr, "  (all zero - device init FAILED)\n");
     }
 
-    /* Phase 1b: Run ONE frame to populate RTOS tables, then call device init,
-     * then run remaining warm-up frames. */
-    printf("  Phase 1b: Warm-up...\n");
+    /* Phase 1b: Warm-up frames. The game shows a diagnostic/date confirmation
+     * screen. With valid CMOS data, it auto-advances after ~15 seconds.
+     * We simulate button presses to speed up dismissal. */
+    printf("  Phase 1b: Warm-up (20 frames)...\n");
     fflush(stdout);
-
-    /* Frame 0: populates VEC[64] function table and VEC[60] callbacks */
-    {
-        uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
-        uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
-        (*vblank)++;
-        (*tick) += 16667;
-
-        /* Save heap state BEFORE main_loop (the big 1.75MB alloc happens here) */
-        uint32_t heap_pre = *(uint32_t*)(g_rdram + 0x001A1E90);
-        uint32_t hp = heap_pre & 0x1FFFFFFF;
-        uint32_t hs[2] = {0};
-        if (hp < RAM_SIZE - 8) { hs[0] = *(uint32_t*)(g_rdram + hp); hs[1] = *(uint32_t*)(g_rdram + hp + 4); }
-
-        ctx.r4 = ctx.r2;
-        func_800C4524(g_rdram, &ctx);
-
-        /* NOW call rtos_80005100 with the heap still large (before big alloc sticks).
-         * Temporarily restore heap so DMA buffer alloc succeeds. */
-        *(uint32_t*)(g_rdram + 0x001A1E90) = heap_pre;
-        if (hp < RAM_SIZE - 8) { *(uint32_t*)(g_rdram + hp) = hs[0]; *(uint32_t*)(g_rdram + hp + 4) = hs[1]; }
-
-        fprintf(stderr, "[init] Heap restored for device init: %u KB free\n",
-                (hs[0] & ~1u) / 1024);
-    }
-
-    /* NOTE: rtos_80005100 device init removed - the func_table entries from VEC[64]
-     * are periodic callbacks (VBlank/timer), NOT device init functions.
-     * The actual device init needs to happen through CMOS validation and
-     * the game's own init sequence (date confirmation screen). */
-
-    /* Continue warm-up frames (19 more).
-     * Simulate button presses to dismiss date confirmation/setup screen. */
-    for (int wf = 1; wf < 20; wf++) {
+    for (int wf = 0; wf < 20; wf++) {
         /* Press service credit + start buttons on frames 5-8 to dismiss menus */
         if (wf >= 5 && wf <= 8) {
             /* Active LOW: clear bits to "press" buttons */
@@ -1118,45 +1100,14 @@ int main(int argc, char** argv) {
     }
     fprintf(stderr, "[debug] After warm-up: r2=0x%08X\n", (uint32_t)ctx.r2);
 
-    /* MOVED: Device init now happens after FIRST warm-up frame (see below) */
-    /* After warm-up: VEC[64] has populated the function pointer table.
-     * Now call rtos_80005100 to run the device init loop.
-     * The status table tells it which function to call for each device slot. */
+    /* RTOS tables are populated by VEC[64]/[60] during warm-up frames.
+     * Device init (rtos_80005100) is NOT called - its func_table entries
+     * are periodic callbacks, not device init functions.
+     * The game's own code handles device discovery via PCI config reads.
+     * With valid CMOS, the game auto-advances past the diagnostic screen.
+     */
     {
-        /* Check what's in the function pointer table now */
-        fprintf(stderr, "[debug] Function pointer table after warm-up:\n");
-        for (int i = 0; i < 8; i++) {
-            uint32_t fp = *(uint32_t*)(g_rdram + 0x000146A0 + i * 4);
-            uint32_t cb = *(uint32_t*)(g_rdram + 0x000146E0 + i * 4);
-            if (fp || cb) {
-                fprintf(stderr, "  [%d] func=0x%08X callback=0x%08X\n", i, fp, cb);
-            }
-        }
-
-        /* Set status table entries to point to valid function indices.
-         * Slot 2 → func_table[0] (VBlank), Slot 3 → func_table[3] (timer) */
-        *(uint32_t*)(g_rdram + 0x000146C0 + 2 * 4) = 0; /* device slot 2 uses func_table[0] */
-        *(uint32_t*)(g_rdram + 0x000146C0 + 3 * 4) = 3; /* device slot 3 uses func_table[3] */
-
-        /* Call rtos_80005100 with bitmask for slots 2 and 3 (bits 10,11 = 0x0C00) */
-        recomp_func_t* dev_init = get_function(0x80005100);
-        if (dev_init) {
-            fprintf(stderr, "[init] Calling rtos_80005100 device init (bitmask=0x0C00)...\n");
-            recomp_context dc = ctx;
-            dc.r4 = 0x00000C00; /* bits 10+11 = slots 2+3 */
-            dc.r5 = 0x800B6E30; /* config struct */
-            dev_init(g_rdram, &dc);
-            fprintf(stderr, "[init] Device init returned: r2=0x%08X\n", (uint32_t)dc.r2);
-
-            /* Check device I/O table */
-            uint32_t dt = 0x000B83E8;
-            for (int i = 0; i < 4; i++) {
-                uint32_t flags = *(uint32_t*)(g_rdram + dt + i * 36 + 16);
-                if (flags) {
-                    fprintf(stderr, "  dev_table[%d] flags=0x%08X\n", i, flags);
-                }
-            }
-        }
+        fprintf(stderr, "[debug] After warm-up: RTOS tables populated by VEC[64]/[60]\n");
     }
 
     /* Phase 2: Start frame loop */
