@@ -162,6 +162,19 @@ void rtos_run_callbacks(uint8_t* rdram) {
         }
     }
 
+    /* Also call VEC[64]-registered callbacks from the RTOS function table at 0x800146A0.
+     * These are VBlank/timer callbacks that the game needs for state machine transitions. */
+    for (int i = 0; i < 8; i++) {
+        uint32_t fv = *(uint32_t*)(rdram + 0x000146A0 + i * 4);
+        if (fv >= 0x800C0000 && fv < 0x801C0000) {
+            recomp_func_t* f = get_function(fv);
+            if (f) {
+                cb_ctx.r4 = (gpr)i;
+                f(rdram, &cb_ctx);
+            }
+        }
+    }
+
     /* Call frame-done callback */
     if (rtos_frame_done_cb) {
         recomp_func_t* f = get_function(rtos_frame_done_cb);
