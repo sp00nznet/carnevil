@@ -1,25 +1,46 @@
 #!/usr/bin/env python3
 """
-Midway Seattle Filesystem Extractor (TRAP format)
+Midway Seattle Filesystem Extractor (TRAP + Phoenix format)
 Extracts files from CarnEvil and other Midway Seattle arcade disk images.
 
-The disk uses the TRAP filesystem format:
+Disk layout:
 - Sector 0: TRAP header with partition table
   - Magic "TRAP" + entry count + entries (start_sector, size_in_sectors, type)
-- Entry 1 (type=1): Filesystem metadata partition containing:
-  - Superblock at byte 0x600
-  - FAT table at byte 0x8800
-  - LFN32 directory entries (variable location, 0x126 bytes each)
-- Entries 2-16 (type=0): Data partitions (contiguous, no gaps)
+  - Entry 0 spans the entire disk
+  - Entry 1 (type=1): Filesystem metadata
+  - Entries 2-16 (type=0): Data partitions
 
-Each TRAP entry occupies a contiguous range of sectors.
-Entry N+1 starts at Entry N start + Entry N size.
+Phoenix filesystem (within the whole disk, entry 0):
+- Base offset: 0x11400 (70656 bytes from disk start)
+- Block size: 4096 bytes
+- Directory entries: 24 bytes each (12 byte-swapped name + 4 size + 4 UID + 4 block ptr)
+- Directory entries are scattered across the metadata partition, found via pattern scan
+- File data: BASE + block_ptr * BLOCK_SIZE, size = size_field * 4 bytes
+- Files stored contiguously, each occupying ceil(size/4096) blocks
+
+EXE file format (.EXE files like GAME.EXE, DIAG.EXE):
+- 0x000-0x1FF: 512-byte boot thumbnail (RGB pixel data)
+- 0x200-0x203: Unknown/padding
+- 0x204-0x207: MIPS load address (LE uint32)
+- 0x208+: MIPS-IV LE flat binary code
+
+LFN32 directory entries (secondary, used by FILESYS.CHK for verification):
+- Located within the metadata area (searched by "LFN32\\x00" magic)
+- 0x126 bytes each, contain filename, UID, checksum
 """
 
 import struct
 import os
 import sys
-from pathlib import Path
+
+
+# Phoenix filesystem constants
+BASE_OFFSET = 0x11400       # Data area starts here
+BLOCK_SIZE = 4096            # Bytes per block
+DIR_ENTRY_SIZE = 24          # Bytes per directory entry
+EXE_HEADER_SIZE = 0x208      # Header size in .EXE files
+EXE_LOADADDR_OFFSET = 0x204  # Load address location in .EXE header
+METADATA_SCAN_SIZE = 60 * 1024 * 1024  # Scan first 60MB for directory entries
 
 
 def read_trap_header(f):
@@ -49,294 +70,230 @@ def read_trap_header(f):
     return entries
 
 
-def find_lfn32_entries(f, max_search=2 * 1024 * 1024):
-    """Find all LFN32 directory entries in the image."""
-    # LFN32 entries are within the first few MB (entry 1 metadata area)
+def byteswap_filename(name_raw):
+    """Byte-swap a 12-byte filename in 4-byte groups [3,2,1,0,7,6,5,4,11,10,9,8]."""
+    swapped = bytearray(12)
+    for group in range(3):
+        for j in range(4):
+            swapped[group * 4 + j] = name_raw[group * 4 + (3 - j)]
+    return swapped.rstrip(b'\x00')
+
+
+def read_directory(f):
+    """Read all directory entries by scanning the metadata area for valid entries.
+
+    Directory entries are 24 bytes each with a byte-swapped 12-byte filename,
+    but they are scattered across the metadata partition at varying alignments.
+    We find them by searching for the '.' character (0x2E) at expected byte
+    positions within the byte-swapped filename field.
+    """
     f.seek(0)
-    data = f.read(max_search)
+    meta = f.read(METADATA_SCAN_SIZE)
 
-    entries = []
-    idx = 0
-    while True:
-        idx = data.find(b'LFN32\x00', idx)
-        if idx == -1:
-            break
+    # Compute all possible raw byte positions for '.' in the filename
+    # Original position P in the filename maps to raw position:
+    # group = P // 4, offset = 3 - (P % 4), raw = group*4 + offset
+    dot_raw_positions = set()
+    for p in range(1, 12):
+        group = p // 4
+        offset = 3 - (p % 4)
+        dot_raw_positions.add(group * 4 + offset)
 
-        if idx + 0x126 > len(data):
-            break
+    entries = {}  # name -> best entry (largest size wins)
 
-        entry_data = data[idx:idx + 0x126]
+    for raw_dot_pos in sorted(dot_raw_positions):
+        for i in range(0, len(meta) - DIR_ENTRY_SIZE):
+            if meta[i + raw_dot_pos] != 0x2E:
+                continue
 
-        # Parse entry fields
-        fmt_version = struct.unpack_from('<H', entry_data, 0x06)[0]
-        uid = struct.unpack_from('<I', entry_data, 0x16)[0]
-        f1a = struct.unpack_from('<H', entry_data, 0x1A)[0]
-        f1c = struct.unpack_from('<H', entry_data, 0x1C)[0]
+            entry_bytes = meta[i:i + DIR_ENTRY_SIZE]
+            name = byteswap_filename(entry_bytes[:12])
 
-        # Filename is 14 bytes at offset 0x1E, null-padded
-        fname_raw = entry_data[0x1E:0x2C]
-        fname = fname_raw.split(b'\x00')[0].decode('ascii', errors='replace')
+            if len(name) < 4 or not all(32 <= b < 127 for b in name):
+                continue
+            if name.count(b'.') != 1:
+                continue
 
-        checksum = struct.unpack_from('<I', entry_data, 0x122)[0]
+            name_s = name.decode('ascii')
+            parts = name_s.split('.')
+            if len(parts) != 2:
+                continue
+            if not all(c.isalnum() or c == '_' for c in parts[0]):
+                continue
+            if not all(c.isalnum() for c in parts[1]) or not (2 <= len(parts[1]) <= 4):
+                continue
 
-        if fname:  # skip empty names
-            entries.append({
-                'name': fname,
-                'fmt_version': fmt_version,
-                'uid': uid,
-                'f1a': f1a,
-                'f1c': f1c,
-                'checksum': checksum,
-                'dir_offset': idx,
-            })
+            size_raw = struct.unpack_from('<I', entry_bytes, 12)[0]
+            uid = struct.unpack_from('<I', entry_bytes, 16)[0]
+            block_ptr = struct.unpack_from('<I', entry_bytes, 20)[0]
 
-        idx += 1  # advance past this match
+            if size_raw == 0 or size_raw > 0x1000000 or block_ptr > 0x100000:
+                continue
 
-    return entries
+            actual_size = size_raw * 4
 
+            if name_s not in entries or entries[name_s]['size'] < actual_size:
+                entries[name_s] = {
+                    'name': name_s,
+                    'size': actual_size,
+                    'size_raw': size_raw,
+                    'uid': uid,
+                    'block_ptr': block_ptr,
+                    'disk_offset': BASE_OFFSET + block_ptr * BLOCK_SIZE,
+                }
 
-def identify_trap_entry_content(f, entry):
-    """Try to identify what a TRAP entry contains."""
-    f.seek(entry['byte_offset'])
-    header = f.read(min(256, entry['byte_size']))
-
-    if not header:
-        return "empty"
-
-    if header[:2] == b'#=':
-        return "djgpp_config"
-
-    # Check for text content
-    text_chars = sum(1 for b in header[:64] if 32 <= b < 127 or b in [10, 13, 9])
-    if text_chars > 48:
-        return "text_config"
-
-    if all(b == 0 for b in header[:32]):
-        return "empty_or_uninitialized"
-
-    return "binary_data"
+    return list(entries.values())
 
 
-def compute_file_sizes(dir_entries):
-    """Compute file sizes from consecutive f1a offsets within each f1c group."""
-    # Group entries by (f1a, f1c) - entries sharing these are aliases
-    unique_blocks = {}
-    for entry in dir_entries:
-        key = (entry['f1c'], entry['f1a'])
-        if key not in unique_blocks:
-            unique_blocks[key] = []
-        unique_blocks[key].append(entry['name'])
-
-    # For each f1c value, sort unique f1a values and compute sizes from gaps
-    by_f1c = {}
-    for (f1c, f1a), names in unique_blocks.items():
-        if f1c not in by_f1c:
-            by_f1c[f1c] = []
-        by_f1c[f1c].append((f1a, names))
-
-    file_sizes = {}  # (f1c, f1a) -> size_in_sectors
-    for f1c, items in by_f1c.items():
-        sorted_items = sorted(items, key=lambda x: x[0])
-        for i in range(len(sorted_items)):
-            f1a = sorted_items[i][0]
-            names = sorted_items[i][1]
-            if i + 1 < len(sorted_items):
-                next_f1a = sorted_items[i + 1][0]
-                size_sectors = next_f1a - f1a
-            else:
-                # Last file in this group - use a reasonable default
-                # Based on observed patterns, use 256 sectors (128KB)
-                size_sectors = 256
-
-            file_sizes[(f1c, f1a)] = size_sectors
-
-    return file_sizes
-
-
-def extract_trap_entries(img_path, output_dir):
-    """Extract all TRAP partition entries as raw files."""
+def extract_files(img_path, output_dir):
+    """Extract all files from the disk image."""
     with open(img_path, 'rb') as f:
+        # Step 1: Read TRAP header
         trap_entries = read_trap_header(f)
 
-        trap_dir = os.path.join(output_dir, 'trap_entries')
-        os.makedirs(trap_dir, exist_ok=True)
-
-        print(f"\n{'='*70}")
+        print(f"{'=' * 70}")
         print(f"TRAP Partition Table ({len(trap_entries)} entries)")
-        print(f"{'='*70}")
-        print(f"{'Idx':>4} {'Start Sector':>12} {'Size (sectors)':>14} {'Size (bytes)':>14} {'Type':>5} {'Content'}")
-        print(f"{'-'*4} {'-'*12} {'-'*14} {'-'*14} {'-'*5} {'-'*20}")
+        print(f"{'=' * 70}")
+        print(f"{'Idx':>4} {'Start Sector':>12} {'Size (sectors)':>14} {'Size':>10} {'Type':>5}")
+        print(f"{'-' * 4} {'-' * 12} {'-' * 14} {'-' * 10} {'-' * 5}")
 
         for entry in trap_entries:
-            content_type = identify_trap_entry_content(f, entry) if entry['index'] > 0 else "whole_disk"
             size_mb = entry['byte_size'] / 1024 / 1024
+            print(f"{entry['index']:4d} {entry['start_sector']:12d} "
+                  f"{entry['size_sectors']:14d} {size_mb:>8.1f}MB {entry['type']:5d}")
 
-            print(f"{entry['index']:4d} {entry['start_sector']:12d} {entry['size_sectors']:14d} {entry['byte_size']:14d} {entry['type']:5d} {content_type} ({size_mb:.1f}MB)")
+        # Step 2: Read directory
+        print(f"\nScanning metadata area for directory entries...")
+        dir_entries = read_directory(f)
 
-            # Extract entries 2-16 (skip entry 0=whole disk, entry 1=metadata)
-            if entry['index'] >= 2:
-                out_name = f"trap_entry_{entry['index']:02d}.bin"
-                out_path = os.path.join(trap_dir, out_name)
+        print(f"\n{'=' * 70}")
+        print(f"Phoenix Directory ({len(dir_entries)} files)")
+        print(f"{'=' * 70}")
 
-                f.seek(entry['byte_offset'])
-                data = f.read(entry['byte_size'])
-                with open(out_path, 'wb') as out:
-                    out.write(data)
-
-        return trap_entries
-
-
-def extract_files(img_path, output_dir, trap_entries):
-    """Extract individual game files from the directory."""
-    with open(img_path, 'rb') as f:
-        dir_entries = find_lfn32_entries(f)
-
-        print(f"\n{'='*70}")
-        print(f"LFN32 Directory ({len(dir_entries)} entries)")
-        print(f"{'='*70}")
-
-        # Compute file sizes
-        file_sizes = compute_file_sizes(dir_entries)
-
-        # Group by file extension
+        # Group by extension
         by_ext = {}
         for entry in dir_entries:
-            name = entry['name']
-            ext = name.rsplit('.', 1)[-1] if '.' in name else 'NOEXT'
-            if ext not in by_ext:
-                by_ext[ext] = []
-            by_ext[ext].append(entry)
+            ext = entry['name'].rsplit('.', 1)[-1] if '.' in entry['name'] else 'NOEXT'
+            by_ext.setdefault(ext, []).append(entry)
 
-        print(f"\nFile types found:")
+        print(f"\nFile types:")
         for ext in sorted(by_ext.keys()):
-            print(f"  .{ext}: {len(by_ext[ext])} files")
+            total_size = sum(e['size'] for e in by_ext[ext])
+            print(f"  .{ext:<6s}: {len(by_ext[ext]):>5} files  ({total_size / 1024 / 1024:>8.1f} MB)")
 
-        # Build map of TRAP entry data regions
-        # Each TRAP entry (2-16) is a contiguous data region
-        data_regions = []
-        for te in trap_entries[2:]:  # skip entry 0 (whole disk) and entry 1 (metadata)
-            data_regions.append({
-                'start_byte': te['byte_offset'],
-                'size_bytes': te['byte_size'],
-                'start_sector': te['start_sector'],
-                'size_sectors': te['size_sectors'],
-                'entry_index': te['index'],
-            })
+        total_size = sum(e['size'] for e in dir_entries)
+        print(f"  {'Total':<8s}: {len(dir_entries):>5} files  ({total_size / 1024 / 1024:>8.1f} MB)")
 
-        # Print directory listing
-        print(f"\n{'Name':<16} {'f1c':>5} {'f1a':>8} {'Size (est)':>12} {'Format':>8}")
-        print(f"{'-'*16} {'-'*5} {'-'*8} {'-'*12} {'-'*8}")
-
-        # Track unique data blocks to avoid extracting duplicates
-        extracted_blocks = set()
+        # Step 3: Extract files
         files_dir = os.path.join(output_dir, 'files')
         os.makedirs(files_dir, exist_ok=True)
 
-        extracted_count = 0
-        skipped_count = 0
-
-        for entry in sorted(dir_entries, key=lambda e: (e['f1c'], e['f1a'], e['name'])):
-            key = (entry['f1c'], entry['f1a'])
-            size_sectors = file_sizes.get(key, 128)
-            size_bytes = size_sectors * 512
-
-            print(f"{entry['name']:<16} {entry['f1c']:5d} {entry['f1a']:8d} {size_bytes:12d} {entry['fmt_version']:>#8x}")
-
-            # Try to extract the file data
-            # The f1c field selects a TRAP data partition, f1a is sector offset within it
-            # We try mapping f1c -> TRAP entry index
-
-            if key in extracted_blocks:
-                # Create a 0-byte marker file for aliases
-                alias_path = os.path.join(files_dir, entry['name'])
-                if not os.path.exists(alias_path):
-                    # Find the primary file this aliases to
-                    primary_names = [e['name'] for e in dir_entries
-                                    if e['f1c'] == entry['f1c'] and e['f1a'] == entry['f1a']]
-                    if primary_names:
-                        # Create the file pointing to same data
-                        try:
-                            _extract_file_data(f, entry, trap_entries, file_sizes, files_dir)
-                            extracted_count += 1
-                        except Exception:
-                            skipped_count += 1
-                continue
-
-            extracted_blocks.add(key)
-
-            try:
-                _extract_file_data(f, entry, trap_entries, file_sizes, files_dir)
-                extracted_count += 1
-            except Exception as e:
-                skipped_count += 1
-
-        print(f"\n{extracted_count} files extracted, {skipped_count} skipped")
-        return dir_entries
-
-
-def _extract_file_data(f, entry, trap_entries, file_sizes, output_dir):
-    """Extract a single file's data from the image."""
-    key = (entry['f1c'], entry['f1a'])
-    size_sectors = file_sizes.get(key, 128)
-    size_bytes = size_sectors * 512
-
-    # Strategy: try multiple offset calculations
-    # The data lives within entry 1 (the large metadata+data partition)
-    entry1 = trap_entries[1]
-    entry1_start = entry1['byte_offset']  # byte offset of entry 1
-
-    # Try: entry 1 data area offset
-    # Based on analysis, data_start appears to be around 0x2F400
-    # (sector 0x17A, which is entry 1's size when treated as bytes / 512)
-    data_start_candidates = [
-        0x2F400,  # observed working offset for f1c=0 files
-    ]
-
-    best_data = None
-    for data_start in data_start_candidates:
-        offset = data_start + entry['f1a'] * 512
-        file_size = f.seek(0, 2)  # get file size
-        if offset + size_bytes <= file_size:
-            f.seek(offset)
-            data = f.read(size_bytes)
-            # Check if data is non-zero (valid)
-            if any(b != 0 for b in data[:min(64, len(data))]):
-                best_data = data
-                break
-
-    if best_data is None:
-        # Fallback: try direct sector addressing within each TRAP data entry
-        for te_idx in range(2, len(trap_entries)):
-            te = trap_entries[te_idx]
-            offset = te['byte_offset'] + entry['f1a'] * 512
-            file_size = f.seek(0, 2)
-            if offset + size_bytes <= file_size and offset >= te['byte_offset']:
-                f.seek(offset)
-                data = f.read(size_bytes)
-                if any(b != 0 for b in data[:min(64, len(data))]):
-                    best_data = data
-                    break
-
-    if best_data is None:
-        # Last resort: use the computed offset even if data looks empty
-        offset = 0x2F400 + entry['f1a'] * 512
         f.seek(0, 2)
-        total = f.tell()
-        if offset < total:
-            f.seek(offset)
-            best_data = f.read(size_bytes)
-        else:
-            best_data = b'\x00' * size_bytes
+        file_size = f.tell()
 
-    out_path = os.path.join(output_dir, entry['name'])
-    with open(out_path, 'wb') as out:
-        out.write(best_data)
+        extracted = 0
+        skipped = 0
+
+        for entry in sorted(dir_entries, key=lambda e: e['block_ptr']):
+            out_path = os.path.join(files_dir, entry['name'])
+
+            if entry['disk_offset'] + entry['size'] > file_size:
+                read_size = max(0, file_size - entry['disk_offset'])
+            else:
+                read_size = entry['size']
+
+            if read_size > 0:
+                f.seek(entry['disk_offset'])
+                data = f.read(read_size)
+
+                with open(out_path, 'wb') as out:
+                    out.write(data)
+                extracted += 1
+            else:
+                skipped += 1
+
+        print(f"\n{extracted} files extracted, {skipped} skipped")
+        print(f"Output: {files_dir}")
+
+        # Step 4: Extract MIPS binaries from EXE files
+        exe_entries = [e for e in dir_entries if e['name'].upper().endswith('.EXE')]
+        if exe_entries:
+            print(f"\n{'=' * 70}")
+            print(f"MIPS Binary Extraction")
+            print(f"{'=' * 70}")
+
+            for entry in exe_entries:
+                f.seek(entry['disk_offset'])
+                exe_data = f.read(entry['size'])
+
+                if len(exe_data) > EXE_HEADER_SIZE:
+                    load_addr = struct.unpack_from('<I', exe_data, EXE_LOADADDR_OFFSET)[0]
+                    mips_binary = exe_data[EXE_HEADER_SIZE:]
+                    va_end = load_addr + len(mips_binary)
+
+                    bin_name = entry['name'].rsplit('.', 1)[0] + '.bin'
+                    bin_path = os.path.join(output_dir, bin_name)
+
+                    with open(bin_path, 'wb') as out:
+                        out.write(mips_binary)
+
+                    w0 = struct.unpack_from('<I', mips_binary, 0)[0]
+                    has_init = w0 == 0x3c1d8080
+
+                    func_count = 0
+                    for i in range(0, len(mips_binary) - 4, 4):
+                        w = struct.unpack_from('<I', mips_binary, i)[0]
+                        if (w >> 16) == 0x27BD:
+                            imm = struct.unpack('<h', struct.pack('<H', w & 0xFFFF))[0]
+                            if imm < 0:
+                                func_count += 1
+
+                    print(f"\n  {entry['name']} -> {bin_name}")
+                    print(f"    Load address:  {load_addr:#010x}")
+                    print(f"    VA range:      {load_addr:#010x} - {va_end:#010x}")
+                    print(f"    Binary size:   {len(mips_binary):,} bytes ({len(mips_binary) / 1024:.1f} KB)")
+                    print(f"    Init code:     {'YES' if has_init else 'NO'}")
+                    print(f"    Functions:     ~{func_count}")
+                    print(f"    Saved to:      {bin_path}")
+
+        # Step 5: Write file listing
+        listing_path = os.path.join(output_dir, 'file_listing.txt')
+        with open(listing_path, 'w') as lst:
+            lst.write(f"Midway Seattle Phoenix Filesystem - File Listing\n")
+            lst.write(f"Image: {img_path}\n")
+            lst.write(f"{'=' * 70}\n\n")
+
+            lst.write(f"TRAP Partition Table:\n")
+            for te in trap_entries:
+                lst.write(f"  Entry {te['index']:2d}: sector {te['start_sector']:8d}, "
+                          f"size {te['size_sectors']:10d} sectors ({te['byte_size']:,} bytes)\n")
+
+            lst.write(f"\nPhoenix Directory ({len(dir_entries)} files):\n")
+            lst.write(f"  {'Name':<16s} {'Size':>10s} {'Block':>8s} {'UID':>10s}\n")
+            lst.write(f"  {'-' * 16} {'-' * 10} {'-' * 8} {'-' * 10}\n")
+            for entry in sorted(dir_entries, key=lambda e: e['name']):
+                lst.write(f"  {entry['name']:<16s} {entry['size']:>10,} "
+                          f"{entry['block_ptr']:>8} {entry['uid']:#010x}\n")
+
+            for entry in exe_entries:
+                f.seek(entry['disk_offset'] + EXE_LOADADDR_OFFSET)
+                load_addr = struct.unpack('<I', f.read(4))[0]
+                mips_size = entry['size'] - EXE_HEADER_SIZE
+                lst.write(f"\n{entry['name']} MIPS Binary:\n")
+                lst.write(f"  Load address: {load_addr:#010x}\n")
+                lst.write(f"  Code size:    {mips_size:,} bytes\n")
+                lst.write(f"  VA range:     {load_addr:#010x} - {load_addr + mips_size:#010x}\n")
+
+        print(f"\nFile listing: {listing_path}")
+        print(f"Done!")
+
+        return dir_entries
 
 
 def main():
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <image_file> [output_dir]")
-        print(f"  Extracts files from a Midway Seattle TRAP filesystem disk image")
+        print(f"  Extracts files from a Midway Seattle TRAP/Phoenix filesystem disk image")
         sys.exit(1)
 
     img_path = sys.argv[1]
@@ -349,38 +306,14 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Midway Seattle TRAP Filesystem Extractor")
+    print(f"Midway Seattle Phoenix Filesystem Extractor")
     print(f"Image: {img_path}")
     print(f"Output: {output_dir}")
 
     file_size = os.path.getsize(img_path)
-    print(f"Image size: {file_size:,} bytes ({file_size/1024/1024/1024:.2f} GB)")
+    print(f"Image size: {file_size:,} bytes ({file_size / 1024 / 1024 / 1024:.2f} GB)\n")
 
-    # Step 1: Extract TRAP partition entries
-    trap_entries = extract_trap_entries(img_path, output_dir)
-
-    # Step 2: Extract individual files from directory
-    dir_entries = extract_files(img_path, output_dir, trap_entries)
-
-    # Step 3: Write file listing
-    listing_path = os.path.join(output_dir, 'file_listing.txt')
-    with open(listing_path, 'w') as lst:
-        lst.write(f"Midway Seattle TRAP Filesystem - File Listing\n")
-        lst.write(f"Image: {img_path}\n")
-        lst.write(f"{'='*70}\n\n")
-
-        lst.write(f"TRAP Partition Table:\n")
-        for te in trap_entries:
-            lst.write(f"  Entry {te['index']:2d}: sector {te['start_sector']:8d}, "
-                      f"size {te['size_sectors']:10d} sectors ({te['byte_size']:,} bytes)\n")
-
-        lst.write(f"\nDirectory Entries ({len(dir_entries)} files):\n")
-        for entry in sorted(dir_entries, key=lambda e: e['name']):
-            lst.write(f"  {entry['name']:<16s} f1c={entry['f1c']:3d} f1a={entry['f1a']:6d} "
-                      f"fmt=0x{entry['fmt_version']:04x} uid=0x{entry['uid']:08x}\n")
-
-    print(f"\nFile listing written to: {listing_path}")
-    print(f"Done!")
+    extract_files(img_path, output_dir)
 
 
 if __name__ == '__main__':
