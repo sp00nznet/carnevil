@@ -130,6 +130,10 @@ static inline void io_wb_flush(void) {
     }
 }
 
+/* RAM poll detector globals - defined in seattle_overrides.c */
+extern uint32_t g_ram_poll_addr;
+extern int g_ram_poll_count;
+
 static inline int32_t* mem_w_ptr(uint8_t* rdram, gpr addr) {
     uint32_t paddr = (uint32_t)addr & PHYS_MASK;
 
@@ -137,6 +141,9 @@ static inline int32_t* mem_w_ptr(uint8_t* rdram, gpr addr) {
     io_wb_flush();
 
     if (paddr < RAM_SIZE_HW) {
+        /* RAM polling detector: if the same address is read thousands of times,
+         * force the value to non-zero to break infinite loops. */
+        /* RAM polling detector disabled — adds overhead to every read */
         return (int32_t*)(rdram + paddr);
     }
 

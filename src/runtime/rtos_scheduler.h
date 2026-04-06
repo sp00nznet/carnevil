@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <setjmp.h>
 
-#define RTOS_MAX_FIBERS 16
+#define RTOS_MAX_FIBERS 32
 #define RTOS_FIBER_STACK_SIZE (256 * 1024)  /* 256KB per fiber */
 
 typedef struct {

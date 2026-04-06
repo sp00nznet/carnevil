@@ -92,6 +92,27 @@ static const char* io_region_name(uint32_t paddr) {
 }
 
 uint32_t seattle_io_read32(uint32_t paddr) {
+    /* Polling detector: if the same address is read > 200 times in a row,
+     * return a "busy done" value to break infinite polling loops. */
+    static uint32_t last_poll_addr = 0;
+    static int poll_count = 0;
+    if (paddr == last_poll_addr) {
+        poll_count++;
+        if (poll_count > 200) {
+            static int poll_break_log = 0;
+            if (poll_break_log < 10) {
+                poll_break_log++;
+                fprintf(stderr, "[IO] Polling break: addr=0x%08X after %d reads\n", paddr, poll_count);
+            }
+            /* Return non-zero to break common polling patterns */
+            poll_count = 0;
+            return 0xFFFFFFFF;
+        }
+    } else {
+        last_poll_addr = paddr;
+        poll_count = 0;
+    }
+
     /* Galileo GT64010 internal registers */
     if (paddr >= 0x08000000 && paddr < 0x08100000) {
         uint32_t reg_off = paddr - 0x08000000;
@@ -118,12 +139,24 @@ uint32_t seattle_io_read32(uint32_t paddr) {
         }
     }
 
-    /* Voodoo -- mapped at 0x00800000+ (Seattle PCI window) and 0x08100000+ (alternative) */
-    if ((paddr >= 0x00800000 && paddr < 0x01800000) ||
-        (paddr >= 0x08100000 && paddr < 0x09000000)) {
-        uint32_t voodoo_offset = (paddr >= 0x08100000)
-            ? (paddr - 0x08100000)
-            : (paddr - 0x00800000);
+    /* Voodoo LFB reads: 0x00800000-0x017FFFFF
+     * Read back pixel data from the back buffer. */
+    if (paddr >= 0x00800000 && paddr < 0x01800000) {
+        uint32_t lfb_offset = paddr - 0x00800000;
+        uint32_t pixel_offset = lfb_offset / 2;
+        uint32_t val = 0;
+        if (pixel_offset < 640 * 480) {
+            val = g_voodoo.backbuffer[pixel_offset];
+            if (pixel_offset + 1 < 640 * 480) {
+                val |= ((uint32_t)g_voodoo.backbuffer[pixel_offset + 1]) << 16;
+            }
+        }
+        return val;
+    }
+
+    /* Voodoo register reads: 0x08100000-0x08FFFFFF */
+    if (paddr >= 0x08100000 && paddr < 0x09000000) {
+        uint32_t voodoo_offset = paddr - 0x08100000;
         uint32_t rv = voodoo_read(&g_voodoo, voodoo_offset);
         static int vrd_log = 0;
         vrd_log++;
@@ -157,21 +190,48 @@ uint32_t seattle_io_read32(uint32_t paddr) {
         return io.cmos[offset];
     }
 
-    /* Lightgun analog registers */
+    /* Widget board / analog input registers (0x16800000-0x168FFFFF).
+     * Registers 0-7 provide video DAC configuration + lightgun analog data.
+     * func_800D4C24 reads bytes from these to determine display resolution.
+     * For CarnEvil 512x384:
+     *   Reg 0: H-res low byte (512 & 0xFF = 0x00)
+     *   Reg 1: H-res high nibble + mode flags (0x42 = high=2, bit6=active)
+     *   Reg 2: H-res2 low (same as reg 0)
+     *   Reg 3: H-res2 high + flags (same as reg 1)
+     *   Reg 4: V-res low byte (384 & 0xFF = 0x80)
+     *   Reg 5: V-res high nibble + flags (0x41 = high=1, bit6=active)
+     *   Reg 6: V-res2 low (same as reg 4)
+     *   Reg 7: V-res2 high + flags (same as reg 5) */
     if (paddr >= 0x16800000 && paddr < 0x16900000) {
-        uint32_t gun_reg = (paddr - 0x16800000) >> 2;
-        switch (gun_reg) {
-            case 0: return g_input.gun_x[0]; /* P1 X */
-            case 1: return g_input.gun_y[0]; /* P1 Y */
-            case 2: return g_input.gun_x[1]; /* P2 X */
-            case 3: return g_input.gun_y[1]; /* P2 Y */
-            default: return 0x80; /* center */
+        uint32_t reg = (paddr - 0x16800000) >> 2;
+        switch (reg) {
+            case 0: return 0x00;   /* H-res low: 512 & 0xFF */
+            case 1: return 0x52;   /* H-res high nibble(2) + bit4(render) + bit6(active) */
+            case 2: return 0x00;   /* H-res2 low */
+            case 3: return 0x52;   /* H-res2 high + bit4(render) + bit6(active) */
+            case 4: return 0x80;   /* V-res low: 384 & 0xFF */
+            case 5: return 0x51;   /* V-res high nibble(1) + bit4(render) + bit6(active) */
+            case 6: return 0x80;   /* V-res2 low */
+            case 7: return 0x51;   /* V-res2 high + bit4(render) + bit6(active) */
+            default: return 0x80;  /* center (lightgun default) */
         }
     }
 
-    /* Status register */
+    /* Status register - advance frame counters to simulate vsync */
     if (paddr >= 0x16C00000 && paddr < 0x16D00000) {
-        return 0x00000020; /* VBLANK active */
+        static int status_polls = 0;
+        status_polls++;
+        /* Advance sync counters when polled (game checks VBLANK status in tight loops) */
+        if (status_polls % 100 == 0) {
+            uint32_t* vbl = (uint32_t*)(g_rdram + 0x001A35CC);
+            uint32_t* sync1 = (uint32_t*)(g_rdram + 0x001A1AB0);
+            uint32_t* sync2 = (uint32_t*)(g_rdram + 0x001A1AB8);
+            (*vbl)++;
+            (*sync1)++;
+            (*sync2) = (*sync1) - 1;
+        }
+        /* Toggle VBLANK active bit */
+        return (status_polls & 1) ? 0x00000020 : 0x00000000;
     }
 
     /* CS3 extended reads (0x17000000-0x17FFFFFF) */
@@ -311,13 +371,44 @@ void seattle_io_write32(uint32_t paddr, uint32_t value) {
         return;
     }
 
-    /* Voodoo */
-    if ((paddr >= 0x00800000 && paddr < 0x01800000) ||
-        (paddr >= 0x08100000 && paddr < 0x09000000)) {
-        uint32_t voodoo_offset = (paddr >= 0x08100000)
-            ? (paddr - 0x08100000)
-            : (paddr - 0x00800000);
-        /* Log a sample of Voodoo write addresses */
+    /* Voodoo LFB (Linear Frame Buffer) writes: 0x00800000-0x017FFFFF
+     * These are DIRECT PIXEL writes to the framebuffer, NOT register commands.
+     * On Voodoo 1, LFB writes go to the framebuffer memory. The format
+     * depends on lfbMode register (typically 16-bit RGB565 or 32-bit ARGB). */
+    if (paddr >= 0x00800000 && paddr < 0x01800000) {
+        uint32_t lfb_offset = paddr - 0x00800000;
+        /* Voodoo 1 LFB is organized as rows of pixels.
+         * Each pixel is 16-bit (2 bytes) in RGB565 format.
+         * A 32-bit write sets 2 adjacent pixels. */
+        uint32_t pixel_offset = lfb_offset / 2; /* 16bpp = 2 bytes per pixel */
+        if (pixel_offset < g_voodoo.width * g_voodoo.height * 2) {
+            /* Write two 16-bit pixels to BACK buffer */
+            uint16_t pixel_lo = (uint16_t)(value & 0xFFFF);
+            uint16_t pixel_hi = (uint16_t)(value >> 16);
+            if (pixel_offset < 640 * 480) {
+                g_voodoo.backbuffer[pixel_offset] = pixel_lo;
+            }
+            if (pixel_offset + 1 < 640 * 480) {
+                g_voodoo.backbuffer[pixel_offset + 1] = pixel_hi;
+            }
+        }
+        static int lfb_log = 0;
+        static uint32_t lfb_writes = 0;
+        lfb_writes++;
+        if (lfb_log < 5 && value != 0) {
+            lfb_log++;
+            fprintf(stderr, "[voodoo_lfb] offset=0x%06X pixel=%u val=0x%08X\n",
+                    lfb_offset, pixel_offset, value);
+        }
+        if (lfb_writes % 100000 == 0) {
+            fprintf(stderr, "[voodoo_lfb] %u LFB writes total\n", lfb_writes);
+        }
+        return;
+    }
+
+    /* Voodoo register writes: 0x08100000-0x08FFFFFF */
+    if (paddr >= 0x08100000 && paddr < 0x09000000) {
+        uint32_t voodoo_offset = paddr - 0x08100000;
         static int vlog = 0;
         if (value != 0 && vlog < 10) {
             vlog++;
@@ -598,13 +689,37 @@ void ioasic_command_handler(uint8_t* rdram, recomp_context* ctx) {
     case 0x690E: /* Sound test */
         if (resp) *resp = 0x0000;
         break;
+    case 0x6909: /* DCS sound buffer status */
+        if (resp) *resp = 0x0001; /* Buffer ready/done */
+        break;
+    case 0x690F: /* DCS sound sync */
+        if (resp) *resp = 0x0001;
+        break;
+    case 0x6910: /* DCS sound init complete */
+        if (resp) *resp = 0x0001;
+        break;
+
+    /* IOASIC status commands */
+    case 0x7403: /* IOASIC input poll */
+        if (resp) *resp = 0xFFFFFFFF; /* All buttons released */
+        break;
+    case 0x7405: /* IOASIC status/ready check */
+        if (resp) *resp = 0x0001; /* Ready */
+        break;
+    case 0x7406: /* IOASIC sync */
+        if (resp) *resp = 0x0001;
+        break;
+    case 0x740B: /* IOASIC extended poll */
+        if (resp) *resp = 0xFFFFFFFF;
+        break;
 
     default:
         if (io.io_log_enabled) {
             fprintf(stderr, "[ioasic] cmd type=%d id=0x%04X resp_addr=0x%08X\n",
                     cmd_type, cmd_id, resp_addr);
         }
-        if (resp) *resp = 0x0000;
+        /* Return non-zero to break polling loops for unhandled commands */
+        if (resp) *resp = 0x0001;
         break;
     }
 
@@ -800,6 +915,18 @@ int main(int argc, char** argv) {
     seattle_register_func(0x80145CE4, func_80145CE4);          /* RTOS event wait */
     seattle_register_func(0x80145F98, func_80145F98);          /* RTOS event signal */
 
+    /* VEC[64] slot 0 rendering callback - split function stub */
+    extern void func_800C5FE4(uint8_t*, recomp_context*);
+    seattle_register_func(0x800C5FE4, func_800C5FE4);
+
+    /* State machine mode dispatcher - split function stub */
+    extern void func_8014A488(uint8_t*, recomp_context*);
+    seattle_register_func(0x8014A488, func_8014A488);
+
+    /* Attract mode scene loop - manual implementation */
+    extern void func_800CAE2C(uint8_t*, recomp_context*);
+    seattle_register_func(0x800CAE2C, func_800CAE2C);
+
     /* Register all recompiled game functions */
     #include "func_registration.inc"
 
@@ -810,10 +937,31 @@ int main(int argc, char** argv) {
     }
     printf("  Registered %d functions for lookup\n", g_func_count);
 
-    /* Pre-flight: check heap setup */
+    /* Initialize heap if not already set up.
+     * The game's entrypoint should do BSS clear + heap init, but our
+     * recompiled entrypoint is a stub (just sets SP). We manually init
+     * the heap: head pointer at 0x001A1E90, first free block at 0x00236850,
+     * free space extends to ~0x007FBFF8 (top of heap, below stack). */
     {
         uint32_t heap_start = *(uint32_t*)(g_rdram + 0x001A1E90);
-        fprintf(stderr, "[debug] Before entry: heap_head=[0x801A1E90] = 0x%08X\n", heap_start);
+        uint32_t hp = heap_start & 0x1FFFFFFF;
+        uint32_t free_sz = (hp > 0 && hp < RAM_SIZE - 4) ? *(uint32_t*)(g_rdram + hp) : 0;
+        if (heap_start == 0 || free_sz == 0) {
+            /* Heap not initialized - set it up manually.
+             * Heap head at physical 0x00236850 (virtual 0x80236850).
+             * Free block format: [size_with_flag, next_ptr]
+             * Size includes the low bit as "free" flag (1=free, 0=allocated). */
+            uint32_t heap_phys = 0x00236850;
+            uint32_t heap_end = 0x007FBFF8; /* just below stack area */
+            uint32_t free_size = heap_end - heap_phys;
+            *(uint32_t*)(g_rdram + 0x001A1E90) = 0x80000000 | heap_phys; /* heap head (virtual) */
+            *(uint32_t*)(g_rdram + heap_phys + 0) = free_size | 1; /* free block size + free flag */
+            *(uint32_t*)(g_rdram + heap_phys + 4) = 0; /* next = NULL (single block) */
+            fprintf(stderr, "[init] Heap initialized: head=0x%08X free=%u KB\n",
+                    0x80000000 | heap_phys, free_size / 1024);
+        } else {
+            fprintf(stderr, "[debug] Before entry: heap_head=[0x801A1E90] = 0x%08X\n", heap_start);
+        }
     }
 
     /* Initialize fiber scheduler before entry_point so task creation works */
@@ -1181,6 +1329,39 @@ int main(int argc, char** argv) {
             /* First warm-up frame: call full main_loop for init (allocs DMA buffers) */
             ctx.r4 = ctx.r2;
             func_800C4524(g_rdram, &ctx);
+
+            /* The main_loop's render buffer allocation:
+             * malloc(0x1C0020) returns at ~0x80236970, aligned to 0x80236980.
+             * Physical addresses stored at:
+             *   0x001DFED4 = buffer start (physical)
+             *   0x001DFEDC = buffer end (start + 0xE0000)
+             * BUT: init code or the PCI driver may corrupt these values.
+             * Fix: find the malloc result and force correct values. */
+            {
+                /* The large allocation starts after the heap area. Look for it. */
+                uint32_t hp = *(uint32_t*)(g_rdram + 0x001A1E90) & 0x1FFFFFFF;
+                /* The render buffer is the last large alloc before the heap head.
+                 * It was malloc'd at 0x80236970. Physical = 0x00236970.
+                 * Align to 32 bytes: 0x00236980. */
+                uint32_t rbuf = *(uint32_t*)(g_rdram + 0x001DFED4);
+                uint32_t rend = *(uint32_t*)(g_rdram + 0x001DFEDC);
+                fprintf(stderr, "[init] After main_loop: render_buf=0x%08X end=0x%08X GP=0x%08X heap=0x%08X\n",
+                        rbuf, rend, (uint32_t)ctx.r28, hp);
+
+                /* If the stored values look wrong (not within the heap area),
+                 * search for the render buffer by looking at the heap layout. */
+                extern uint32_t g_render_buffer_addr;
+                if (g_render_buffer_addr != 0 &&
+                    (rbuf == 0 || rbuf > 0x00800000 || rbuf < 0x00200000 ||
+                     rbuf != g_render_buffer_addr)) {
+                    uint32_t forced_buf = g_render_buffer_addr;
+                    uint32_t forced_end = forced_buf + 0x000E0000;
+                    *(uint32_t*)(g_rdram + 0x001DFED4) = forced_buf;
+                    *(uint32_t*)(g_rdram + 0x001DFEDC) = forced_end;
+                    fprintf(stderr, "[init] FORCED render_buf=0x%08X end=0x%08X\n",
+                            forced_buf, forced_end);
+                }
+            }
         }
         /* All frames: run process dispatcher + callbacks */
         {
@@ -1202,6 +1383,35 @@ int main(int argc, char** argv) {
         fprintf(stderr, "[debug] After warm-up: RTOS tables populated by VEC[64]/[60]\n");
     }
 
+    /* Call attract mode ONCE to populate the scene graph.
+     * Must happen BEFORE the frame loop (while heap has free space).
+     * The IOASIC 0x7406 polling loop now terminates quickly. */
+    {
+        uint32_t head = *(uint32_t*)(g_rdram + 0x001A1E90);
+        uint32_t phys = head & 0x1FFFFFFF;
+        uint32_t free_sz = (phys < RAM_SIZE - 4) ? (*(uint32_t*)(g_rdram + phys) & ~1u) : 0;
+        fprintf(stderr, "[init] Heap before attract mode: %u KB free\n", free_sz / 1024);
+
+        /* Force all rendering flags before attract mode */
+        *(uint32_t*)(g_rdram + 0x00179258) = 1;
+        *(uint32_t*)(g_rdram + 0x002122D4) = 0x40;
+        *(uint32_t*)(g_rdram + 0x0017925C) = 1;
+        *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
+        *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
+
+        extern void func_800C50AC(uint8_t*, recomp_context*);
+        fprintf(stderr, "[init] Calling attract mode to populate scene...\n");
+        fflush(stderr);
+        func_800C50AC(g_rdram, &ctx);
+        fprintf(stderr, "[init] Attract mode returned!\n");
+        fflush(stderr);
+
+        head = *(uint32_t*)(g_rdram + 0x001A1E90);
+        phys = head & 0x1FFFFFFF;
+        free_sz = (phys < RAM_SIZE - 4) ? (*(uint32_t*)(g_rdram + phys) & ~1u) : 0;
+        fprintf(stderr, "[init] Heap after attract mode: %u KB free\n", free_sz / 1024);
+    }
+
     /* Phase 2: Start frame loop */
     fprintf(stderr, "[debug] Starting frame loop with %d fibers\n",
             g_scheduler.fiber_count);
@@ -1217,7 +1427,6 @@ int main(int argc, char** argv) {
         uint32_t free_sz = (phys < RAM_SIZE - 4) ? *(uint32_t*)(g_rdram + phys) : 0;
         fprintf(stderr, "[debug] Before frame loop: heap_head=0x%08X free_block=%u KB\n",
                 head, (free_sz & ~1u) / 1024);
-        fprintf(stderr, "[debug] malloc needs: %u KB (0x1C0020 bytes)\n", 0x1C0020 / 1024);
     }
 
     int max_frames = 5000; /* Run longer - attract mode may need 60+ seconds */
@@ -1256,6 +1465,92 @@ int main(int argc, char** argv) {
          * Index 0 → entry[0] which has our Voodoo ready flag at [+0x11178]=4. */
         *(uint32_t*)(g_rdram + 0x0022A444) = 0;
 
+        /* Force Voodoo PCI base address - rendering code reads this to compute
+         * destination addresses for Voodoo register writes. If 0, no rendering. */
+        *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
+
+        /* Ensure rendering context entry[0] has Voodoo ready flag = 4 */
+        *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
+
+        /* Force display initialized flag (gate for scene graph rendering) */
+        *(uint32_t*)(g_rdram + 0x00179258) = 1;
+
+        /* Force display mode flag (gate inside scene graph render loop).
+         * func_800D4C24 checks *0x002122D4 == 0x40 before rendering objects. */
+        *(uint32_t*)(g_rdram + 0x002122D4) = 0x40;
+
+        /* Force Voodoo display active flag (second rendering gate).
+         * func_800D4C24 checks *(0x001DDD80) == 1 before entering render loop. */
+        *(uint32_t*)(g_rdram + 0x001DDD80) = 1;
+
+        /* Force Widget display mode flags (third rendering gate).
+         * func_800D4C24 checks *(0x001E6580) != 0 (bit 6 of Widget reg 1).
+         * Also set the second display channel's mode flag. */
+        if (*(uint32_t*)(g_rdram + 0x001E6580) == 0)
+            *(uint32_t*)(g_rdram + 0x001E6580) = 0x40;
+        if (*(uint32_t*)(g_rdram + 0x001E65A4) == 0)
+            *(uint32_t*)(g_rdram + 0x001E65A4) = 0x40;
+
+        /* Force render submission flag (gate in static_0_800D547C → func_800D5484).
+         * func_800D5484 checks *0x0017925C != 0 before processing render list. */
+        if (*(uint32_t*)(g_rdram + 0x0017925C) == 0) {
+            *(uint32_t*)(g_rdram + 0x0017925C) = 1;
+        }
+
+        /* Log state machine flag on first frame */
+        if (frame == 0) {
+            uint32_t sm_flag = *(uint32_t*)(g_rdram + 0x001A25F4);
+            uint32_t sm_current = *(uint32_t*)(g_rdram + 0x001A25F8);
+            uint32_t sm_entry = *(uint32_t*)(g_rdram + 0x001A25F0);
+            fprintf(stderr, "[state] SM flag @0x1A25F4 = 0x%08X, current @0x1A25F8 = 0x%08X, entry @0x1A25F0 = 0x%08X\n",
+                    sm_flag, sm_current, sm_entry);
+            /* Also check the entry at 0x1A25F0 */
+            if (sm_entry) {
+                uint32_t ep2 = sm_entry & 0x1FFFFFFF;
+                if (ep2 + 0x28 < 0x00800000) {
+                    fprintf(stderr, "[state] Entry@25F0: [0]=0x%08X [4]=0x%08X [10]=0x%08X [24]=0x%08X\n",
+                            *(uint32_t*)(g_rdram + ep2),
+                            *(uint32_t*)(g_rdram + ep2 + 4),
+                            *(uint32_t*)(g_rdram + ep2 + 0x10),
+                            *(uint32_t*)(g_rdram + ep2 + 0x24));
+                }
+            }
+            if (sm_current) {
+                uint32_t ep = sm_current & 0x1FFFFFFF;
+                if (ep + 0x28 < 0x00800000) {
+                    fprintf(stderr, "[state] Entry: [0]=0x%08X [4]=0x%08X [8]=0x%08X [10]=0x%08X [24]=0x%08X\n",
+                            *(uint32_t*)(g_rdram + ep),
+                            *(uint32_t*)(g_rdram + ep + 4),
+                            *(uint32_t*)(g_rdram + ep + 8),
+                            *(uint32_t*)(g_rdram + ep + 0x10),
+                            *(uint32_t*)(g_rdram + ep + 0x24));
+                    uint32_t buf = *(uint32_t*)(g_rdram + ep + 0x10) & 0x1FFFFFFF;
+                    if (buf > 0 && buf + 0x20 < 0x00800000) {
+                        /* Check for action function at expected offset */
+                        fprintf(stderr, "[state] Buffer: [0]=0x%08X [4]=0x%08X [8]=0x%08X\n",
+                                *(uint32_t*)(g_rdram + buf),
+                                *(uint32_t*)(g_rdram + buf + 4),
+                                *(uint32_t*)(g_rdram + buf + 8));
+                    }
+                }
+            }
+        }
+
+        /* Force render buffer pointer at 0x001DFED4 every frame.
+         * main_loop allocates this, but init code corrupts the stored value. */
+        {
+            extern uint32_t g_render_buffer_addr;
+            if (g_render_buffer_addr != 0) {
+                *(uint32_t*)(g_rdram + 0x001DFED4) = g_render_buffer_addr;
+                *(uint32_t*)(g_rdram + 0x001DFEDC) = g_render_buffer_addr + 0x000E0000;
+            }
+            if (frame == 0) {
+                fprintf(stderr, "[frame0] Render buffer = 0x%08X\n", g_render_buffer_addr);
+            }
+        }
+
+        /* Debug HUD moved to after frame loop, before PPM dump */
+
         /* Restore heap to post-init snapshot (preserves permanent allocs) */
         if (frame > 0 && heap_snapshot_head != 0) {
             *(uint32_t*)(g_rdram + 0x001A1E90) = heap_snapshot_head;
@@ -1282,21 +1577,35 @@ int main(int argc, char** argv) {
             extern void func_80151718(uint8_t*, recomp_context*);
             extern void func_801438D0(uint8_t*, recomp_context*);
 
-            /* func_80151B74 args: a0=game_name, a1=0, a2=mode_func, a3=0, sp[16..24]=0
-             * game_name at 0x8016DAB8, mode_func at 0x800C50AC */
-            ctx.r4 = 0x8016DAB8; /* game name string */
-            ctx.r5 = 0;
-            ctx.r6 = 0x800C50AC; /* mode function (attract mode) */
-            ctx.r7 = 0;
-            uint32_t sp_phys = (uint32_t)ctx.r29 & 0x1FFFFFFF;
-            if (sp_phys + 24 < RAM_SIZE) {
-                *(uint32_t*)(g_rdram + sp_phys + 16) = 0;
-                *(uint32_t*)(g_rdram + sp_phys + 20) = 0;
-                *(uint32_t*)(g_rdram + sp_phys + 24) = 0;
+            /* func_80151B74: State machine mode registration.
+             * Only register the attract mode on the first frame.
+             * After that, the attract mode itself registers subsequent modes
+             * (func_800C5830, etc.) via internal func_80151B74 calls.
+             * Re-registering every frame would OVERWRITE mode transitions! */
+            if (frame == 0) {
+                ctx.r4 = 0x8016DAB8; /* game name string */
+                ctx.r5 = 0;
+                ctx.r6 = 0x800C50AC; /* mode function (attract mode) */
+                ctx.r7 = 0;
+                uint32_t sp_phys = (uint32_t)ctx.r29 & 0x1FFFFFFF;
+                if (sp_phys + 24 < RAM_SIZE) {
+                    *(uint32_t*)(g_rdram + sp_phys + 16) = 0;
+                    *(uint32_t*)(g_rdram + sp_phys + 20) = 0;
+                    *(uint32_t*)(g_rdram + sp_phys + 24) = 0;
+                }
+                func_80151B74(g_rdram, &ctx);
             }
-            func_80151B74(g_rdram, &ctx);
 
             func_80151528(g_rdram, &ctx);
+
+            /* Mark per-frame fibers as inactive (they'll be reactivated by
+             * func_800C4A08 → func_801A2A3C on the next frame).
+             * Don't reset fiber_count — reuse existing fiber objects. */
+            for (int fi = 0; fi < g_scheduler.fiber_count; fi++) {
+                g_scheduler.fibers[fi].active = 0;
+                g_scheduler.fibers[fi].blocked = 0;
+            }
+
             func_800C4A08(g_rdram, &ctx); /* create tasks */
             func_80151528(g_rdram, &ctx);
             func_80151718(g_rdram, &ctx); /* process dispatcher */
@@ -1304,11 +1613,12 @@ int main(int argc, char** argv) {
             extern void rtos_run_callbacks(uint8_t* rdram);
             rtos_run_callbacks(g_rdram);
 
-            /* Directly invoke attract mode function to advance game state.
-             * It loops internally but pause_self catches the infinite loop. */
-            if (frame > 5 && frame % 3 == 0) {
-                recomp_func_t* attract = get_function(0x800C50AC);
-                if (attract) attract(g_rdram, &ctx);
+            /* Call the state machine's current mode function.
+             * After frame 0 (attract mode init), this dispatches func_800C5830
+             * which handles actual scene rendering and attract sequence. */
+            {
+                extern void func_8014A488(uint8_t*, recomp_context*);
+                func_8014A488(g_rdram, &ctx);
             }
         }
 
@@ -1316,17 +1626,32 @@ int main(int argc, char** argv) {
          * It enters naturally through the game's task/callback system.
          * The PIC serial (IOASIC cmd 0x7001 = 486) is now correct. */
 
-        /* FastFill as fallback */
-        {
-            int r = (frame * 3) & 0xFF;
-            int g = ((frame * 5) + 100) & 0xFF;
-            int b = ((frame * 7) + 200) & 0xFF;
-            uint32_t color = (r << 16) | (g << 8) | b;
-            voodoo_write(&g_voodoo, VOODOO_CLIPLR, 512);
-            voodoo_write(&g_voodoo, VOODOO_CLIPLOHI, 384);
-            voodoo_write(&g_voodoo, VOODOO_COLOR1, color);
-            voodoo_write(&g_voodoo, VOODOO_FASTFILLCMD, 0);
+        /* Check if rendering functions wrote to the GP-relative command buffer */
+        if (frame == 10 || frame == 100 || frame == 500) {
+            uint32_t gp = (uint32_t)ctx.r28 & 0x1FFFFFFF;
+            fprintf(stderr, "[gp_check] frame=%d GP=0x%08X phys=0x%06X\n",
+                    frame, (uint32_t)ctx.r28, gp);
+            if (gp > 0 && gp + 256 < RAM_SIZE) {
+                int nz = 0;
+                for (int i = 0; i < 256; i += 4) {
+                    uint32_t v = *(uint32_t*)(g_rdram + gp + i);
+                    if (v != 0) nz++;
+                }
+                fprintf(stderr, "[render_buf] GP=0x%08X, first 64 words: %d non-zero\n",
+                        (uint32_t)ctx.r28, nz);
+                if (nz > 0) {
+                    fprintf(stderr, "[render_buf] Command buffer contents:\n");
+                    for (int i = 0; i < 128; i += 4) {
+                        uint32_t v = *(uint32_t*)(g_rdram + gp + i);
+                        if (v != 0)
+                            fprintf(stderr, "  GP[+0x%02X] = 0x%08X\n", i, v);
+                    }
+                }
+            }
         }
+
+        /* No placeholder rendering - let game LFB writes fill the framebuffer.
+         * If the game doesn't write anything, framebuffer stays from last frame. */
 
         /* After frame 0: snapshot the heap (permanent allocs done) */
         if (frame == 0) {
@@ -1493,6 +1818,50 @@ int main(int argc, char** argv) {
 
     /* Dump framebuffer as raw PPM image */
     if (g_voodoo.swap_count > 0 || 1) {
+        /* Draw debug HUD to front buffer before dump */
+        {
+            /* Dark blue gradient background */
+            for (int y = 0; y < 384; y++) {
+                uint16_t blue = (uint16_t)((20 * (384 - y)) / 384);
+                uint16_t green = (uint16_t)((4 * (384 - y)) / 384);
+                uint16_t color = (green << 5) | blue;
+                for (int x = 0; x < 512; x++) {
+                    g_voodoo.framebuffer[y * 640 + x] = color;
+                }
+            }
+            /* Scene graph node count */
+            uint32_t sg_hd = *(uint32_t*)(g_rdram + 0x0017B71C);
+            int sg_n = 0;
+            uint32_t c4 = sg_hd;
+            while (c4 && sg_n < 100) {
+                c4 = *(uint32_t*)(g_rdram + (c4 & 0x1FFFFFFF) + 0x44);
+                sg_n++;
+            }
+            for (int n = 0; n < sg_n && n < 20; n++) {
+                for (int y = 50 + n * 15; y < 60 + n * 15; y++)
+                    for (int x = 50; x < 200; x++)
+                        g_voodoo.framebuffer[y * 640 + x] = 0x07E0;
+            }
+            /* Voodoo write count bar */
+            extern uint32_t voodoo_get_write_count(void);
+            int wbar = (int)(voodoo_get_write_count() / 100);
+            if (wbar > 512) wbar = 512;
+            for (int y = 355; y < 365; y++)
+                for (int x = 0; x < wbar; x++)
+                    g_voodoo.framebuffer[y * 640 + x] = 0xFFFF;
+            /* Progress bar (always full at dump time) */
+            for (int y = 370; y < 380; y++)
+                for (int x = 0; x < 512; x++)
+                    g_voodoo.framebuffer[y * 640 + x] = 0xFFE0;
+            /* Zone files loaded indicator: red bars */
+            extern int g_file_dev_count;
+            for (int f = 0; f < g_file_dev_count && f < 10; f++) {
+                for (int y = 50 + f * 15; y < 60 + f * 15; y++)
+                    for (int x = 300; x < 450; x++)
+                        g_voodoo.framebuffer[y * 640 + x] = 0xF800;
+            }
+        }
+
         FILE* fb = fopen("framebuffer.ppm", "wb");
         if (fb) {
             int w = g_voodoo.width > 0 ? g_voodoo.width : 512;
@@ -1502,6 +1871,7 @@ int main(int argc, char** argv) {
             fprintf(fb, "P6\n%d %d\n255\n", w, h);
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
+                    /* Dump front buffer (swapped from back after rendering) */
                     uint16_t pixel = g_voodoo.framebuffer[y * 640 + x];
                     /* RGB565 to RGB888 */
                     uint8_t r = (pixel >> 11) << 3;

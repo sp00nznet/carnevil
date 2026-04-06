@@ -13,6 +13,22 @@
 #define VOODOO_STATUS       0x000  /* R: status */
 #define VOODOO_INTRCTRL     0x004  /* RW: interrupt control (V2+) */
 
+/* Vertex/triangle setup registers (integer format) */
+#define VOODOO_SVX          0x048  /* W: start vertex X (12.4 fixed) */
+#define VOODOO_SVY          0x04C  /* W: start vertex Y (12.4 fixed) */
+#define VOODOO_SRED         0x050  /* W: start Red (12.12 fixed) */
+#define VOODOO_SGREEN       0x054  /* W: start Green */
+#define VOODOO_SBLUE        0x058  /* W: start Blue */
+#define VOODOO_SALPHA       0x05C  /* W: start Alpha */
+
+/* Vertex/triangle setup registers (float format) */
+#define VOODOO_FVX          0x180  /* W: start vertex X (IEEE float) */
+#define VOODOO_FVY          0x184  /* W: start vertex Y */
+#define VOODOO_FRED         0x188  /* W: start Red */
+#define VOODOO_FGREEN       0x18C  /* W: start Green */
+#define VOODOO_FBLUE        0x190  /* W: start Blue */
+#define VOODOO_FALPHA       0x194  /* W: start Alpha */
+
 /* Rendering command registers */
 #define VOODOO_TRIANGLECMD  0x080  /* W: triangle command */
 #define VOODOO_FTRIANGLE    0x100  /* W: float triangle command */
@@ -84,8 +100,9 @@ typedef struct {
     uint32_t backporch;
     uint32_t regs[256];  /* Generic register storage */
 
-    /* Framebuffer - 640x480 RGB565 */
-    uint16_t framebuffer[640 * 480];
+    /* Double-buffered framebuffer - 640x480 RGB565 */
+    uint16_t framebuffer[640 * 480];   /* front buffer (displayed) */
+    uint16_t backbuffer[640 * 480];    /* back buffer (rendered to) */
     int swap_count;
     int frame_count;
 

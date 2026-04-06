@@ -1,5 +1,7 @@
 /* Auto-generated RTOS vector trampolines */
 #include "recomp.h"
+#include <stdio.h>
+#include <string.h>
 
 extern RECOMP_FUNC void rtos_80004E3C(uint8_t* rdram, recomp_context* ctx);
 extern RECOMP_FUNC void rtos_80005048(uint8_t* rdram, recomp_context* ctx);
@@ -49,13 +51,99 @@ RECOMP_FUNC void static_0_800C4114(uint8_t* rdram, recomp_context* ctx) {
     rtos_8000BB68(rdram, ctx);
 }
 
-/* vec[18] static_0_800C411C -> rtos_8000BCB0 (4 calls) */
+/* vec[18] static_0_800C411C -> rtos_8000BCB0 (4 calls)
+ * Device read: a0=device_handle, a1=dest_buf, a2=byte_count
+ * For file devices, copy pre-loaded file data into dest buffer. */
 RECOMP_FUNC void static_0_800C411C(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t dev_id = (uint32_t)ctx->r4;
+    uint32_t dest_virt = (uint32_t)ctx->r5;
+    uint32_t count = (uint32_t)ctx->r6;
+    uint32_t dest_phys = dest_virt & 0x1FFFFFFF;
+
+    /* Check if this is a file device (index 0x10-0x3F) */
+    {
+        struct file_dev_entry {
+            char name[64];
+            uint32_t data_phys;
+            uint32_t size;
+            int active;
+        };
+        extern struct file_dev_entry g_file_devs[];
+        extern int g_file_dev_count;
+
+        if (dev_id >= 0x10 && dev_id < 0x40) {
+            int fdev_idx = dev_id - 0x10;
+            if (fdev_idx < g_file_dev_count && g_file_devs[fdev_idx].active) {
+                uint32_t data_phys = g_file_devs[fdev_idx].data_phys;
+                uint32_t file_size = g_file_devs[fdev_idx].size;
+                if (count == 0 || count > file_size) count = file_size;
+
+                static int vec18_log = 0;
+                vec18_log++;
+                if (vec18_log <= 20) {
+                    fprintf(stderr, "[vec18_read] \"%s\" -> dest=0x%08X count=%u\n",
+                            g_file_devs[fdev_idx].name, dest_virt, count);
+                }
+
+                if (dest_phys > 0 && dest_phys + count <= 0x00800000 &&
+                    data_phys + count <= 0x00800000 && count > 0) {
+                    memcpy(rdram + dest_phys, rdram + data_phys, count);
+                }
+
+                ctx->r2 = (gpr)(int32_t)count; /* return bytes read */
+                return;
+            }
+        }
+    }
+
+    /* Not a file device - use original RTOS handler */
     rtos_8000BCB0(rdram, ctx);
 }
 
-/* vec[24] static_0_800C414C -> rtos_8000BE10 (4 calls) */
+/* vec[24] static_0_800C414C -> rtos_8000BE10 (4 calls)
+ * Device read: a0=device_id, a1=dest_buf, a2=byte_count
+ * For file devices (opened via device_open), a0 is our descriptor pointer.
+ * We intercept these and copy file data directly. */
 RECOMP_FUNC void static_0_800C414C(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t dev_id = (uint32_t)ctx->r4;
+    uint32_t dest_virt = (uint32_t)ctx->r5;
+    uint32_t count = (uint32_t)ctx->r6;
+    uint32_t dest_phys = dest_virt & 0x1FFFFFFF;
+
+    /* Check if dev_id is one of our file device indices (0x10-0x3F) */
+    struct file_dev_entry {
+        char name[64];
+        uint32_t data_phys;
+        uint32_t size;
+        int active;
+    };
+    extern struct file_dev_entry g_file_devs[];
+    extern int g_file_dev_count;
+    if (dev_id >= 0x10 && dev_id < 0x40) {
+        int fdev_idx = dev_id - 0x10;
+        if (fdev_idx < g_file_dev_count && g_file_devs[fdev_idx].active) {
+            uint32_t data_phys = g_file_devs[fdev_idx].data_phys;
+            uint32_t file_size = g_file_devs[fdev_idx].size;
+            if (count > file_size) count = file_size;
+
+            static int devread_log = 0;
+            devread_log++;
+            if (devread_log <= 10) {
+                fprintf(stderr, "[dev_read] \"%s\" dest=0x%08X count=%u\n",
+                        g_file_devs[fdev_idx].name, dest_virt, count);
+            }
+
+            if (dest_phys > 0 && dest_phys + count <= 0x00800000 &&
+                data_phys + count <= 0x00800000 && count > 0) {
+                memcpy(rdram + dest_phys, rdram + data_phys, count);
+            }
+
+            ctx->r2 = 0;
+            return;
+        }
+    }
+
+    /* Not a file device - use original RTOS handler */
     rtos_8000BE10(rdram, ctx);
 }
 

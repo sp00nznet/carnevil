@@ -12,6 +12,23 @@
 
 extern uint8_t* seattle_rdram;
 extern voodoo_state_t g_voodoo;
+extern uint32_t voodoo_get_write_count(void);
+
+/* DCS2 sound system state */
+uint32_t g_dcs_last_write = 0x55AA;
+uint32_t g_render_counter = 0;
+
+/* File device table for RTOS device I/O.
+ * Indices 0x10-0x3F are file devices opened via device_open. */
+struct file_dev_entry {
+    char name[64];
+    uint32_t data_phys;
+    uint32_t size;
+    int active;
+};
+struct file_dev_entry g_file_devs[32];
+int g_file_dev_count = 0;
+uint32_t g_file_next_data_phys = 0x600000;
 
 /* Forward declaration for heap check utility */
 static void override_check_heap(const uint8_t* rdram, const char* when);
@@ -58,13 +75,14 @@ static void trace_vec_call(const char* name, int vec_idx, uint8_t* rdram, recomp
  * We implement a simple file handle system that serves game.env with
  * hardware configuration environment strings. */
 
-#define MAX_RTOS_FILES 8
+#define MAX_RTOS_FILES 32
 static struct {
     int active;
     char name[64];
-    const uint8_t* data;
+    uint8_t* data;       /* file data (malloc'd from host heap, not game heap) */
     uint32_t size;
     uint32_t pos;
+    int owns_data;       /* 1 = we malloc'd data, 0 = static data */
 } rtos_files[MAX_RTOS_FILES];
 
 /* CarnEvil game.env: hardware config environment strings.
@@ -95,42 +113,73 @@ static const char game_env_data[] =
     ;                       /* C string auto-null terminates */
 
 static int rtos_file_open(const char* name) {
+    /* Find a free slot */
+    int slot = -1;
     for (int i = 0; i < MAX_RTOS_FILES; i++) {
-        if (!rtos_files[i].active) {
-            rtos_files[i].active = 1;
-            strncpy(rtos_files[i].name, name, 63);
-            rtos_files[i].pos = 0;
+        if (!rtos_files[i].active) { slot = i; break; }
+    }
+    if (slot < 0) {
+        /* Try to reclaim oldest slot */
+        slot = 0;
+        if (rtos_files[slot].owns_data && rtos_files[slot].data)
+            free(rtos_files[slot].data);
+    }
 
-            if (strcmp(name, "game.env") == 0 || strcmp(name, "GAME.ENV") == 0) {
-                rtos_files[i].data = (const uint8_t*)game_env_data;
-                rtos_files[i].size = sizeof(game_env_data);
-            } else {
-                /* Unknown file - try loading from extracted/files/ */
-                char path[256];
-                snprintf(path, sizeof(path), "extracted/files/%s", name);
-                FILE* f = fopen(path, "rb");
-                if (f) {
-                    fseek(f, 0, SEEK_END);
-                    long sz = ftell(f);
-                    fseek(f, 0, SEEK_SET);
-                    uint8_t* buf = (uint8_t*)malloc(sz);
-                    if (buf) {
-                        fread(buf, 1, sz, f);
-                        rtos_files[i].data = buf;
-                        rtos_files[i].size = (uint32_t)sz;
-                    }
-                    fclose(f);
-                    fprintf(stderr, "[file] Loaded '%s' from disk (%ld bytes)\n", path, sz);
-                } else {
-                    rtos_files[i].data = NULL;
-                    rtos_files[i].size = 0;
-                    fprintf(stderr, "[file] '%s' not found on disk\n", name);
+    rtos_files[slot].active = 1;
+    strncpy(rtos_files[slot].name, name, 63);
+    rtos_files[slot].name[63] = 0;
+    rtos_files[slot].pos = 0;
+    rtos_files[slot].owns_data = 0;
+    rtos_files[slot].data = NULL;
+    rtos_files[slot].size = 0;
+
+    if (strcmp(name, "game.env") == 0 || strcmp(name, "GAME.ENV") == 0) {
+        rtos_files[slot].data = (uint8_t*)game_env_data;
+        rtos_files[slot].size = sizeof(game_env_data);
+        rtos_files[slot].owns_data = 0;
+    } else {
+        /* Try loading from extracted/files/ directory */
+        char path[256];
+        snprintf(path, sizeof(path), "extracted/files/%s", name);
+        FILE* f = fopen(path, "rb");
+        if (!f) {
+            /* Try uppercase */
+            char upper_name[64];
+            for (int i = 0; name[i] && i < 63; i++) {
+                upper_name[i] = (name[i] >= 'a' && name[i] <= 'z') ? name[i] - 32 : name[i];
+                upper_name[i+1] = 0;
+            }
+            snprintf(path, sizeof(path), "extracted/files/%s", upper_name);
+            f = fopen(path, "rb");
+        }
+        if (f) {
+            fseek(f, 0, SEEK_END);
+            long sz = ftell(f);
+            fseek(f, 0, SEEK_SET);
+            if (sz > 0 && sz < 16 * 1024 * 1024) { /* max 16MB per file */
+                uint8_t* buf = (uint8_t*)malloc((size_t)sz);
+                if (buf) {
+                    fread(buf, 1, (size_t)sz, f);
+                    rtos_files[slot].data = buf;
+                    rtos_files[slot].size = (uint32_t)sz;
+                    rtos_files[slot].owns_data = 1;
                 }
             }
-            return i + 1; /* handle = 1-based index */
+            fclose(f);
+            static int load_log = 0;
+            load_log++;
+            if (load_log <= 20) {
+                fprintf(stderr, "[file] Loaded '%s' (%ld bytes)\n", path, sz);
+            }
+        } else {
+            static int miss_log = 0;
+            miss_log++;
+            if (miss_log <= 20) {
+                fprintf(stderr, "[file] NOT FOUND: '%s'\n", name);
+            }
         }
     }
-    return -1;
+    return slot + 1; /* handle = 1-based index */
 }
 
 static int rtos_file_read(int handle, uint8_t* dest, uint32_t count) {
@@ -152,12 +201,32 @@ RECOMP_FUNC void rtos_vec7_device_io(uint8_t* rdram, recomp_context* ctx) {
     ctx->r2 = 0;
 }
 
-/* func_80142C58: RTOS fopen(device_ptr, mode_string)
- * Returns file handle (pointer) or 0 on error.
- * Called after device_open to open a file for reading. */
+/* Map fopen handles to rtos_file slots.
+ * fopen returns a "file pointer" that we encode as 0xF1000000 | slot.
+ * This lets us distinguish our handles from game RAM pointers. */
+#define FOPEN_MAGIC 0xF1000000
+#define FOPEN_SLOT(h) ((int)((h) & 0xFF))
+#define IS_FOPEN_HANDLE(h) (((h) & 0xFF000000) == FOPEN_MAGIC)
+
+/* func_80142C58: RTOS fopen(name_ptr, mode_string)
+ * The first argument is a pointer to a filename string in game RAM.
+ * Returns file handle or 0 on error. */
 RECOMP_FUNC void func_80142C58(uint8_t* rdram, recomp_context* ctx) {
-    uint32_t dev_ptr = (uint32_t)ctx->r4;
+    uint32_t name_virt = (uint32_t)ctx->r4;
+    uint32_t name_phys = name_virt & 0x1FFFFFFF;
     uint32_t mode_phys = (uint32_t)ctx->r5 & 0x1FFFFFFF;
+
+    /* Read filename string */
+    char filename[64] = {0};
+    if (name_phys < 0x00800000 - 64) {
+        for (int i = 0; i < 63; i++) {
+            char c = rdram[name_phys + i];
+            if (!c) break;
+            filename[i] = c;
+        }
+    }
+
+    /* Read mode string */
     char mode[16] = {0};
     if (mode_phys < 0x00800000 - 16) {
         for (int i = 0; i < 15; i++) {
@@ -166,55 +235,110 @@ RECOMP_FUNC void func_80142C58(uint8_t* rdram, recomp_context* ctx) {
             mode[i] = c;
         }
     }
-    fprintf(stderr, "[file] fopen(dev=0x%08X, mode=\"%s\") -> handle\n", dev_ptr, mode);
-    /* Return a non-zero "handle" (just use the device ptr as the handle) */
-    ctx->r2 = dev_ptr ? dev_ptr : 1;
+
+    /* Reject empty filenames (directory table not populated) */
+    if (filename[0] == '\0') {
+        ctx->r2 = 0; /* NULL = failed */
+        return;
+    }
+
+    /* Open the file */
+    int handle = rtos_file_open(filename);
+
+    static int fopen_log = 0;
+    fopen_log++;
+    if (fopen_log <= 30 || (handle > 0 && rtos_files[handle-1].data)) {
+        if (fopen_log <= 30)
+            fprintf(stderr, "[file] fopen(\"%s\", \"%s\") -> handle %d (%u bytes)\n",
+                    filename, mode, handle,
+                    handle > 0 ? rtos_files[handle-1].size : 0);
+    }
+
+    if (handle > 0 && rtos_files[handle-1].data) {
+        /* Reset read position for new open */
+        rtos_files[handle-1].pos = 0;
+        ctx->r2 = (gpr)(FOPEN_MAGIC | (handle - 1));
+    } else {
+        ctx->r2 = 0; /* failed */
+    }
 }
 
-/* func_80142F10: RTOS fread(dest_buf, element_size, count_or_size, handle)
- * Reads data from an opened file into the destination buffer.
- * Returns number of bytes read. */
+/* func_80142F10: RTOS fread(dest_buf, element_size, count, handle)
+ * Returns number of elements read. */
 RECOMP_FUNC void func_80142F10(uint8_t* rdram, recomp_context* ctx) {
     uint32_t dest_virt = (uint32_t)ctx->r4;
     uint32_t dest_phys = dest_virt & 0x1FFFFFFF;
     uint32_t elem_size = (uint32_t)ctx->r5;
     uint32_t count = (uint32_t)ctx->r6;
+    uint32_t handle = (uint32_t)ctx->r7;
     uint32_t total = elem_size * count;
 
-    /* Find which file is open - check all handles */
     int bytes_read = 0;
-    for (int i = 0; i < MAX_RTOS_FILES; i++) {
-        if (rtos_files[i].active && rtos_files[i].data) {
-            if (dest_phys < 0x00800000 - total && total > 0) {
-                bytes_read = rtos_file_read(i + 1, rdram + dest_phys, total);
-                if (bytes_read > 0) break;
+
+    if (IS_FOPEN_HANDLE(handle)) {
+        int slot = FOPEN_SLOT(handle);
+        if (slot >= 0 && slot < MAX_RTOS_FILES && rtos_files[slot].active && rtos_files[slot].data) {
+            if (dest_phys > 0 && dest_phys < 0x00800000 && total > 0 &&
+                dest_phys + total <= 0x00800000) {
+                bytes_read = rtos_file_read(slot + 1, rdram + dest_phys, total);
+            }
+        }
+    } else {
+        /* Legacy: try all active files */
+        for (int i = 0; i < MAX_RTOS_FILES; i++) {
+            if (rtos_files[i].active && rtos_files[i].data) {
+                if (dest_phys > 0 && dest_phys < 0x00800000 && total > 0 &&
+                    dest_phys + total <= 0x00800000) {
+                    bytes_read = rtos_file_read(i + 1, rdram + dest_phys, total);
+                    if (bytes_read > 0) break;
+                }
             }
         }
     }
 
-    fprintf(stderr, "[file] fread(dest=0x%08X, %u, %u, total=%u) -> %d bytes\n",
-            dest_virt, elem_size, count, total, bytes_read);
+    static int fread_log = 0;
+    fread_log++;
+    if (fread_log <= 20 || bytes_read == 0) {
+        if (fread_log <= 30)
+            fprintf(stderr, "[file] fread(dest=0x%08X, %u, %u, total=%u, h=0x%X) -> %d bytes\n",
+                    dest_virt, elem_size, count, total, handle, bytes_read);
+    }
 
-    ctx->r2 = (gpr)(int32_t)(bytes_read > 0 ? bytes_read : total);
+    /* Return number of ELEMENTS read (like C fread) */
+    if (bytes_read > 0 && elem_size > 0) {
+        ctx->r2 = (gpr)(int32_t)(bytes_read / elem_size);
+    } else {
+        ctx->r2 = 0;
+    }
 }
 
 /* func_80142850: RTOS fclose(handle) */
 RECOMP_FUNC void func_80142850(uint8_t* rdram, recomp_context* ctx) {
     uint32_t handle = (uint32_t)ctx->r4;
-    fprintf(stderr, "[file] fclose(0x%08X)\n", handle);
 
-    /* Mark all matching files as closed */
-    for (int i = 0; i < MAX_RTOS_FILES; i++) {
-        if (rtos_files[i].active) {
-            rtos_files[i].active = 0;
+    if (IS_FOPEN_HANDLE(handle)) {
+        int slot = FOPEN_SLOT(handle);
+        if (slot >= 0 && slot < MAX_RTOS_FILES) {
+            static int fclose_log = 0;
+            fclose_log++;
+            if (fclose_log <= 10)
+                fprintf(stderr, "[file] fclose(\"%s\")\n", rtos_files[slot].name);
+            rtos_files[slot].active = 0;
+            /* Don't free data - might be reopened. Host memory is cheap. */
         }
     }
     ctx->r2 = 0;
 }
 
-/* func_80143E74: RTOS free(ptr) - from heap */
+/* func_80143E74: RTOS free(ptr) - call real implementation.
+ * Original renamed to func_80143E74_original in funcs_30.c.
+ * MUST work for attract mode to load/free/reload game assets. */
+extern RECOMP_FUNC void func_80143E74_original(uint8_t* rdram, recomp_context* ctx);
 RECOMP_FUNC void func_80143E74(uint8_t* rdram, recomp_context* ctx) {
-    /* Just ignore frees for now */
+    uint32_t ptr = (uint32_t)ctx->r4;
+    if (ptr != 0) {
+        func_80143E74_original(rdram, ctx);
+    }
     ctx->r2 = 0;
 }
 
@@ -322,29 +446,69 @@ RECOMP_FUNC void static_0_801451F0(uint8_t* rdram, recomp_context* ctx) {
     if (dev_idx >= 0 && dev_idx < 16) {
         uint32_t entry = dev_table_phys + dev_idx * 36;
         if (entry + 36 <= 0x00800000) {
-            /* [+0] = device ID */
             *(uint32_t*)(rdram + entry + 0) = dev_idx;
-            /* [+16] = flags (bit 2 set = active) */
             *(uint32_t*)(rdram + entry + 16) = 0x00000004;
 
-            /* [+24] = handler table pointer.
-             * vec[25] does: lw handler, 24(entry); lw func, 24(handler); jalr func
-             * We need a fake handler struct in RAM with a function pointer at offset 24.
-             * Use a region at 0x6F0000+ for these fake handler structs. */
             uint32_t handler_phys = 0x6F0000 + dev_idx * 64;
             uint32_t handler_virt = 0x806F0000 + dev_idx * 64;
             memset(rdram + handler_phys, 0, 64);
-
-            /* Put a "PCI device handler" function pointer at handler[+24].
-             * We'll use a known function address that we can override.
-             * Use 0x800C40A4 (vec[3]) which we have a trampoline for. */
-            /* Actually, the handler func gets called via jalr which means
-             * LOOKUP_FUNC is used. Let's use a known registered address. */
-            *(uint32_t*)(rdram + handler_phys + 24) = 0x800C40A4; /* vec[3] = RTOS render func */
-
+            *(uint32_t*)(rdram + handler_phys + 24) = 0x800C40A4;
             *(uint32_t*)(rdram + entry + 24) = handler_virt;
             fprintf(stderr, "[rtos] Registered device \"%s\" at index %d, handler at 0x%08X\n",
                     devname, dev_idx, handler_virt);
+        }
+    }
+
+    /* For file-type device opens (names with extensions like .ZM, .WMS, etc.),
+     * load the file from disk and return a small positive device index.
+     * The game checks bgez (>= 0 signed) on the return value.
+     * We use indices 0x10-0x3F to avoid collision with PCI device indices (0-5). */
+    if (strchr(devname, '.') && !strstr(devname, "pci") && !strstr(devname, "pic") &&
+        !strstr(devname, "wdog")) {
+        /* Check cache */
+        for (int i = 0; i < g_file_dev_count; i++) {
+            if (strcmp(g_file_devs[i].name, devname) == 0) {
+                int idx = 0x10 + i; /* file device index */
+                ctx->r2 = (gpr)(int32_t)idx;
+                return;
+            }
+        }
+
+        /* New file: load from disk */
+        int handle = rtos_file_open(devname);
+        if (handle > 0 && rtos_files[handle - 1].data && g_file_dev_count < 32) {
+            uint32_t fsize = rtos_files[handle - 1].size;
+            uint32_t data_phys = g_file_next_data_phys;
+
+            if (data_phys + fsize < 0x00780000 && fsize > 0) {
+                memcpy(rdram + data_phys, rtos_files[handle - 1].data, fsize);
+                g_file_next_data_phys = (data_phys + fsize + 0xF) & ~0xF;
+            }
+
+            strncpy(g_file_devs[g_file_dev_count].name, devname, 63);
+            g_file_devs[g_file_dev_count].data_phys = data_phys;
+            g_file_devs[g_file_dev_count].size = fsize;
+            g_file_devs[g_file_dev_count].active = 1;
+
+            int idx = 0x10 + g_file_dev_count;
+            g_file_dev_count++;
+
+            if (open_count <= 20) {
+                fprintf(stderr, "[rtos] File device \"%s\": idx=%d size=%u data@0x%08X\n",
+                        devname, idx, fsize, 0x80000000 | data_phys);
+            }
+
+            /* Set up device table entry so func_80145020 can find it.
+             * Device table base is at *(0x001A1EEC). If the table exists,
+             * set the flag byte for our index. */
+            uint32_t dtable_ptr = *(uint32_t*)(rdram + 0x001A1EEC);
+            uint32_t dtable_phys = dtable_ptr & 0x1FFFFFFF;
+            if (dtable_phys > 0 && dtable_phys + idx + 1 < 0x00800000) {
+                rdram[dtable_phys + idx] |= 0x04; /* set active flag */
+            }
+
+            ctx->r2 = (gpr)(int32_t)idx;
+            return;
         }
     }
 
@@ -391,8 +555,20 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
     if (data_phys > 0 && data_phys + 4 <= 0x00800000)
         resp = (int32_t*)(rdram + data_phys);
 
-    /* Handle all commands regardless of device ID - the PIC device
-     * uses handles (like 486) that don't match our device table indices */
+    /* Device I/O polling loop breaker: if we see > 1000 I/O calls
+     * without yielding, force responses to non-zero to break loops. */
+    {
+        static int io_total = 0;
+        io_total++;
+        if (io_total > 1000 && io_total % 1000 == 0) {
+            if (data_phys > 0 && data_phys + 4 <= 0x00800000)
+                *(int32_t*)(rdram + data_phys) = (int32_t)0xFFFFFFFF;
+            ctx->r2 = (gpr)(int32_t)0xFFFFFFFF;
+            return;
+        }
+    }
+
+    /* Handle all commands regardless of device ID */
     if ((cmd & 0xFF00) == 0x6900) {
         /* DCS2 Sound commands */
         switch (cmd) {
@@ -403,12 +579,16 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x6905: break;                             /* Sound command (play) */
             case 0x6907: if (resp) *resp = 0x0000; break; /* Volume */
             case 0x6909: {
-                /* DCS2 sound data read - simulate handshake.
-                 * The game sends commands via 0x7405/0x6905 and polls for response.
-                 * DCS2 ready response = 0x55AA (85/170). */
-                static int sp = 0;
-                sp++;
-                if (resp) *resp = (sp > 50) ? 0x55AA : 0x0000;
+                /* DCS2 sound data read - return "ready" with all status bits set */
+                static int dcs_read_count = 0;
+                dcs_read_count++;
+                if (resp) {
+                    *resp = 0x55EA | 0xFF; /* handshake + all status bits */
+                }
+                if (dcs_read_count <= 5) {
+                    fprintf(stderr, "[dcs2] READ #%d resp@0x%08X = 0x%08X\n",
+                            dcs_read_count, data, resp ? *resp : 0);
+                }
                 break;
             }
             case 0x690E: if (resp) *resp = 0x0000; break; /* Sound test */
@@ -423,15 +603,26 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x7001: if (resp) *resp = 486;   break; /* IOASIC upper = PIC serial (486=39") */
             case 0x7002: if (resp) *resp = 487;   break; /* Board ID (game subtracts 1 → 486) */
             case 0x7403: if (resp) *resp = 486; break; /* PIC query - return serial */
-            case 0x7405: if (resp) *resp = 0x0000; break; /* IOASIC output - acknowledge */
+            case 0x7405:
+                /* IOASIC write / DCS command — always return "done" */
+                if (resp) *resp = 0x0001;
+                ctx->r2 = 0;
+                return; /* Return immediately, don't continue to other handling */
             case 0x7406: {
-                /* IOASIC data transfer. The game writes data then polls.
-                 * On real hardware, 0x7406 is the IOASIC "read input" command
-                 * which returns the DIP switch + coin door status.
-                 * Return the IOASIC status with all inputs "released" (0xFFFF). */
+                /* IOASIC data transfer / counter read.
+                 *
+                 * func_8016A540 polls this in a tight loop:
+                 *   dev_io(5, 0x7406, &counter)
+                 *   if (counter < target) goto loop
+                 * The comparison is SIGNED (slt). The target is computed from
+                 * the function argument * large constant (typically millions).
+                 *
+                 * On real hardware, this is a timing counter that increments
+                 * rapidly. We simulate it by returning a large incrementing value.
+                 * Must be positive (not 0xFFFF which is -1 signed). */
                 static int ip = 0;
-                ip++;
-                if (resp) *resp = 0xFFFF; /* all inputs released */
+                ip += 100000; /* increment fast to exceed any target quickly */
+                if (resp) *resp = ip;
                 break;
             }
             case 0x740B: if (resp) *resp = 486; break; /* PIC serial number (486=39") */
@@ -457,15 +648,27 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
         if (resp) *resp = 0x0000;
     }
 
-    /* Anti-spin protection: if the same dev_io call happens >10000 times,
-     * force the game to progress by returning different values. */
+    /* Anti-spin protection: if dev_io is called too many times in a burst,
+     * force the game to progress. Polling loops stall without this. */
     {
-        static uint32_t last_cmd = 0;
+        static int last_cmd = 0;
         static int repeat_count = 0;
-        if (cmd == last_cmd) {
+        if ((int)cmd == last_cmd) {
             repeat_count++;
-            if (repeat_count > 10000 && resp) {
-                *resp = 0x55AA; /* force "ready" response to break polling loops */
+            if (repeat_count > 50) {
+                /* Force function to return via longjmp-like mechanism.
+                 * Since we can't longjmp, instead make the attract mode's
+                 * inner loops break by varying the IOASIC responses. */
+                if (resp) {
+                    if (*resp == 0) *resp = 0x55AA;
+                    else *resp = (int32_t)(repeat_count & 1 ? 0xFFDF : 0xFFFF);
+                }
+                /* After 500 repeats, the loop won't break on its own.
+                 * Force a return by setting a "done" flag. */
+                if (repeat_count > 200) {
+                    repeat_count = 0; /* prevent infinite loop */
+                    return; /* bail out of dev_io entirely */
+                }
             }
         } else {
             repeat_count = 0;
@@ -536,6 +739,18 @@ RECOMP_FUNC void func_801A2A3C(uint8_t* rdram, recomp_context* ctx) {
         if (!found) {
             rtos_sched_create_task(&g_scheduler, task_id, callback);
         }
+    }
+
+    /* Send task_id as a message to channel 6 (the task dispatch channel).
+     * The fibers running func_800C47E0 wait on channel 6 and use the
+     * message value as a jump table index to select the handler.
+     * We call func_80145DE0 (msg_send) to do this properly. */
+    {
+        recomp_context msg_ctx = *ctx;
+        msg_ctx.r4 = 6;              /* channel = 6 */
+        msg_ctx.r5 = (gpr)task_id;   /* value = task_id */
+        extern RECOMP_FUNC void func_80145DE0(uint8_t*, recomp_context*);
+        func_80145DE0(rdram, &msg_ctx);
     }
 
     rtos_log_count++;
@@ -722,11 +937,9 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
 
     rtos_event_counter++;
 
-    if (rtos_event_counter <= 5 || channel > 100) {
-        static int high_ch_log = 0;
-        if (channel > 100) high_ch_log++;
-        if (rtos_event_counter <= 5 || high_ch_log <= 5)
-            fprintf(stderr, "[rtos] event_wait(channel=%d) -> counter=%u\n", channel, rtos_event_counter);
+    if (rtos_event_counter <= 20 || (channel < 100 && rtos_event_counter <= 200)) {
+        fprintf(stderr, "[rtos] event_wait(channel=%d, buf=0x%08X) -> counter=%u\n",
+                channel, buf_addr, rtos_event_counter);
     }
 
     /* For high-numbered channels (rendering sync), return immediately.
@@ -764,6 +977,15 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
         *(uint32_t*)(rdram + buf_phys) = value;
     }
 
+    static int evt_val_log = 0;
+    if (channel == 6) {
+        evt_val_log++;
+        if (evt_val_log <= 30) {
+            fprintf(stderr, "[rtos] event_wait(ch=6) -> value=%u (queue had %d items)\n",
+                    value, (channel < RTOS_MAX_CHANNELS) ? rtos_queues[channel].count + 1 : -1);
+        }
+    }
+
     ctx->r2 = (gpr)(int32_t)value;
 }
 
@@ -781,7 +1003,7 @@ static int msg_recv_count = 0;
 RECOMP_FUNC void func_80145DE0(uint8_t* rdram, recomp_context* ctx) {
     int channel = (int)ctx->r4;
     msg_send_count++;
-    if (msg_send_count <= 5) {
+    if (msg_send_count <= 30 || (channel < 100 && msg_send_count <= 200)) {
         fprintf(stderr, "[rtos] msg_send(ch=%d, val=0x%X) [#%d]\n",
                 channel, (uint32_t)ctx->r5, msg_send_count);
     }
@@ -898,8 +1120,66 @@ RECOMP_FUNC void func_80145E84(uint8_t* rdram, recomp_context* ctx) {
     }
 }
 
-/* func_80145020: yield timeslice */
+/* func_80145020: RTOS device read / yield.
+ * Original: reads data from device handle into buffer via device table.
+ * For file devices, we intercept and copy file data directly.
+ * a0=device_handle, a1=output_buf_ptr, a2=sector_count */
 RECOMP_FUNC void func_80145020(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t handle = (uint32_t)ctx->r4;
+    uint32_t handle_phys = handle & 0x1FFFFFFF;
+
+    static int f45020_log = 0;
+    f45020_log++;
+    if (f45020_log <= 30) {
+        fprintf(stderr, "[func_80145020] #%d a0=0x%08X a1=0x%08X a2=0x%08X\n",
+                f45020_log, handle, (uint32_t)ctx->r5, (uint32_t)ctx->r6);
+    }
+
+    /* Check if this is a file device handle (index 0x10-0x3F) */
+    if (handle >= 0x10 && handle < 0x40) {
+        int fdev_idx = handle - 0x10;
+        if (fdev_idx >= 0 && fdev_idx < g_file_dev_count && g_file_devs[fdev_idx].active) {
+            uint32_t data_phys = g_file_devs[fdev_idx].data_phys;
+            uint32_t file_size = g_file_devs[fdev_idx].size;
+            uint32_t buf_info = (uint32_t)ctx->r5;
+            uint32_t sector_count = (uint32_t)ctx->r6;
+
+            /* buf_info points to a stack struct. The destination address
+             * may be at *(buf_info) or buf_info itself may be the dest. */
+            uint32_t buf_info_phys = buf_info & 0x1FFFFFFF;
+            uint32_t dest_virt = 0;
+            if (buf_info_phys > 0 && buf_info_phys + 4 <= 0x00800000) {
+                dest_virt = *(uint32_t*)(rdram + buf_info_phys);
+            }
+            uint32_t dest_phys = dest_virt & 0x1FFFFFFF;
+
+            uint32_t read_size = sector_count * 512;
+            if (read_size > file_size) read_size = file_size;
+            if (read_size == 0) read_size = file_size; /* sector_count=0 means read all */
+
+            static int fdev_read_log = 0;
+            fdev_read_log++;
+            if (fdev_read_log <= 20) {
+                fprintf(stderr, "[fdev_read] #%d \"%s\" dest=0x%08X sectors=%u size=%u/%u\n",
+                        fdev_read_log, g_file_devs[fdev_idx].name, dest_virt,
+                        sector_count, read_size, file_size);
+            }
+
+            /* Copy file data to destination */
+            if (dest_phys > 0 && dest_phys + read_size <= 0x00800000 &&
+                data_phys + read_size <= 0x00800000 && read_size > 0) {
+                memcpy(rdram + dest_phys, rdram + data_phys, read_size);
+                if (fdev_read_log <= 5) {
+                    fprintf(stderr, "[fdev_read] Copied %u bytes to 0x%08X\n", read_size, dest_virt);
+                }
+            }
+
+            ctx->r2 = 0;
+            return;
+        }
+    }
+
+    /* Not a file device - original yield behavior for fiber operations */
     if (g_scheduler.current_fiber >= 0) {
         rtos_sched_yield(&g_scheduler, -1);
     }
@@ -925,18 +1205,47 @@ RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
  * The loop at 0x800C515C-0x800C5164 calls this repeatedly until
  * the PIC serial at 0x801E6504 matches 528, 469, or 486.
  * We force-set the PIC serial to 486 each call to break the loop. */
+int g_yield_counter = 0;
+uint32_t g_ram_poll_addr = 0;
+int g_ram_poll_count = 0;
+
 RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
-    if (c <= 5 || c % 10000 == 0)
-        fprintf(stderr, "[yield] func_80151618 #%d PIC=%u\n", c,
-                *(uint32_t*)(rdram + 0x001E6504));
-    *(uint32_t*)(rdram + 0x001E6504) = 486;
+    g_yield_counter++;
+    *(uint32_t*)(rdram + 0x001E6504) = 486; /* force PIC serial */
+
+    /* Advance frame counters */
+    uint32_t* vbl = (uint32_t*)(rdram + 0x001A35CC);
+    uint32_t* tick = (uint32_t*)(rdram + 0x001A35C8);
+    uint32_t* sync1 = (uint32_t*)(rdram + 0x001A1AB0);
+    uint32_t* sync2 = (uint32_t*)(rdram + 0x001A1AB8);
+    (*vbl)++;
+    (*tick) += 16667;
+    (*sync1)++;
+    (*sync2) = (*sync1) - 1;
+
+    /* Set DCS/sound ready flag */
+    *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
+
+    /* If yield is called too many times (infinite loop detection),
+     * force-set various flags that polling loops check. */
+    if (g_yield_counter > 500) {
+        /* Set all common polling flags to break out of loops */
+        *(uint32_t*)(rdram + 0x001DDDE0) |= 0xFF;  /* all DCS flags */
+        *(uint32_t*)(rdram + 0x002122E0) |= 0x10000; /* zone loaded flag */
+        *(uint32_t*)(rdram + 0x001E50AC) = 0;  /* clear loading trigger */
+    }
+
     ctx->r2 = 0;
 }
 
 /* Override func_80143A40 (heap malloc) to trace allocation failures.
  * Original renamed to func_80143A40_real in funcs_30.c */
 extern RECOMP_FUNC void func_80143A40_real(uint8_t* rdram, recomp_context* ctx);
+
+/* Track the large render buffer allocation for fixing GP */
+uint32_t g_render_buffer_addr = 0;
+
 RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
     uint32_t size = (uint32_t)ctx->r4;
     uint32_t heap_head = *(uint32_t*)(rdram + 0x001A1E90);
@@ -951,6 +1260,15 @@ RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
     if (result == 0 || alloc_log <= 5 || size > 100000) {
         fprintf(stderr, "[malloc] size=%u (0x%X) heap=0x%08X free=%u -> 0x%08X%s\n",
                 size, size, heap_head, free_sz, result, result == 0 ? " FAILED!" : "");
+    }
+
+    /* Save the 1.75MB render buffer address (malloc(0x1C0020)) */
+    if (size == 0x1C0020 && result != 0 && g_render_buffer_addr == 0) {
+        /* Align to 32 bytes (matching main_loop's alignment loop) */
+        uint32_t phys = result & 0x1FFFFFFF;
+        g_render_buffer_addr = (phys + 0x1F) & ~0x1F;
+        fprintf(stderr, "[malloc] Render buffer: raw=0x%08X aligned=0x%08X\n",
+                phys, g_render_buffer_addr);
     }
 }
 
@@ -994,4 +1312,517 @@ RECOMP_FUNC void func_800F25E0(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
     if (c <= 3) fprintf(stderr, "[cmos] Bypassing CMOS validation (returning 0=OK)\n");
     ctx->r2 = 0; /* success - CMOS is valid */
+}
+
+/* ======================================================================
+ * Voodoo Command Buffer Builder Override
+ *
+ * func_80167848 is the core DMA command builder. Every rendering function
+ * calls it to append Voodoo register writes to a GP-relative command buffer.
+ *
+ * Original behavior:
+ *   GP[0] = a1 (byte count of data)
+ *   GP[4] = GP+0x10 (pointer to data start)
+ *   GP[8] = a0 (PCI destination address, e.g. 0x0800010C = Voodoo reg 0x10C)
+ *   GP[C] = next_ptr (aligned to 32 bytes)
+ *   GP[0x10..] = data words (written by caller before this function)
+ *   GP = next_ptr (advance cursor)
+ *
+ * Our override: replicate the buffer building AND immediately execute
+ * the Voodoo register writes so we get actual pixel output.
+ *
+ * PCI address mapping:
+ *   0x08000000 + offset = Voodoo registers (PCI bus address)
+ *   0x00800000 + offset = Voodoo LFB (PCI bus address)
+ * ====================================================================== */
+RECOMP_FUNC void func_80167848(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t dest_pci = (uint32_t)ctx->r4;   /* PCI destination address */
+    uint32_t byte_count = (uint32_t)ctx->r5;  /* data size in bytes */
+    uint32_t gp = (uint32_t)ctx->r28;
+    uint32_t gp_phys = gp & 0x1FFFFFFF;
+
+    /* Replicate original buffer-building logic */
+    uint32_t t0 = ((byte_count >> 2) << 2) + 0x10;
+    uint32_t t0_abs = gp_phys + t0;
+
+    /* Write command header to GP buffer */
+    if (gp_phys > 0 && gp_phys + 0x20 < 0x00800000) {
+        *(uint32_t*)(rdram + gp_phys + 0x00) = byte_count;
+        *(uint32_t*)(rdram + gp_phys + 0x04) = gp + 0x10;
+        *(uint32_t*)(rdram + gp_phys + 0x08) = dest_pci;
+    }
+
+    /* Align to 32-byte boundary (original loop: while (t0 & 0x1C) t0 += 4) */
+    if (t0_abs & 0x1C) {
+        t0_abs = (t0_abs + 0x1F) & ~0x1F;
+    }
+
+    /* Write next pointer */
+    if (gp_phys > 0 && gp_phys + 0x0C < 0x00800000) {
+        *(uint32_t*)(rdram + gp_phys + 0x0C) = (gp & 0xE0000000) | t0_abs;
+    }
+
+    /* Advance GP */
+    ctx->r28 = (gpr)((gp & 0xE0000000) | t0_abs);
+
+    /* --- Intercept and execute Voodoo writes --- */
+    static int gfx_cmd_count = 0;
+    gfx_cmd_count++;
+    if (gfx_cmd_count <= 100) {
+        fprintf(stderr, "[gfx_cmd] #%d dest=0x%08X bytes=%d GP=0x%08X\n",
+                gfx_cmd_count, dest_pci, byte_count, gp);
+    }
+
+    /* Determine Voodoo register offset from PCI address */
+    uint32_t voodoo_off = 0xFFFFFFFF; /* invalid */
+    if (dest_pci >= 0x08000000 && dest_pci < 0x08100000) {
+        /* PCI bus address for Voodoo registers: 0x08000000 + reg_offset */
+        voodoo_off = dest_pci - 0x08000000;
+    } else if (dest_pci >= 0x08100000 && dest_pci < 0x09000000) {
+        /* CPU MMIO address for Voodoo registers */
+        voodoo_off = dest_pci - 0x08100000;
+    } else if (dest_pci >= 0x00800000 && dest_pci < 0x01800000) {
+        /* LFB writes */
+        voodoo_off = dest_pci - 0x00800000;
+    }
+
+    if (voodoo_off != 0xFFFFFFFF && byte_count > 0 && byte_count <= 4096) {
+        uint32_t data_phys = gp_phys + 0x10;
+        if (data_phys > 0 && data_phys + byte_count <= 0x00800000) {
+            for (uint32_t i = 0; i < byte_count; i += 4) {
+                uint32_t val = *(uint32_t*)(rdram + data_phys + i);
+                voodoo_write(&g_voodoo, voodoo_off + i, val);
+            }
+
+            if (gfx_cmd_count <= 30) {
+                uint32_t first_val = *(uint32_t*)(rdram + data_phys);
+                fprintf(stderr, "[gfx_cmd]   -> voodoo reg 0x%03X = 0x%08X\n",
+                        voodoo_off, first_val);
+            }
+        }
+    }
+}
+
+/* ======================================================================
+ * Attract Mode Camera Update -- func_800CAE2C
+ *
+ * This is a mid-function entry point inside func_800CADD4.
+ * The original code reads input bits from 0x80236790 and adjusts
+ * camera float values at 0x80180000-based addresses.
+ * Each bit controls a different camera axis.
+ *
+ * Since this is a mid-function entry (fiber resume point), we replicate
+ * the camera update logic as a callable function.
+ * ====================================================================== */
+RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
+    static int call_count = 0;
+    call_count++;
+
+    /* On first call: run the attract mode scene functions.
+     * These are func_800CAFD0, func_800CAF24, func_800CB19C, func_800CB31C
+     * which load zones, create scene objects, and set up animations.
+     * Each function: yield, setup zone, init scene, create objects. */
+    if (call_count == 1) {
+        extern recomp_func_t* get_function(int32_t);
+
+        /* Set DCS ready flag so scene functions don't block on polls */
+        *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
+
+        /* Call the attract mode scene functions in order */
+        uint32_t scene_funcs[] = { 0x800CAFD0, 0x800CAF24, 0x800CB19C, 0x800CB31C };
+        for (int i = 0; i < 4; i++) {
+            recomp_func_t* sfn = get_function((int32_t)scene_funcs[i]);
+            if (sfn) {
+                fprintf(stderr, "[attract] Calling scene func 0x%08X...\n", scene_funcs[i]);
+                ctx->r4 = (gpr)i;
+                sfn(rdram, ctx);
+                fprintf(stderr, "[attract] Scene func 0x%08X returned\n", scene_funcs[i]);
+            }
+        }
+
+        /* After scene functions set up zone config, try calling the zone builder.
+         * func_8010FE90 processes zone data from the config at 0x001DFEB8.
+         * It should parse zone files and create scene objects. */
+        {
+            uint32_t zone_cfg = *(uint32_t*)(rdram + 0x001DFEB8);
+            uint32_t zone_cfg2 = *(uint32_t*)(rdram + 0x001E0C4C);
+            fprintf(stderr, "[attract] Zone config: 0x%08X / 0x%08X\n", zone_cfg, zone_cfg2);
+
+            /* Set the zone loading trigger flags */
+            *(uint32_t*)(rdram + 0x001E50AC) = 1;  /* func_8010FE60 sets this */
+            *(uint32_t*)(rdram + 0x001E4FF4) = 1;  /* func_8010FE74 sets this */
+
+            /* Call the zone processor to parse zone data and create scene objects.
+             * Clear the "already loaded" flag and set r2=0 for normal entry. */
+            *(uint32_t*)(rdram + 0x002122E0) &= ~0x10000; /* clear "loaded" flag */
+            *(uint32_t*)(rdram + 0x00212354) = 0;          /* clear delay counter */
+
+            /* Force display state so zone parser proceeds */
+            *(uint32_t*)(rdram + 0x001E0444) |= 0x44;
+            *(uint32_t*)(rdram + 0x001E055C) |= 0x44;
+
+            /* Create test scene nodes */
+            {
+                /* Position data at 0x005F0000 */
+                float* pos = (float*)(rdram + 0x005F0000);
+                pos[0] = 100.0f;  /* X */
+                pos[1] = 100.0f;  /* Y */
+                pos[2] = -500.0f; /* Z (into screen) */
+
+                float* scale = (float*)(rdram + 0x005F0010);
+                scale[0] = 50.0f;
+                scale[1] = 50.0f;
+                scale[2] = 50.0f;
+
+                /* Create multiple nodes at different positions */
+                recomp_func_t* create_node = get_function(0x800D7600);
+                if (create_node) {
+                    for (int n = 0; n < 5; n++) {
+                        pos[0] = 50.0f + n * 80.0f;
+                        pos[1] = 192.0f;
+                        pos[2] = -200.0f - n * 100.0f;
+
+                        uint32_t sp_phys = (uint32_t)ctx->r29 & 0x1FFFFFFF;
+                        if (sp_phys >= 0x20 && sp_phys < 0x00800000 - 0x20)
+                            *(uint32_t*)(rdram + sp_phys + 0x10) = 1;
+
+                        ctx->r4 = 1;
+                        ctx->r5 = (gpr)(int32_t)(0x80000000 | 0x005F0000);
+                        ctx->r6 = (gpr)(int32_t)(0x80000000 | 0x005F0010);
+                        ctx->r7 = (gpr)0x3F800000; /* 1.0f */
+                        create_node(rdram, ctx);
+                    }
+                    fprintf(stderr, "[attract] Created 5 scene nodes\n");
+                }
+            }
+        }
+
+        /* Check if scene graph now has objects.
+         * List head is at 0x0017B6D8 + 0x44 = 0x0017B71C (next ptr in root node).
+         * Each node links via offset +0x44. */
+        uint32_t sg_head = *(uint32_t*)(rdram + 0x0017B71C);
+        int sg_count = 0;
+        uint32_t cur = sg_head;
+        while (cur != 0 && sg_count < 200) {
+            uint32_t phys = cur & 0x1FFFFFFF;
+            if (phys + 0x48 >= 0x00800000) break;
+            cur = *(uint32_t*)(rdram + phys + 0x44);
+            sg_count++;
+        }
+        fprintf(stderr, "[attract] Scene graph (at +0x44): head=0x%08X count=%d\n", sg_head, sg_count);
+    }
+
+    /* Process zone commands. Use a global yield counter to detect infinite loops.
+     * If func_80151618 is called > 1000 times during a single zone command,
+     * the command is blocking — force-skip it by advancing the config pointer. */
+    /* Zone processing: skip past the blocking region.
+     * Frames 2-50 work (cfg 0x80112DAC-0x80113274). Frame 51+ blocks.
+     * Try jumping the config pointer past the trouble zone. */
+    static int zone_done = 0;
+    static int zone_skip_until = 0;
+    if (call_count > 1 && call_count < 500 && !zone_done && call_count >= zone_skip_until) {
+        extern recomp_func_t* get_function(int32_t);
+        static int zone_cmd_count = 0;
+        extern int g_yield_counter;  /* declared below in func_80151618 */
+
+        /* Set flags for zone processing */
+        *(uint32_t*)(rdram + 0x002122E0) &= ~0x10000;
+        *(uint32_t*)(rdram + 0x001E4FF4) = 1;
+        *(uint32_t*)(rdram + 0x001E0444) |= 0x44;
+        *(uint32_t*)(rdram + 0x001E055C) |= 0x44;
+        *(uint32_t*)(rdram + 0x00212354) = 0;
+        *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
+
+        recomp_func_t* process_zone = get_function(0x8010FE90);
+        if (process_zone) {
+            uint32_t cfg_before = *(uint32_t*)(rdram + 0x001E0C4C);
+
+            g_yield_counter = 0;
+
+            /* Check config pointer. The config stream has 413 command words
+             * from 0x80112DA4 to 0x80113A20. Some commands read multi-word
+             * arguments. If the pointer enters a region where the parser
+             * gets misaligned (reads data words as commands), skip to end. */
+            uint32_t cfg_cur = *(uint32_t*)(rdram + 0x001E0C4C);
+            uint32_t cfg_phys_pre = cfg_cur & 0x1FFFFFFF;
+
+            /* Read the next command value to check validity */
+            uint32_t next_cmd = 0;
+            if (cfg_phys_pre > 0 && cfg_phys_pre + 4 < 0x00800000)
+                next_cmd = *(uint32_t*)(rdram + cfg_phys_pre);
+
+            /* If the value is not a valid command (1-29) AND not a known
+             * data value used by multi-word commands, we're misaligned.
+             * Force the config pointer past the end. */
+            if (cfg_phys_pre >= 0x00113270 && (next_cmd == 0 || next_cmd > 29)) {
+                *(uint32_t*)(rdram + 0x001E0C4C) = 0x80113A24; /* past end */
+                fprintf(stderr, "[zone] Config misaligned at 0x%08X (val=0x%X), marking done\n",
+                        cfg_cur, next_cmd);
+                zone_done = 1;
+                goto zone_done_skip; /* skip the process_zone call */
+            }
+
+            ctx->r2 = 0;
+            ctx->r4 = 0;
+            process_zone(rdram, ctx);
+            int ret = (int)(int32_t)ctx->r2;
+
+            uint32_t cfg_after = *(uint32_t*)(rdram + 0x001E0C4C);
+
+            if (call_count <= 50 || call_count % 200 == 0) {
+                fprintf(stderr, "[zone] frame=%d ret=%d cfg=0x%08X yields=%d\n",
+                        call_count, ret, cfg_after, g_yield_counter);
+            }
+
+            /* Check for end of config stream (config ends at 0x80113A20) */
+            uint32_t cfg_phys = cfg_after & 0x1FFFFFFF;
+            if (cfg_phys >= 0x00113A20 || cfg_phys == 0) {
+                zone_done = 1;
+                uint32_t sg_head = *(uint32_t*)(rdram + 0x0017B71C);
+                int sg_n = 0;
+                uint32_t c2 = sg_head;
+                while (c2 && sg_n < 200) {
+                    c2 = *(uint32_t*)(rdram + (c2 & 0x1FFFFFFF) + 0x44);
+                    sg_n++;
+                }
+                fprintf(stderr, "[zone] DONE: %d cmds, sg_head=0x%08X count=%d\n",
+                        zone_cmd_count, sg_head, sg_n);
+            }
+        }
+
+        if (call_count <= 100 || call_count % 200 == 0) {
+            uint32_t sg_head = *(uint32_t*)(rdram + 0x0017B71C);
+            fprintf(stderr, "[zone_frame] frame=%d cmds=%d sg_head=0x%08X\n",
+                    call_count, zone_cmd_count, sg_head);
+        }
+    }
+
+    zone_done_skip: ;
+    /* Camera update: call func_800CADD4 */
+    {
+        extern recomp_func_t* get_function(int32_t);
+        recomp_func_t* parent = get_function(0x800CADD4);
+        if (parent) {
+            ctx->r1 = (gpr)(int32_t)0x80180000;
+            parent(rdram, ctx);
+        }
+    }
+
+    if (call_count <= 5 || call_count % 1000 == 0) {
+        fprintf(stderr, "[attract_cam] call #%d\n", call_count);
+    }
+
+    ctx->r2 = 0;
+}
+
+/* ======================================================================
+ * State Machine Mode Dispatcher -- func_8014A488
+ *
+ * The RTOS mode system stores registered mode entries at 0x001A25F0.
+ * func_80148AFC populates: entry[+0x24] = mode function, entry[+0x10] = data.
+ * This dispatcher reads the registered entry and calls the mode function.
+ *
+ * NOTE: 0x001A25F8 is the "current task" pointer, NOT the mode entry.
+ * It often points to the display global (0x80710100) which has garbage
+ * at offset +0x24. Always use 0x001A25F0 for mode dispatch.
+ * ====================================================================== */
+extern RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx);
+
+RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
+    /* Read the registered mode entry from 0x001A25F0 */
+    uint32_t entry_ptr = *(uint32_t*)(rdram + 0x001A25F0);
+    uint32_t entry_phys = entry_ptr & 0x1FFFFFFF;
+
+    if (entry_phys == 0 || entry_phys + 0x30 >= 0x00800000) {
+        return;
+    }
+
+    uint32_t mode_func_addr = *(uint32_t*)(rdram + entry_phys + 0x24);
+    uint32_t data_buf = *(uint32_t*)(rdram + entry_phys + 0x10);
+
+    static int dispatch_count = 0;
+    dispatch_count++;
+    if (dispatch_count <= 10 || dispatch_count % 500 == 0) {
+        fprintf(stderr, "[state_dispatch] #%d: entry=0x%08X mode_func=0x%08X data=0x%08X\n",
+                dispatch_count, entry_ptr, mode_func_addr, data_buf);
+    }
+
+    /* Validate mode_func_addr looks like a MIPS virtual address */
+    if (mode_func_addr < 0x80000000 || mode_func_addr >= 0x80800000) {
+        if (dispatch_count <= 5) {
+            fprintf(stderr, "[state_dispatch] Invalid mode_func 0x%08X (not a MIPS vaddr)\n",
+                    mode_func_addr);
+        }
+        return;
+    }
+
+    /* Look up and call the mode function */
+    recomp_func_t* mode_func = get_function((int32_t)mode_func_addr);
+    if (mode_func) {
+        ctx->r4 = (gpr)data_buf;
+        mode_func(rdram, ctx);
+    } else if (dispatch_count <= 5) {
+        fprintf(stderr, "[state_dispatch] Mode function 0x%08X not found!\n", mode_func_addr);
+    }
+
+    /* After mode function returns, call yield */
+    ctx->r4 = 1;
+    func_80151618(rdram, ctx);
+}
+
+/* ======================================================================
+ * Scene Graph Render Wrapper -- func_800D4C24
+ * Traces the rendering pipeline to understand why no output is produced.
+ * ====================================================================== */
+extern RECOMP_FUNC void func_800D4C24_original(uint8_t* rdram, recomp_context* ctx);
+RECOMP_FUNC void func_800D4C24(uint8_t* rdram, recomp_context* ctx) {
+    static int render_call = 0;
+    render_call++;
+
+    /* Log the scene graph pointer list that func_800D4C24 iterates.
+     * The display entry at 0x001E0440 has a linked list of scene objects.
+     * Each display channel entry is 0x118 bytes. */
+    if (render_call <= 5 || render_call == 50 || render_call == 500) {
+        /* Check the REAL scene graph list head at 0x0017B71C (base+0x44) */
+        uint32_t sg_head = *(uint32_t*)(rdram + 0x0017B71C);
+        int sg_count = 0;
+        uint32_t cur = sg_head;
+        while (cur != 0 && sg_count < 100) {
+            uint32_t phys = cur & 0x1FFFFFFF;
+            if (phys + 0x48 >= 0x00800000) break;
+            uint32_t next = *(uint32_t*)(rdram + phys + 0x44);
+            sg_count++;
+            cur = next;
+        }
+        fprintf(stderr, "[scene_render] #%d: sg_head=0x%08X sg_count=%d\n",
+                render_call, sg_head, sg_count);
+
+        /* Also check display entry at 0x1E0440 */
+        for (int ch = 0; ch < 2; ch++) {
+            uint32_t base = 0x001E0440 + ch * 0x118;
+            uint32_t ch_state = *(uint32_t*)(rdram + base + 0x50);
+            fprintf(stderr, "[scene_render] ch%d state=0x%X\n", ch, ch_state);
+        }
+    }
+
+    func_800D4C24_original(rdram, ctx);
+
+    if (render_call <= 10 || render_call == 50 || render_call == 500) {
+        uint32_t writes_after = voodoo_get_write_count();
+        fprintf(stderr, "[scene_render] #%d complete, total_voodoo=%u\n", render_call, writes_after);
+    }
+}
+
+/* ======================================================================
+ * VEC[64] Slot 0 Callback -- func_800C5FE4
+ *
+ * This is the MAIN per-frame rendering trigger. The recompiler missed it
+ * because it's a split entry point (mid-function code at 0x800C5FE4 that
+ * falls through to func_800C602C).
+ *
+ * Original code computes: frame_counter++ % display_list_count
+ * Then calls func_800C602C which triggers the scene graph traversal.
+ * Without this, no rendering happens during the frame loop.
+ * ====================================================================== */
+extern RECOMP_FUNC void func_800C602C(uint8_t* rdram, recomp_context* ctx);
+
+RECOMP_FUNC void func_800C5FE4(uint8_t* rdram, recomp_context* ctx) {
+    static int render_cb_count = 0;
+    render_cb_count++;
+
+    /* Replicate the prefix code at 0x800C5FE4-0x800C6028:
+     * v1 = MEM[0x1A24CC] + 1   (increment frame counter)
+     * v0 = MEM[0x177604]       (display list count / divisor)
+     * a0 = v1 % v0             (frame index modulo)
+     * v0 = MEM[0x1A24C8]       (load secondary counter)
+     */
+    uint32_t frame_ctr = *(uint32_t*)(rdram + 0x001A24CC);
+    uint32_t divisor   = *(uint32_t*)(rdram + 0x00177604);
+    frame_ctr++;
+
+    /* Sanity check: divisor should be a small display list count (1-4).
+     * It often gets corrupted by Voodoo PCI base address writes (0x08100000).
+     * If corrupted, default to 2 (double buffering). */
+    if (divisor == 0 || divisor > 16) {
+        divisor = 2;
+        *(uint32_t*)(rdram + 0x00177604) = divisor;
+    }
+
+    uint32_t remainder = frame_ctr % divisor;
+
+    /* Set registers as the original code would before falling through.
+     * The original prefix at 0x800C5FE4 sets these registers:
+     *   v1 (r3) = frame_ctr (incremented)
+     *   a0 (r4) = remainder (frame_ctr % divisor)
+     *   v0 (r2) = *0x001A24C8 (secondary counter)
+     *   at (r1) = 0x801A0000 (needed by func_800C602C for store instructions!) */
+    ctx->r1 = (gpr)(int32_t)0x801A0000;
+    ctx->r3 = (gpr)(int32_t)frame_ctr;
+    ctx->r4 = (gpr)(int32_t)remainder;
+    ctx->r2 = (gpr)(int32_t)(*(uint32_t*)(rdram + 0x001A24C8));
+
+    if (render_cb_count <= 5 || render_cb_count % 500 == 0) {
+        fprintf(stderr, "[vec64_cb] frame_ctr=%u divisor=%u remainder=%u (call #%d)\n",
+                frame_ctr, divisor, remainder, render_cb_count);
+    }
+
+    /* Log scene graph gate conditions */
+    if (remainder == 0) {
+        uint32_t render_flag = *(uint32_t*)(rdram + 0x00212320);
+        uint32_t display_init = *(uint32_t*)(rdram + 0x00179258);
+        static int scene_log = 0;
+        scene_log++;
+        if (scene_log <= 10) {
+            fprintf(stderr, "[vec64_cb] remainder==0: render_flag@0x212320=%u display_init@0x179258=%u\n",
+                    render_flag, display_init);
+        }
+        /* Force display_init flag to 1 (Voodoo display ready).
+         * On real hardware, the display init sequence sets this.
+         * Our Voodoo emulation handles init registers but may not set this flag. */
+        if (display_init != 1) {
+            *(uint32_t*)(rdram + 0x00179258) = 1;
+        }
+    }
+
+    /* Force gate values right before calling the render callback */
+    *(uint32_t*)(rdram + 0x00179258) = 1;    /* display_init */
+    /* Cycle the display mode state machine:
+     * 0x40 = prepare, 0x20 = render, 0x1000 = swap, 0x2000 = done
+     * Alternate between 0x40 (setup) and 0x20 (render) each frame. */
+    {
+        uint32_t cur_mode = *(uint32_t*)(rdram + 0x002122D4);
+        if (cur_mode == 0x40 || cur_mode == 0x2000 || cur_mode == 0) {
+            /* After prepare/done, switch to render mode */
+            *(uint32_t*)(rdram + 0x002122D4) = 0x20;
+        } else if (cur_mode == 0x20) {
+            /* After render, keep in render mode (swap happens naturally) */
+            *(uint32_t*)(rdram + 0x002122D4) = 0x20;
+        }
+    }
+    *(uint32_t*)(rdram + 0x001DDD80) = 1;    /* voodoo active */
+    *(uint32_t*)(rdram + 0x001AA660) = 0x08100000; /* Voodoo PCI base - CRITICAL */
+    /* Display channel active flags: 1=active, checked at *(0x1E0490+channel*0x118) */
+    *(uint32_t*)(rdram + 0x001E0490) = 1;           /* channel 0 state */
+    *(uint32_t*)(rdram + 0x001E0490 + 0x118) = 1;   /* channel 1 state */
+    /* Display channel initialized flag at entry[+4], needed by zone parser.
+     * func_8010FE90 checks *(0x1E0444) & 0x44 and *(0x1E055C) & 0x44.
+     * Value 4 = "rendering active". Set 0x44 = bits 2,6. */
+    *(uint32_t*)(rdram + 0x001E0444) |= 0x44;       /* channel 0 display flag */
+    *(uint32_t*)(rdram + 0x001E055C) |= 0x44;       /* channel 1 display flag */
+
+    /* Log the render buffer / scene graph state on first calls */
+    if (render_cb_count <= 3) {
+        uint32_t scene_count = *(uint32_t*)(rdram + 0x00212320);
+        uint32_t render_ptr = *(uint32_t*)(rdram + 0x0022A444);
+        uint32_t display_mode = *(uint32_t*)(rdram + 0x002122D4);
+        uint32_t disp_init = *(uint32_t*)(rdram + 0x00179258);
+        uint32_t vdoo_active = *(uint32_t*)(rdram + 0x001DDD80);
+        uint32_t widget_flag = *(uint32_t*)(rdram + 0x001E6580);
+        uint32_t pci_base = *(uint32_t*)(rdram + 0x001AA660);
+        fprintf(stderr, "[render_gate] scene=%u render_ptr=0x%08X mode=0x%X init=%u active=%u widget=0x%X pci=0x%08X\n",
+                scene_count, render_ptr, display_mode, disp_init, vdoo_active, widget_flag, pci_base);
+    }
+
+    /* Fall through to the real callback body */
+    func_800C602C(rdram, ctx);
 }

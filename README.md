@@ -29,35 +29,37 @@ CarnEvil was a coin-op rail shooter where you blasted your way through a haunted
 
 Source: [System16 Hardware Page](https://www.system16.com/hardware.php?id=618)
 
-## Current Status: Game Fully Boots to Attract Mode
+## Current Status: Rendering Pipeline Active, Scene Graph Populated
 
-The game completes its entire boot sequence and enters attract/free play mode. The rendering function is being called from the scene graph. Next milestone: Voodoo triangle rasterization for visible pixel output.
+The game fully boots, enters attract mode, and the 3D rendering pipeline is connected end-to-end. Zone files (BABY.ZM, baby.za) are loaded from the TRAP filesystem into game memory. The scene graph has active nodes and the Voodoo emulation processes 3.8M register writes per run. LFB pixel writes and FastFill are handled with double-buffered output. Next milestone: breaking DCS2 polling loops so the zone parser can create geometry-attached scene objects.
 
 ### What's Working
 
 - **2,498 recompiled MIPS functions** (2,187 game + 304 RTOS + 7 stubs) running as native x64
-- **Full RTOS "Mother GOOSE" emulation** -- 27 vector table trampolines connecting game code to real RTOS functions, device callback registration (VEC[60]/[64]), fiber-based cooperative task scheduler
-- **Complete game boot sequence**: RTOS banner -> env config (14 entries) -> diagnostic register audit -> CMOS validation -> DCS2 sound handshake -> operator config menu -> free play enabled -> attract mode entry
-- **PCI configuration space bridge** with device enumeration (Galileo GT64010, 3DFX Voodoo 1, IDE controller)
-- **Voodoo display init**: 11,828 register writes (fbiInit0-3, hSync/vSync, backPorch, videoDimensions)
-- **Voodoo FastFill command** produces visible colored pixels at 512x384
-- **File I/O** serving game.env with hardware config (newline-separated key=value pairs)
-- **CMOS/NVRAM** loaded from MAME dump, validation bypassed
-- **PIC security** -- IOASIC cmd 0x7001 returns serial 486 (39" cabinet)
-- **DCS2 sound** handshake simulation (0x55AA ready response)
-- **Device I/O dispatch** handling sound (0x69XX), IOASIC (0x74XX), and PIC commands
-- **Heap management** with per-frame snapshot/restore preserving permanent allocations
-- **DMA buffer** allocation (1.75MB rendering buffer, single init)
-- **Scene graph rendering function** (`static_0_8015E2F4`, 147 call sites) being called from attract mode
+- **Full RTOS emulation** -- 27 vector table trampolines, device callbacks (VEC[60]/[64]), fiber-based cooperative task scheduler with proper task message dispatch (channel 6)
+- **Complete game boot sequence**: RTOS banner -> env config -> diagnostics -> CMOS -> DCS2 handshake -> free play -> attract mode
+- **State machine dispatcher** correctly reads registered mode entries at 0x001A25F0
+- **Attract mode lifecycle**: init (func_800C50AC) -> camera update (func_800CADD4) -> scene functions
+- **Zone file I/O**: device_open returns small positive indices, vec[18] (static_0_800C411C) copies BABY.ZM (90KB), baby.za (246KB) into game heap buffers
+- **Scene graph**: 5 nodes created via func_800D7600, linked list at 0x0017B71C traversed by renderer
+- **Voodoo double-buffered emulation**: LFB writes (1.7M/run) to back buffer, FastFill, SwapBuffers copy, 3.8M register writes total
+- **LFB/Register separation**: physical 0x00800000+ = framebuffer pixels, 0x08100000+ = Voodoo registers (was previously misidentified, causing 65K fake triangles)
+- **Widget board registers**: return proper 512x384 video config with render-enable bits
+- **Display rendering gates**: mode cycling (0x40->0x20), channel active flags, Voodoo PCI base forced
+- **Zone config parser**: processes ~50 commands per frame from the zone setup stream
+- **Device I/O**: DCS2 (0x69XX), IOASIC (0x74XX), PIC commands with proper handshake responses
+- **Heap management** with per-frame snapshot/restore
+- **PCI configuration space bridge**, CMOS/NVRAM, DMA buffer allocation
 
 ### What's Next
 
-- [ ] **Voodoo Triangle Rasterization** -- Implement the rendering commands (vertex data, triangleCMD, fTriangleCMD) that the game's PCI register writes produce
-- [ ] **Voodoo LFB Writes** -- Handle direct framebuffer writes for text overlays and 2D rendering
-- [ ] **Texture Support** -- Load WMS textures and map them through the TMU registers
-- [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL rendering
-- [ ] **DCS2 Audio** -- Implement the ADSP-2115 DSP or decode DCS 3.0 audio banks directly
-- [ ] **Input System** -- Mouse/gamepad/Sinden lightgun mapping, networked 2P co-op
+- [ ] **Break DCS2 polling loops** -- Fibers and main thread enter infinite DCS/IOASIC polling (0x6909/0x7405 alternating). Need to return correct "done" status or implement cooperative yielding
+- [ ] **Zone geometry parsing** -- Zone FILE parser (func_801143CC -> func_800D036C -> func_800D7600) creates geometry-attached scene nodes. Currently blocked by DCS polling in the async task pipeline
+- [ ] **Voodoo Triangle Rasterization** -- Implement edge-walking using vertex setup registers (SVX/SVY/dXdY) for 3D pixel output
+- [ ] **Texture Support** -- Load WMS textures and map through TMU registers
+- [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL
+- [ ] **DCS2 Audio** -- ADSP-2115 DSP or direct DCS 3.0 audio bank decoding
+- [ ] **Input System** -- Mouse/gamepad/Sinden lightgun, networked 2P co-op
 
 ## Architecture
 

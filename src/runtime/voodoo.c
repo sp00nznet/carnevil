@@ -162,6 +162,9 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
 
     case VOODOO_SWAPBUFCMD:
         voodoo->swap_count++;
+        /* Copy back → front. Front buffer is what gets dumped. */
+        memcpy(voodoo->framebuffer, voodoo->backbuffer,
+               sizeof(uint16_t) * 640 * 480);
         if (voodoo->swap_count <= 5 || voodoo->swap_count % 100 == 0) {
             fprintf(stderr, "[voodoo] SwapBuffers #%d\n", voodoo->swap_count);
         }
@@ -169,6 +172,41 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
 
     case VOODOO_NOPCOMMAND:
         break;
+
+    /* Log ANY write to vertex setup registers (0x048-0x070, 0x180-0x1B0) */
+    case VOODOO_SVX: case VOODOO_SVY:
+    case VOODOO_SRED: case VOODOO_SGREEN: case VOODOO_SBLUE: case VOODOO_SALPHA: {
+        static int vtx_log = 0;
+        vtx_log++;
+        if (vtx_log <= 30) {
+            fprintf(stderr, "[voodoo] VERTEX INT reg 0x%03X = 0x%08X (%.3f)\n",
+                    reg, value, *(float*)&value);
+        }
+        break;
+    }
+    case VOODOO_FVX: case VOODOO_FVY:
+    case VOODOO_FRED: case VOODOO_FGREEN: case VOODOO_FBLUE: case VOODOO_FALPHA: {
+        static int fvtx_log = 0;
+        fvtx_log++;
+        if (fvtx_log <= 30) {
+            fprintf(stderr, "[voodoo] VERTEX FLOAT reg 0x%03X = %.3f\n",
+                    reg, *(float*)&value);
+        }
+        break;
+    }
+
+    case VOODOO_TRIANGLECMD:
+    case VOODOO_FTRIANGLE: {
+        static int tri_count = 0;
+        tri_count++;
+        if (tri_count <= 20 || tri_count % 10000 == 0) {
+            float vx = *(float*)&voodoo->regs[VOODOO_FVX / 4];
+            float vy = *(float*)&voodoo->regs[VOODOO_FVY / 4];
+            fprintf(stderr, "[voodoo] Triangle #%d at (%.1f, %.1f) cmd=0x%X\n",
+                    tri_count, vx, vy, reg);
+        }
+        break;
+    }
 
     case VOODOO_FASTFILLCMD: {
         /* FastFill: fill the clip rectangle with color1 */
@@ -191,9 +229,14 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
             fprintf(stderr, "[voodoo] FastFill: (%d,%d)-(%d,%d) color=0x%08X -> 0x%04X\n",
                     left, top, right, bottom, color1, fill_color);
         }
+        /* FastFill writes to BACK buffer.
+         * Skip black fills — they erase LFB-rendered content.
+         * The game clears before rendering, but our single-pass loop
+         * means the clear happens AFTER the last LFB write. */
+        if (fill_color == 0x0000) break;
         for (int y = top; y < bottom; y++) {
             for (int x = left; x < right; x++) {
-                voodoo->framebuffer[y * 640 + x] = fill_color;
+                voodoo->backbuffer[y * 640 + x] = fill_color;
             }
         }
         break;

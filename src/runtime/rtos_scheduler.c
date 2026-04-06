@@ -33,7 +33,18 @@ void rtos_sched_init(rtos_scheduler_t* sched, uint8_t* rdram) {
 }
 
 int rtos_sched_create_task(rtos_scheduler_t* sched, int task_id, uint32_t callback_vram) {
-    if (sched->fiber_count >= RTOS_MAX_FIBERS) return -1;
+    if (sched->fiber_count >= RTOS_MAX_FIBERS) {
+        /* Try to reactivate an existing inactive fiber with same callback */
+        for (int i = 0; i < sched->fiber_count; i++) {
+            if (sched->fibers[i].callback_vram == callback_vram && !sched->fibers[i].active) {
+                sched->fibers[i].active = 1;
+                sched->fibers[i].blocked = 0;
+                sched->fibers[i].id = task_id;
+                return i;
+            }
+        }
+        return -1;
+    }
 
     int idx = sched->fiber_count++;
     rtos_fiber_t* f = &sched->fibers[idx];
@@ -81,6 +92,16 @@ static void CALLBACK fiber_entry(void* param) {
     f->ctx_save.r29 = (gpr)stack_top;
     f->ctx_save.mips3_float_mode = 1;
 
+    /* Initialize GP (r28) from the tracked render buffer address.
+     * The rendering functions use GP as a write cursor for Voodoo DMA commands.
+     * Also set the game's standard global pointer value for non-rendering code. */
+    {
+        extern uint32_t g_render_buffer_addr;
+        if (g_render_buffer_addr != 0) {
+            f->ctx_save.r28 = (gpr)g_render_buffer_addr;
+        }
+    }
+
     /* Set up per-task context data in game RAM.
      * Allocate 512 bytes per task below the stack area.
      * Pre-fill with indices so message_send passes non-zero values. */
@@ -118,11 +139,16 @@ static void CALLBACK fiber_entry(void* param) {
 
 void rtos_sched_run_frame(rtos_scheduler_t* sched, recomp_context* ctx) {
     /* Unblock all active fibers at frame start */
+    extern uint32_t g_render_buffer_addr;
     for (int i = 0; i < sched->fiber_count; i++) {
         if (sched->fibers[i].active) {
             sched->fibers[i].blocked = 0;
             sched->fibers[i].ctx_save.mips3_float_mode = ctx->mips3_float_mode;
-            /* Don't overwrite per-fiber stack pointer! Each fiber has its own stack. */
+            /* Reset GP to rendering buffer start each frame.
+             * The rendering functions advance GP as they write commands. */
+            if (g_render_buffer_addr != 0) {
+                sched->fibers[i].ctx_save.r28 = (gpr)g_render_buffer_addr;
+            }
         }
     }
 
