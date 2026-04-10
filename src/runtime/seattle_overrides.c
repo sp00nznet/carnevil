@@ -352,6 +352,35 @@ RECOMP_FUNC void func_80144E70(uint8_t* rdram, recomp_context* ctx) {
             name_buf[i] = c;
         }
     }
+    /* Skip BNK (sound bank) files — DCS2 hardware not emulated.
+     * Return success with handle 1 and size 0 to prevent retry loops.
+     * The caller expects a valid handle + size in the output descriptor. */
+    {
+        int len = (int)strlen(name_buf);
+        if (len >= 4 && (strcmp(name_buf + len - 4, ".BNK") == 0 ||
+                         strcmp(name_buf + len - 4, ".bnk") == 0)) {
+            static int bnk_skip = 0;
+            bnk_skip++;
+            if (bnk_skip <= 5) {
+                fprintf(stderr, "[rtos] device_open(\"%s\") -> DUMMY (sound bank)\n", name_buf);
+            }
+            /* Fill output descriptor with small dummy size so caller
+             * can malloc successfully and doesn't retry.
+             * Size at offset 0x1A-0x1D in big-endian format. */
+            uint32_t out_phys = (uint32_t)ctx->r5 & 0x1FFFFFFF;
+            if (out_phys > 0 && out_phys + 0x20 < 0x00800000) {
+                memset(rdram + out_phys, 0, 0x20);
+                /* Set size = 64 bytes (big-endian at offset 0x1A) */
+                rdram[out_phys + 0x1A] = 0;
+                rdram[out_phys + 0x1B] = 0;
+                rdram[out_phys + 0x1C] = 0;
+                rdram[out_phys + 0x1D] = 64;
+            }
+            ctx->r2 = 1; /* success handle */
+            return;
+        }
+    }
+
     fprintf(stderr, "[rtos] device_open(\"%s\", out=0x%08X, flags=0x%X) -> success\n",
             name_buf, (uint32_t)ctx->r5, (uint32_t)ctx->r6);
 
@@ -555,17 +584,10 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
     if (data_phys > 0 && data_phys + 4 <= 0x00800000)
         resp = (int32_t*)(rdram + data_phys);
 
-    /* Device I/O polling loop breaker: if we see > 1000 I/O calls
-     * without yielding, force responses to non-zero to break loops. */
+    /* IO call counter for diagnostics */
     {
         static int io_total = 0;
         io_total++;
-        if (io_total > 1000 && io_total % 1000 == 0) {
-            if (data_phys > 0 && data_phys + 4 <= 0x00800000)
-                *(int32_t*)(rdram + data_phys) = (int32_t)0xFFFFFFFF;
-            ctx->r2 = (gpr)(int32_t)0xFFFFFFFF;
-            return;
-        }
     }
 
     /* Handle all commands regardless of device ID */
@@ -579,16 +601,13 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x6905: break;                             /* Sound command (play) */
             case 0x6907: if (resp) *resp = 0x0000; break; /* Volume */
             case 0x6909: {
-                /* DCS2 sound data read - return "ready" with all status bits set */
-                static int dcs_read_count = 0;
-                dcs_read_count++;
-                if (resp) {
-                    *resp = 0x55EA | 0xFF; /* handshake + all status bits */
-                }
-                if (dcs_read_count <= 5) {
-                    fprintf(stderr, "[dcs2] READ #%d resp@0x%08X = 0x%08X\n",
-                            dcs_read_count, data, resp ? *resp : 0);
-                }
+                /* DCS2 sound status read.
+                 * Bit 0x40: data ready (loop exit condition in polling loops)
+                 * Bits 0x700: status code — must be 0x200 for success
+                 *   (func_8016C630 checks (resp & 0x700) == 0x200)
+                 * Bits 0x7F00: must NOT be 0x1900 (that triggers error check)
+                 * Value 0x0240 = bit 0x40 set + status 0x200 = success + ready */
+                if (resp) *resp = 0x0240;
                 break;
             }
             case 0x690E: if (resp) *resp = 0x0000; break; /* Sound test */
@@ -603,11 +622,14 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             case 0x7001: if (resp) *resp = 486;   break; /* IOASIC upper = PIC serial (486=39") */
             case 0x7002: if (resp) *resp = 487;   break; /* Board ID (game subtracts 1 → 486) */
             case 0x7403: if (resp) *resp = 486; break; /* PIC query - return serial */
-            case 0x7405:
-                /* IOASIC write / DCS command — always return "done" */
-                if (resp) *resp = 0x0001;
+            case 0x7405: {
+                /* IOASIC write / DCS command — always return a value above the
+                 * DCS2 polling timeout threshold (0x17D7840 = ~25M).
+                 * This forces the loop to exit via the timer path immediately. */
+                if (resp) *resp = 0x7FFFFFFF; /* max positive int32 — always exceeds threshold */
                 ctx->r2 = 0;
                 return; /* Return immediately, don't continue to other handling */
+            }
             case 0x7406: {
                 /* IOASIC data transfer / counter read.
                  *
@@ -1206,6 +1228,7 @@ RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
  * the PIC serial at 0x801E6504 matches 528, 469, or 486.
  * We force-set the PIC serial to 486 each call to break the loop. */
 int g_yield_counter = 0;
+int g_zone_processing_active = 0;
 uint32_t g_ram_poll_addr = 0;
 int g_ram_poll_count = 0;
 
@@ -1315,6 +1338,16 @@ RECOMP_FUNC void func_800F25E0(uint8_t* rdram, recomp_context* ctx) {
 }
 
 /* ======================================================================
+ * DCS2 Sound Manager Override -- func_80138954
+ * The original is a state machine that loads sound banks from the filesystem
+ * and transfers them to the DCS2 sound board. Since we don't have real
+ * DCS2 hardware, the transfers fail and cause infinite retry loops.
+ * Override to no-op: skip all bank loading. */
+RECOMP_FUNC void func_80138954(uint8_t* rdram, recomp_context* ctx) {
+    ctx->r2 = 0; /* success — no bank loading needed */
+}
+
+/* ======================================================================
  * Voodoo Command Buffer Builder Override
  *
  * func_80167848 is the core DMA command builder. Every rendering function
@@ -1368,7 +1401,7 @@ RECOMP_FUNC void func_80167848(uint8_t* rdram, recomp_context* ctx) {
     /* --- Intercept and execute Voodoo writes --- */
     static int gfx_cmd_count = 0;
     gfx_cmd_count++;
-    if (gfx_cmd_count <= 100) {
+    if (gfx_cmd_count <= 100 || gfx_cmd_count % 10000 == 0) {
         fprintf(stderr, "[gfx_cmd] #%d dest=0x%08X bytes=%d GP=0x%08X\n",
                 gfx_cmd_count, dest_pci, byte_count, gp);
     }
@@ -1454,12 +1487,13 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
 
             /* Call the zone processor to parse zone data and create scene objects.
              * Clear the "already loaded" flag and set r2=0 for normal entry. */
-            *(uint32_t*)(rdram + 0x002122E0) &= ~0x10000; /* clear "loaded" flag */
+            /* Don't clear bit 0x10000 — it's the DCS2 ready flag that prevents
+             * the sound manager from endlessly retrying bank loading. */
             *(uint32_t*)(rdram + 0x00212354) = 0;          /* clear delay counter */
 
             /* Force display state so zone parser proceeds */
-            *(uint32_t*)(rdram + 0x001E0444) |= 0x44;
-            *(uint32_t*)(rdram + 0x001E055C) |= 0x44;
+            *(uint32_t*)(rdram + 0x001E0444) = 4;
+            *(uint32_t*)(rdram + 0x001E055C) = 4;
 
             /* Create test scene nodes */
             {
@@ -1520,16 +1554,16 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
      * Try jumping the config pointer past the trouble zone. */
     static int zone_done = 0;
     static int zone_skip_until = 0;
-    if (call_count > 1 && call_count < 500 && !zone_done && call_count >= zone_skip_until) {
+    if (call_count > 1 && call_count < 40 && !zone_done && call_count >= zone_skip_until) {
         extern recomp_func_t* get_function(int32_t);
         static int zone_cmd_count = 0;
         extern int g_yield_counter;  /* declared below in func_80151618 */
 
         /* Set flags for zone processing */
-        *(uint32_t*)(rdram + 0x002122E0) &= ~0x10000;
+        /* Don't clear bit 0x10000 — DCS2 ready flag */
         *(uint32_t*)(rdram + 0x001E4FF4) = 1;
-        *(uint32_t*)(rdram + 0x001E0444) |= 0x44;
-        *(uint32_t*)(rdram + 0x001E055C) |= 0x44;
+        *(uint32_t*)(rdram + 0x001E0444) = 4;
+        *(uint32_t*)(rdram + 0x001E055C) = 4;
         *(uint32_t*)(rdram + 0x00212354) = 0;
         *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
 
@@ -1538,6 +1572,9 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             uint32_t cfg_before = *(uint32_t*)(rdram + 0x001E0C4C);
 
             g_yield_counter = 0;
+
+            /* Don't clear bit 0x10000 globally — func_8010FE90 is patched to
+             * bypass its own check. Other functions still need the bit set. */
 
             /* Check config pointer. The config stream has 413 command words
              * from 0x80112DA4 to 0x80113A20. Some commands read multi-word
@@ -1564,7 +1601,9 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
 
             ctx->r2 = 0;
             ctx->r4 = 0;
+            g_zone_processing_active = 1;
             process_zone(rdram, ctx);
+            g_zone_processing_active = 0;
             int ret = (int)(int32_t)ctx->r2;
 
             uint32_t cfg_after = *(uint32_t*)(rdram + 0x001E0C4C);
@@ -1705,6 +1744,52 @@ RECOMP_FUNC void func_800D4C24(uint8_t* rdram, recomp_context* ctx) {
         }
     }
 
+    /* Dump scene graph node contents to understand their type/data */
+    if (render_call == 50 || render_call == 500) {
+        uint32_t sg_head = *(uint32_t*)(rdram + 0x0017B71C);
+        uint32_t cur = sg_head;
+        int idx = 0;
+        while (cur != 0 && idx < 10) {
+            uint32_t phys = cur & 0x1FFFFFFF;
+            if (phys + 0x60 >= 0x00800000) break;
+            /* Dump first 24 words of each node */
+            fprintf(stderr, "[sg_node] #%d @0x%08X:", idx, cur);
+            for (int w = 0; w < 24 && phys + w*4 + 4 <= 0x00800000; w++) {
+                uint32_t val = *(uint32_t*)(rdram + phys + w*4);
+                if (val != 0) fprintf(stderr, " [%02X]=0x%08X", w*4, val);
+            }
+            fprintf(stderr, "\n");
+            cur = *(uint32_t*)(rdram + phys + 0x44);
+            idx++;
+        }
+    }
+
+    /* Check critical rendering gates before calling original */
+    if (render_call <= 5 || render_call == 50 || render_call == 500) {
+        /* Float comparison gate: f12 (0x1E65A8) vs f0 (0x16F6C8) */
+        uint32_t f12_raw = *(uint32_t*)(rdram + 0x001E65A8);
+        uint32_t f0_raw  = *(uint32_t*)(rdram + 0x0016F6C8);
+        /* Display mode at 0x2122D4 and render context at 0x22A444 */
+        uint32_t disp_mode = *(uint32_t*)(rdram + 0x002122D4);
+        uint32_t rctx_idx  = *(uint32_t*)(rdram + 0x0022A444);
+        /* Scene active flags */
+        uint32_t ddd80 = *(uint32_t*)(rdram + 0x001DDD80);
+        uint32_t w6580 = *(uint32_t*)(rdram + 0x001E6580);
+        uint32_t w65A4 = *(uint32_t*)(rdram + 0x001E65A4);
+        uint32_t frame_ctr = *(uint32_t*)(rdram + 0x001A24CC);
+        /* Additional check: *(0x1E02F0) — display resolution init state. -1 = not init. */
+        uint32_t res_init = *(uint32_t*)(rdram + 0x001E02F0);
+        /* Check *(0x1E0490) — display channel 0 active state */
+        uint32_t ch0_active = *(uint32_t*)(rdram + 0x001E0490);
+        /* Check render context entry[1] ready flag */
+        uint32_t entry1_off = 0x001E6A20 + 70316;
+        uint32_t entry1_ready = (entry1_off + 0x11178 + 4 < 0x00800000) ?
+            *(uint32_t*)(rdram + entry1_off + 0x11178) : 0xDEAD;
+        /* Check func_8015E300 index computation: idx * 70316 */
+        fprintf(stderr, "[render_diag] #%d: mode=0x%X ctx=%u active=%u w6580=0x%X res_init=0x%X ch0=%u e1rdy=%u\n",
+                render_call, disp_mode, rctx_idx, ddd80, w6580, res_init, ch0_active, entry1_ready);
+    }
+
     func_800D4C24_original(rdram, ctx);
 
     if (render_call <= 10 || render_call == 50 || render_call == 500) {
@@ -1786,29 +1871,32 @@ RECOMP_FUNC void func_800C5FE4(uint8_t* rdram, recomp_context* ctx) {
 
     /* Force gate values right before calling the render callback */
     *(uint32_t*)(rdram + 0x00179258) = 1;    /* display_init */
-    /* Cycle the display mode state machine:
-     * 0x40 = prepare, 0x20 = render, 0x1000 = swap, 0x2000 = done
-     * Alternate between 0x40 (setup) and 0x20 (render) each frame. */
-    {
-        uint32_t cur_mode = *(uint32_t*)(rdram + 0x002122D4);
-        if (cur_mode == 0x40 || cur_mode == 0x2000 || cur_mode == 0) {
-            /* After prepare/done, switch to render mode */
-            *(uint32_t*)(rdram + 0x002122D4) = 0x20;
-        } else if (cur_mode == 0x20) {
-            /* After render, keep in render mode (swap happens naturally) */
-            *(uint32_t*)(rdram + 0x002122D4) = 0x20;
-        }
+    /* Display mode state machine:
+     * func_800D4C24: mode==0x40 → setup (resolution init), mode!=0x40 → channel setup
+     * func_800D5D04: mode==2 → scene graph rendering (calls scene node handlers)
+     * On real hardware, VBLANK interrupt transitions: 0x40 → 2 → render → swap
+     * Simulate: first 2 calls do setup (0x40), then switch to render mode (2). */
+    if (render_cb_count <= 2) {
+        *(uint32_t*)(rdram + 0x002122D4) = 0x40;  /* setup mode */
+    } else {
+        *(uint32_t*)(rdram + 0x002122D4) = 2;     /* render mode */
     }
-    *(uint32_t*)(rdram + 0x001DDD80) = 1;    /* voodoo active */
+    /* Don't force voodoo active — the renderer manages it via *(0x1DDD80) */
     *(uint32_t*)(rdram + 0x001AA660) = 0x08100000; /* Voodoo PCI base - CRITICAL */
     /* Display channel active flags: 1=active, checked at *(0x1E0490+channel*0x118) */
     *(uint32_t*)(rdram + 0x001E0490) = 1;           /* channel 0 state */
     *(uint32_t*)(rdram + 0x001E0490 + 0x118) = 1;   /* channel 1 state */
-    /* Display channel initialized flag at entry[+4], needed by zone parser.
-     * func_8010FE90 checks *(0x1E0444) & 0x44 and *(0x1E055C) & 0x44.
-     * Value 4 = "rendering active". Set 0x44 = bits 2,6. */
-    *(uint32_t*)(rdram + 0x001E0444) |= 0x44;       /* channel 0 display flag */
-    *(uint32_t*)(rdram + 0x001E055C) |= 0x44;       /* channel 1 display flag */
+    /* Display channel state at entry[+4]:
+     * func_8010FE90 (zone processor) checks *(0x1E0444) & 0x44 (bits 2,6)
+     * func_800D5D04 (scene renderer) checks *(0x1E0444) == 4 exactly
+     * Set to 4 = bit 2 only. This satisfies both checks (4 & 0x44 = 4 != 0). */
+    *(uint32_t*)(rdram + 0x001E0444) = 4;            /* channel 0: render mode */
+    *(uint32_t*)(rdram + 0x001E055C) = 4;            /* channel 1: render mode */
+    /* Clear render-busy flags at entry[+0x5C]. func_800D5D04 checks these and
+     * skips rendering if non-zero (indicates render-in-progress). On real hardware,
+     * VBLANK clears these. Force-clear every frame for our single-pass rendering. */
+    *(uint32_t*)(rdram + 0x001E0440 + 0x5C) = 0;    /* channel 0 render sync */
+    *(uint32_t*)(rdram + 0x001E0558 + 0x5C) = 0;    /* channel 1 render sync */
 
     /* Log the render buffer / scene graph state on first calls */
     if (render_cb_count <= 3) {

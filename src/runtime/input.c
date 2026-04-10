@@ -58,9 +58,11 @@ uint32_t input_build_ioasic_buttons(const input_state_t* state) {
 }
 
 void input_write_to_ram(uint8_t* rdram, const input_state_t* state) {
-    /* Write IOASIC button register to the game's global input state */
-    /* Physical address of input_state: 0x002122E0 (from 0x802122E0 & 0x1FFFFFFF) */
-    *(uint32_t*)(rdram + 0x002122E0) = state->ioasic_buttons;
+    /* Write IOASIC button register to the game's global input state.
+     * Physical address of input_state: 0x002122E0 (from 0x802122E0 & 0x1FFFFFFF).
+     * Bit 0x10000 = DCS2 sound board ready. Must be set so the sound manager
+     * (func_80138954) doesn't endlessly retry bank loading. */
+    *(uint32_t*)(rdram + 0x002122E0) = state->ioasic_buttons | 0x10000;
 
     /* Lightgun positions are read via I/O at 0x16800000, handled in seattle_io_read32 */
 }

@@ -12604,7 +12604,10 @@ L_800D5000:
     // 0x800D5000: lui         $at, 0x801E
     ctx->r1 = S32(0X801E << 16);
     // 0x800D5004: sw          $zero, -0x2280($at)
-    MEM_W(-0X2280, ctx->r1) = 0;
+    /* PATCHED: Original writes 0 to *(0x1DDD80) then reads back expecting 2
+     * (set by VBLANK interrupt on real hardware). Write 2 directly to simulate
+     * the interrupt having fired. */
+    MEM_W(-0X2280, ctx->r1) = 2;
 L_800D5008:
     // 0x800D5008: lui         $v0, 0x801E
     ctx->r2 = S32(0X801E << 16);
@@ -13490,6 +13493,11 @@ L_800D545C:
 
 ;}
 RECOMP_FUNC void func_800D5484(uint8_t* rdram, recomp_context* ctx) {
+    { static int cc = 0; cc++;
+      if (cc <= 10 || cc % 5000 == 0)
+        fprintf(stderr, "[render_submit] func_800D5484 #%d v0=0x%08X flag@16925C=%u\n",
+                cc, (uint32_t)ctx->r2, *(uint32_t*)(rdram + 0x0016925C));
+    }
     uint64_t hi = 0, lo = 0, result = 0;
     int c1cs = 0;
     // 0x800D5484: addiu       $sp, $sp, -0x20
@@ -14752,6 +14760,10 @@ L_800D5AFC:
 
 ;}
 RECOMP_FUNC void func_800D5B10(uint8_t* rdram, recomp_context* ctx) {
+    { static int cc = 0; cc++;
+      if (cc <= 20 || cc % 5000 == 0)
+        fprintf(stderr, "[scene_draw] func_800D5B10 called #%d a0=0x%08X\n", cc, (uint32_t)ctx->r4);
+    }
     uint64_t hi = 0, lo = 0, result = 0;
     int c1cs = 0;
     // 0x800D5B10: addiu       $v0, $zero, 0x1
@@ -15122,6 +15134,19 @@ RECOMP_FUNC void func_800D5CD0(uint8_t* rdram, recomp_context* ctx) {
     MEM_W(0XA0, ctx->r4) = ctx->f0.u32l;
 ;}
 RECOMP_FUNC void func_800D5D04(uint8_t* rdram, recomp_context* ctx) {
+    { static int cc = 0; cc++;
+      if (cc <= 10 || cc % 5000 == 0) {
+        uint32_t s0p = (uint32_t)ctx->r4 & 0x1FFFFFFF;
+        uint32_t mode = *(uint32_t*)(rdram + 0x002122D4);
+        uint32_t entry4 = (s0p+4 < 0x800000) ? *(uint32_t*)(rdram + s0p + 4) : 0xDEAD;
+        uint32_t entry5c = (s0p+0x5C < 0x800000) ? *(uint32_t*)(rdram + s0p + 0x5C) : 0xDEAD;
+        uint32_t ptr50e0 = *(uint32_t*)(rdram + 0x001E50E0);
+        uint32_t entry94 = (s0p+0x94 < 0x800000) ? *(uint32_t*)(rdram + s0p + 0x94) : 0xDEAD;
+        uint32_t entry98 = (s0p+0x98 < 0x800000) ? *(uint32_t*)(rdram + s0p + 0x98) : 0xDEAD;
+        fprintf(stderr, "[d5d04] #%d a0=0x%08X a1=0x%08X mode=%u e4=%u e5c=0x%X p50e0=0x%X e94=0x%X e98=0x%X\n",
+                cc, (uint32_t)ctx->r4, (uint32_t)ctx->r5, mode, entry4, entry5c, ptr50e0, entry94, entry98);
+      }
+    }
     uint64_t hi = 0, lo = 0, result = 0;
     int c1cs = 0;
     // 0x800D5D04: addiu       $sp, $sp, -0x20

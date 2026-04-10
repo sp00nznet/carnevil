@@ -206,13 +206,13 @@ uint32_t seattle_io_read32(uint32_t paddr) {
         uint32_t reg = (paddr - 0x16800000) >> 2;
         switch (reg) {
             case 0: return 0x00;   /* H-res low: 512 & 0xFF */
-            case 1: return 0x52;   /* H-res high nibble(2) + bit4(render) + bit6(active) */
+            case 1: return 0x72;   /* H-res high nibble(2) + bit4(render) + bit5(display ready) + bit6(active) */
             case 2: return 0x00;   /* H-res2 low */
-            case 3: return 0x52;   /* H-res2 high + bit4(render) + bit6(active) */
+            case 3: return 0x72;   /* H-res2 high + bit4(render) + bit5(display ready) + bit6(active) */
             case 4: return 0x80;   /* V-res low: 384 & 0xFF */
-            case 5: return 0x51;   /* V-res high nibble(1) + bit4(render) + bit6(active) */
+            case 5: return 0x71;   /* V-res high nibble(1) + bit4(render) + bit5(display ready) + bit6(active) */
             case 6: return 0x80;   /* V-res2 low */
-            case 7: return 0x51;   /* V-res2 high + bit4(render) + bit6(active) */
+            case 7: return 0x71;   /* V-res2 high + bit4(render) + bit5(display ready) + bit6(active) */
             default: return 0x80;  /* center (lightgun default) */
         }
     }
@@ -1278,9 +1278,15 @@ int main(int argc, char** argv) {
             uint32_t entry0 = 0x001E6A20;
             if (entry0 + 0x11178 + 4 < RAM_SIZE) {
                 *(uint32_t*)(g_rdram + entry0 + 0x11178) = 4;
-                /* Also store the Voodoo PCI base at the beginning of the entry */
                 *(uint32_t*)(g_rdram + entry0 + 0) = 0x08100000;
-                fprintf(stderr, "[init] Set Voodoo ready flag at entry[0x11178]=4\n");
+                fprintf(stderr, "[init] Set Voodoo ready flag at entry[0][0x11178]=4\n");
+            }
+            /* Also init entry[1] (stride 70316 = 0x1129C) */
+            uint32_t entry1_init = entry0 + 70316;
+            if (entry1_init + 0x11178 + 4 < RAM_SIZE) {
+                *(uint32_t*)(g_rdram + entry1_init + 0x11178) = 4;
+                *(uint32_t*)(g_rdram + entry1_init + 0) = 0x08100000;
+                fprintf(stderr, "[init] Set Voodoo ready flag at entry[1][0x11178]=4\n");
             }
         }
     }
@@ -1316,10 +1322,10 @@ int main(int argc, char** argv) {
         if (wf >= 5 && wf <= 8) {
             /* Active LOW: clear bits to "press" buttons */
             g_input.ioasic_buttons = 0xFFFFFFFF & ~((1<<10) | (1<<2) | (1<<0)); /* service + P1 start + P1 trigger */
-            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons;
+            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons | 0x10000;
         } else {
             g_input.ioasic_buttons = 0xFFFFFFFF; /* all released */
-            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons;
+            *(uint32_t*)(g_rdram + 0x002122E0) = g_input.ioasic_buttons | 0x10000;
         }
         uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
@@ -1395,7 +1401,7 @@ int main(int argc, char** argv) {
         /* Force all rendering flags before attract mode */
         *(uint32_t*)(g_rdram + 0x00179258) = 1;
         *(uint32_t*)(g_rdram + 0x002122D4) = 0x40;
-        *(uint32_t*)(g_rdram + 0x0017925C) = 1;
+        *(uint32_t*)(g_rdram + 0x0016925C) = 1;
         *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
         *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
 
@@ -1429,7 +1435,7 @@ int main(int argc, char** argv) {
                 head, (free_sz & ~1u) / 1024);
     }
 
-    int max_frames = 5000; /* Run longer - attract mode may need 60+ seconds */
+    int max_frames = 500; /* Reduced for testing - DCS2 polling fixed */
 
     /* Heap management: save heap state AFTER first frame's permanent allocs.
      * Frame 0 does the 1.75MB render buffer alloc.
@@ -1459,29 +1465,37 @@ int main(int argc, char** argv) {
         /* Force PIC serial number EVERY frame (game clears it during init) */
         *(uint32_t*)(g_rdram + 0x001E6504) = 486;
 
-        /* Force rendering context pointer EVERY frame.
+        /* Force rendering context index EVERY frame.
          * func_8015E2F4 (147 callers) loads from 0x8022A444. If 0, all rendering bails.
-         * Value is used as index into 70KB stride array at 0x801E6A20.
-         * Index 0 → entry[0] which has our Voodoo ready flag at [+0x11178]=4. */
-        *(uint32_t*)(g_rdram + 0x0022A444) = 0;
+         * Value is an index into 70,316-byte stride array at 0x801E6A20.
+         * Index 1 → entry at 0x001F7CCC. Must be non-zero for rendering to proceed. */
+        *(uint32_t*)(g_rdram + 0x0022A444) = 1;
 
         /* Force Voodoo PCI base address - rendering code reads this to compute
          * destination addresses for Voodoo register writes. If 0, no rendering. */
         *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
 
-        /* Ensure rendering context entry[0] has Voodoo ready flag = 4 */
-        *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
+        /* Ensure rendering context entries have Voodoo ready flag = 4.
+         * Entry[0] at 0x001E6A20, Entry[1] at 0x001F7CCC (stride 70316 = 0x11298+delta).
+         * Actually stride = 70316 = 0x1129C. Entry[1] = 0x001E6A20 + 70316 = 0x001F7CBC. */
+        *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;  /* entry[0] */
+        {
+            uint32_t entry1 = 0x001E6A20 + 70316;
+            if (entry1 + 0x11178 + 4 < 0x00800000) {
+                *(uint32_t*)(g_rdram + entry1 + 0x11178) = 4;           /* Voodoo ready flag */
+                *(uint32_t*)(g_rdram + entry1) = 0x08100000;            /* Voodoo PCI base */
+            }
+        }
 
         /* Force display initialized flag (gate for scene graph rendering) */
         *(uint32_t*)(g_rdram + 0x00179258) = 1;
 
-        /* Force display mode flag (gate inside scene graph render loop).
-         * func_800D4C24 checks *0x002122D4 == 0x40 before rendering objects. */
-        *(uint32_t*)(g_rdram + 0x002122D4) = 0x40;
+        /* Display mode: 0x40=setup, 2=render. func_800D5D04 needs mode==2.
+         * First frame: setup. Subsequent frames: render. */
+        *(uint32_t*)(g_rdram + 0x002122D4) = (frame == 0) ? 0x40 : 2;
 
-        /* Force Voodoo display active flag (second rendering gate).
-         * func_800D4C24 checks *(0x001DDD80) == 1 before entering render loop. */
-        *(uint32_t*)(g_rdram + 0x001DDD80) = 1;
+        /* Don't force *(0x1DDD80) — the renderer manages this as a vblank sync flag.
+         * Patched in funcs_4.c to write 2 (simulates vblank) instead of 0. */
 
         /* Force Widget display mode flags (third rendering gate).
          * func_800D4C24 checks *(0x001E6580) != 0 (bit 6 of Widget reg 1).
@@ -1492,9 +1506,9 @@ int main(int argc, char** argv) {
             *(uint32_t*)(g_rdram + 0x001E65A4) = 0x40;
 
         /* Force render submission flag (gate in static_0_800D547C → func_800D5484).
-         * func_800D5484 checks *0x0017925C != 0 before processing render list. */
-        if (*(uint32_t*)(g_rdram + 0x0017925C) == 0) {
-            *(uint32_t*)(g_rdram + 0x0017925C) = 1;
+         * func_800D5484 checks *0x0016925C != 0 before processing render list. */
+        if (*(uint32_t*)(g_rdram + 0x0016925C) == 0) {
+            *(uint32_t*)(g_rdram + 0x0016925C) = 1;
         }
 
         /* Log state machine flag on first frame */
@@ -1818,49 +1832,7 @@ int main(int argc, char** argv) {
 
     /* Dump framebuffer as raw PPM image */
     if (g_voodoo.swap_count > 0 || 1) {
-        /* Draw debug HUD to front buffer before dump */
-        {
-            /* Dark blue gradient background */
-            for (int y = 0; y < 384; y++) {
-                uint16_t blue = (uint16_t)((20 * (384 - y)) / 384);
-                uint16_t green = (uint16_t)((4 * (384 - y)) / 384);
-                uint16_t color = (green << 5) | blue;
-                for (int x = 0; x < 512; x++) {
-                    g_voodoo.framebuffer[y * 640 + x] = color;
-                }
-            }
-            /* Scene graph node count */
-            uint32_t sg_hd = *(uint32_t*)(g_rdram + 0x0017B71C);
-            int sg_n = 0;
-            uint32_t c4 = sg_hd;
-            while (c4 && sg_n < 100) {
-                c4 = *(uint32_t*)(g_rdram + (c4 & 0x1FFFFFFF) + 0x44);
-                sg_n++;
-            }
-            for (int n = 0; n < sg_n && n < 20; n++) {
-                for (int y = 50 + n * 15; y < 60 + n * 15; y++)
-                    for (int x = 50; x < 200; x++)
-                        g_voodoo.framebuffer[y * 640 + x] = 0x07E0;
-            }
-            /* Voodoo write count bar */
-            extern uint32_t voodoo_get_write_count(void);
-            int wbar = (int)(voodoo_get_write_count() / 100);
-            if (wbar > 512) wbar = 512;
-            for (int y = 355; y < 365; y++)
-                for (int x = 0; x < wbar; x++)
-                    g_voodoo.framebuffer[y * 640 + x] = 0xFFFF;
-            /* Progress bar (always full at dump time) */
-            for (int y = 370; y < 380; y++)
-                for (int x = 0; x < 512; x++)
-                    g_voodoo.framebuffer[y * 640 + x] = 0xFFE0;
-            /* Zone files loaded indicator: red bars */
-            extern int g_file_dev_count;
-            for (int f = 0; f < g_file_dev_count && f < 10; f++) {
-                for (int y = 50 + f * 15; y < 60 + f * 15; y++)
-                    for (int x = 300; x < 450; x++)
-                        g_voodoo.framebuffer[y * 640 + x] = 0xF800;
-            }
-        }
+        /* Debug HUD disabled — show actual game rendering */
 
         FILE* fb = fopen("framebuffer.ppm", "wb");
         if (fb) {
