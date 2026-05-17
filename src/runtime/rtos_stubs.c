@@ -143,6 +143,13 @@ RECOMP_FUNC void rtos_80006210(uint8_t* rdram, recomp_context* ctx) {
 /* Call all registered rendering callbacks. Called from the frame loop. */
 void rtos_run_callbacks(uint8_t* rdram) {
     recomp_context cb_ctx = {0};
+    /* Valid MIPS stack: callees push s-regs and ra here. sp=0 would route
+     * saves/restores through the I/O sink, silently corrupting callee-saved
+     * registers across calls (e.g. func_800D513C clobbered $s0 in the
+     * rendering path). Reserve a 4 KB callback stack near the top of RAM,
+     * above the per-fiber stacks (0x807F0000-0x807FFFFF). */
+    cb_ctx.r29 = (gpr)(int32_t)0x807EF000;
+    cb_ctx.mips3_float_mode = 1;
     static int run_count = 0;
     run_count++;
 
