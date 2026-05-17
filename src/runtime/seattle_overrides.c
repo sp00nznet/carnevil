@@ -1495,40 +1495,13 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             *(uint32_t*)(rdram + 0x001E0444) = 4;
             *(uint32_t*)(rdram + 0x001E055C) = 4;
 
-            /* Create test scene nodes */
-            {
-                /* Position data at 0x005F0000 */
-                float* pos = (float*)(rdram + 0x005F0000);
-                pos[0] = 100.0f;  /* X */
-                pos[1] = 100.0f;  /* Y */
-                pos[2] = -500.0f; /* Z (into screen) */
-
-                float* scale = (float*)(rdram + 0x005F0010);
-                scale[0] = 50.0f;
-                scale[1] = 50.0f;
-                scale[2] = 50.0f;
-
-                /* Create multiple nodes at different positions */
-                recomp_func_t* create_node = get_function(0x800D7600);
-                if (create_node) {
-                    for (int n = 0; n < 5; n++) {
-                        pos[0] = 50.0f + n * 80.0f;
-                        pos[1] = 192.0f;
-                        pos[2] = -200.0f - n * 100.0f;
-
-                        uint32_t sp_phys = (uint32_t)ctx->r29 & 0x1FFFFFFF;
-                        if (sp_phys >= 0x20 && sp_phys < 0x00800000 - 0x20)
-                            *(uint32_t*)(rdram + sp_phys + 0x10) = 1;
-
-                        ctx->r4 = 1;
-                        ctx->r5 = (gpr)(int32_t)(0x80000000 | 0x005F0000);
-                        ctx->r6 = (gpr)(int32_t)(0x80000000 | 0x005F0010);
-                        ctx->r7 = (gpr)0x3F800000; /* 1.0f */
-                        create_node(rdram, ctx);
-                    }
-                    fprintf(stderr, "[attract] Created 5 scene nodes\n");
-                }
-            }
+            /* Phase A: test-fixture scene-node creation disabled.
+             * This block manually invoked func_800D7600 with synthetic args
+             * to populate the scene graph with placeholder nodes for
+             * diagnostic purposes. It masked the real game's failure to
+             * produce scene nodes, so we removed it to expose the actual
+             * zone-parser stall. Real nodes should come from the zone
+             * processing chain (func_8010FE90 -> ... -> func_800D7600). */
         }
 
         /* Check if scene graph now has objects.
