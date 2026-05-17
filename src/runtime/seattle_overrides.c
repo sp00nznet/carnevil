@@ -1641,7 +1641,7 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
 extern RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx);
 
 RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
-    /* Read the registered mode entry from 0x001A25F0 */
+    /* Read the current mode entry from 0x001A25F0 */
     uint32_t entry_ptr = *(uint32_t*)(rdram + 0x001A25F0);
     uint32_t entry_phys = entry_ptr & 0x1FFFFFFF;
 
@@ -1649,35 +1649,79 @@ RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
         return;
     }
 
-    uint32_t mode_func_addr = *(uint32_t*)(rdram + entry_phys + 0x24);
-    uint32_t data_buf = *(uint32_t*)(rdram + entry_phys + 0x10);
-
     static int dispatch_count = 0;
     dispatch_count++;
-    if (dispatch_count <= 10 || dispatch_count % 500 == 0) {
-        fprintf(stderr, "[state_dispatch] #%d: entry=0x%08X mode_func=0x%08X data=0x%08X\n",
-                dispatch_count, entry_ptr, mode_func_addr, data_buf);
+
+    /* Walk the mode-entry doubly-linked list to head, then forward.
+     * Mode entries are linked via [+0]=prev and [+4]=next; mode_fn at [+24].
+     * Multiple modes register (attract, camera, render layer, etc.) and the
+     * game's real per-frame dispatcher calls them all in order. We were only
+     * calling one, which is why entity dispatch was dormant. */
+    uint32_t head = entry_ptr;
+    for (int safety = 0; safety < 16; safety++) {
+        uint32_t hp = head & 0x1FFFFFFF;
+        if (hp == 0 || hp + 0x30 >= 0x00800000) break;
+        uint32_t prev = *(uint32_t*)(rdram + hp + 0x00);
+        if (prev == 0 || prev == head) break;
+        head = prev;
     }
 
-    /* Validate mode_func_addr looks like a MIPS virtual address */
-    if (mode_func_addr < 0x80000000 || mode_func_addr >= 0x80800000) {
-        if (dispatch_count <= 5) {
-            fprintf(stderr, "[state_dispatch] Invalid mode_func 0x%08X (not a MIPS vaddr)\n",
-                    mode_func_addr);
+    int called = 0, skipped = 0;
+    uint32_t cur = head;
+    for (int safety = 0; safety < 16 && cur; safety++) {
+        uint32_t cp = cur & 0x1FFFFFFF;
+        if (cp == 0 || cp + 0x30 >= 0x00800000) break;
+        uint32_t mfn = *(uint32_t*)(rdram + cp + 0x24);
+        uint32_t dat = *(uint32_t*)(rdram + cp + 0x10);
+
+        if (mfn >= 0x80000000 && mfn < 0x80800000) {
+            extern void seattle_null_stub(uint8_t*, recomp_context*);
+            recomp_func_t* fn = get_function((int32_t)mfn);
+            int is_stub = (fn == seattle_null_stub);
+            /* Mid-function split entries the recompiler missed.
+             * Fall back to the containing function — it'll run from the
+             * start and pass through the mid-entry point. The intervening
+             * yield calls return benignly under our scheduler. */
+            if (is_stub || !fn) {
+                uint32_t fallback = 0;
+                if (mfn == 0x800C6D08) fallback = 0x800C6AA8;
+                else if (mfn == 0x800C78E4) fallback = 0x800C78BC;
+                else if (mfn == 0x800E79C0) fallback = 0x800E7968;
+                if (fallback) {
+                    recomp_func_t* pf = get_function((int32_t)fallback);
+                    if (pf && pf != seattle_null_stub) {
+                        fn = pf;
+                        is_stub = 0;
+                        if (dispatch_count <= 3) {
+                            fprintf(stderr, "[state_dispatch] mid-entry 0x%08X -> parent 0x%08X\n",
+                                    mfn, fallback);
+                        }
+                    }
+                }
+            }
+            if (fn && !is_stub) {
+                ctx->r4 = (gpr)dat;
+                fn(rdram, ctx);
+                called++;
+            } else {
+                skipped++;
+                if (dispatch_count <= 3) {
+                    fprintf(stderr, "[state_dispatch] skipped mode_fn=0x%08X (entry 0x%08X)\n",
+                            mfn, cur);
+                }
+            }
         }
-        return;
+        uint32_t next = *(uint32_t*)(rdram + cp + 0x04);
+        if (next == cur || next == 0) break;
+        cur = next;
     }
 
-    /* Look up and call the mode function */
-    recomp_func_t* mode_func = get_function((int32_t)mode_func_addr);
-    if (mode_func) {
-        ctx->r4 = (gpr)data_buf;
-        mode_func(rdram, ctx);
-    } else if (dispatch_count <= 5) {
-        fprintf(stderr, "[state_dispatch] Mode function 0x%08X not found!\n", mode_func_addr);
+    if (dispatch_count <= 5 || dispatch_count % 500 == 0) {
+        fprintf(stderr, "[state_dispatch] #%d: walked list, called=%d skipped=%d\n",
+                dispatch_count, called, skipped);
     }
 
-    /* After mode function returns, call yield */
+    /* After mode functions return, call yield */
     ctx->r4 = 1;
     func_80151618(rdram, ctx);
 }

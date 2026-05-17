@@ -593,9 +593,12 @@ static void reboot_handler(uint8_t* rdram, recomp_context* ctx) {
     ctx->r2 = 0;
 }
 
-static void null_stub(uint8_t* rdram, recomp_context* ctx) {
+void seattle_null_stub(uint8_t* rdram, recomp_context* ctx) {
     /* Safe no-op for unresolved function pointers */
+    (void)rdram; (void)ctx;
 }
+/* Back-compat alias for internal callers */
+#define null_stub seattle_null_stub
 
 recomp_func_t* get_function(int32_t vram) {
     /* Log vector table lookups to trace RTOS API usage */
