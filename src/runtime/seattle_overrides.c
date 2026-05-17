@@ -1231,11 +1231,22 @@ int g_yield_counter = 0;
 int g_zone_processing_active = 0;
 uint32_t g_ram_poll_addr = 0;
 int g_ram_poll_count = 0;
+extern jmp_buf g_yield_escape_buf;
+extern int g_yield_escape_armed;
+extern int g_yield_escape_threshold;
 
 RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
     g_yield_counter++;
     *(uint32_t*)(rdram + 0x001E6504) = 486; /* force PIC serial */
+
+    /* Yield-escape: when armed (we're inside a per-frame mode call), after
+     * threshold yields, longjmp out to the dispatcher. This turns infinite
+     * yield-loops in fiber-resume mid-entries into per-frame iteration. */
+    if (g_yield_escape_armed && g_yield_counter >= g_yield_escape_threshold) {
+        g_yield_escape_armed = 0;  /* disarm to avoid re-entry */
+        longjmp(g_yield_escape_buf, 1);
+    }
 
     /* Advance frame counters */
     uint32_t* vbl = (uint32_t*)(rdram + 0x001A35CC);
@@ -1640,6 +1651,20 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
  * ====================================================================== */
 extern RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx);
 
+/* Yield-escape: when a mode function is called per-frame, its body often
+ * contains infinite loops that call yield() expecting to be suspended.
+ * Our func_80151618 yield is a no-op, so those loops spin.
+ *
+ * Set up a setjmp here before each mode call; func_80151618 longjmps out
+ * when called too many times, returning control to the dispatcher. The
+ * mode function effectively becomes "do one frame's worth of work."
+ *
+ * The jmp_buf is held in TLS-style globals; func_80151618 reads them. */
+#include <setjmp.h>
+jmp_buf g_yield_escape_buf;
+int g_yield_escape_armed = 0;
+int g_yield_escape_threshold = 200;  /* yields before escape */
+
 RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
     /* Read the current mode entry from 0x001A25F0 */
     uint32_t entry_ptr = *(uint32_t*)(rdram + 0x001A25F0);
@@ -1706,7 +1731,17 @@ RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
             }
             if (fn && !is_stub) {
                 ctx->r4 = (gpr)dat;
-                fn(rdram, ctx);
+                /* Arm yield-escape so func_80151618 can longjmp out of any
+                 * infinite yield-loop in this mode function. */
+                g_yield_escape_armed = 1;
+                int yield_count_save = g_yield_counter;
+                g_yield_counter = 0;
+                if (setjmp(g_yield_escape_buf) == 0) {
+                    fn(rdram, ctx);
+                }
+                /* whether we returned normally or via longjmp, disarm */
+                g_yield_escape_armed = 0;
+                g_yield_counter = yield_count_save;
                 called++;
             } else {
                 skipped++;
