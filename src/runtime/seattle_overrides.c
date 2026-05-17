@@ -1263,8 +1263,8 @@ RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
 }
 
 /* Override func_80143A40 (heap malloc) to trace allocation failures.
- * Original renamed to func_80143A40_real in funcs_30.c */
-extern RECOMP_FUNC void func_80143A40_real(uint8_t* rdram, recomp_context* ctx);
+ * Original renamed to func_80143A40_original in funcs_30.c */
+extern RECOMP_FUNC void func_80143A40_original(uint8_t* rdram, recomp_context* ctx);
 
 /* Track the large render buffer allocation for fixing GP */
 uint32_t g_render_buffer_addr = 0;
@@ -1275,7 +1275,7 @@ RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
     uint32_t hp = heap_head & 0x1FFFFFFF;
     uint32_t free_sz = (hp < 0x00800000 - 4) ? (*(uint32_t*)(rdram + hp) & ~1u) : 0;
 
-    func_80143A40_real(rdram, ctx);
+    func_80143A40_original(rdram, ctx);
 
     uint32_t result = (uint32_t)ctx->r2;
     static int alloc_log = 0;
@@ -1298,7 +1298,7 @@ RECOMP_FUNC void func_80143A40(uint8_t* rdram, recomp_context* ctx) {
 /* Override func_80161140 (Voodoo PCI driver init).
  * Populate the device descriptor table BEFORE calling the real function
  * so it can find the Voodoo during PCI scan. */
-extern RECOMP_FUNC void func_80161140_real(uint8_t* rdram, recomp_context* ctx);
+extern RECOMP_FUNC void func_80161140_original(uint8_t* rdram, recomp_context* ctx);
 RECOMP_FUNC void func_80161140(uint8_t* rdram, recomp_context* ctx) {
     /* Populate full descriptor entry including float values.
      * entry[+24] and [+28] are floats read by func_800C42D8 for display init. */
@@ -1319,7 +1319,7 @@ RECOMP_FUNC void func_80161140(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
     if (c <= 3) fprintf(stderr, "[pci_drv] func_80161140: populated descriptor, calling real...\n");
 
-    func_80161140_real(rdram, ctx);
+    func_80161140_original(rdram, ctx);
 
     if (c <= 3)
         fprintf(stderr, "[pci_drv] func_80161140: r2=0x%08X base=0x%08X render=0x%08X\n",
@@ -1687,6 +1687,11 @@ RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
                 if (mfn == 0x800C6D08) fallback = 0x800C6AA8;
                 else if (mfn == 0x800C78E4) fallback = 0x800C78BC;
                 else if (mfn == 0x800E79C0) fallback = 0x800E7968;
+                /* NOTE: per-frame parent calls keep boot working (each parent
+                 * has a quick early-exit when its state preconditions aren't
+                 * met). Direct calls to the split-entry recompiled bodies
+                 * hang because they assume the prefix already ran in a
+                 * yielded fiber. Fiber-resume support is the real fix. */
                 if (fallback) {
                     recomp_func_t* pf = get_function((int32_t)fallback);
                     if (pf && pf != seattle_null_stub) {

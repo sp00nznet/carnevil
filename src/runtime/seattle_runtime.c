@@ -930,6 +930,12 @@ int main(int argc, char** argv) {
     extern void func_800CAE2C(uint8_t*, recomp_context*);
     seattle_register_func(0x800CAE2C, func_800CAE2C);
 
+    /* Externs for static_0_* trampolines that live in rtos_trampolines.c
+     * but are referenced by func_registration.inc. The recompiler used
+     * to emit empty stubs for these; manual trampoline overrides replaced
+     * them, so the inc needs forward declarations from this side. */
+    extern void static_0_800C4234(uint8_t*, recomp_context*);
+
     /* Register all recompiled game functions */
     #include "func_registration.inc"
 

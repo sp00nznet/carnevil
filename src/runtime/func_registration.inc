@@ -61,6 +61,7 @@ seattle_register_func(0x800C69D0, func_800C69D0);
 seattle_register_func(0x800C6A64, func_800C6A64);
 seattle_register_func(0x800C6AA8, func_800C6AA8);
 seattle_register_func(0x800C6E30, static_0_800C6E30);
+/* seattle_register_func(0x800C6D08, func_800C6D08); -- disabled: hang */
 seattle_register_func(0x800C6E38, func_800C6E38);
 seattle_register_func(0x800C6F50, func_800C6F50);
 seattle_register_func(0x800C7030, func_800C7030);
@@ -72,6 +73,7 @@ seattle_register_func(0x800C7750, func_800C7750);
 seattle_register_func(0x800C77BC, func_800C77BC);
 seattle_register_func(0x800C7860, func_800C7860);
 seattle_register_func(0x800C78BC, func_800C78BC);
+/* seattle_register_func(0x800C78E4, func_800C78E4); -- disabled: hang */
 seattle_register_func(0x800C79AC, func_800C79AC);
 seattle_register_func(0x800C7A20, func_800C7A20);
 seattle_register_func(0x800C7A30, static_0_800C7A30);
@@ -469,6 +471,7 @@ seattle_register_func(0x800E7464, func_800E7464);
 seattle_register_func(0x800E78DC, static_0_800E78DC);
 seattle_register_func(0x800E78E4, func_800E78E4);
 seattle_register_func(0x800E7968, func_800E7968);
+/* seattle_register_func(0x800E79C0, func_800E79C0); -- disabled: hangs after attract free-play init (infinite loop in body) */
 seattle_register_func(0x800E7BD4, func_800E7BD4);
 seattle_register_func(0x800E7C2C, func_800E7C2C);
 seattle_register_func(0x800E7DD8, func_800E7DD8);
