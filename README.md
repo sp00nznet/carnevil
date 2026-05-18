@@ -29,9 +29,13 @@ CarnEvil was a coin-op rail shooter where you blasted your way through a haunted
 
 Source: [System16 Hardware Page](https://www.system16.com/hardware.php?id=618)
 
-## Current Status: All Plumbing Works, Entity Dispatch Still Dormant
+## Current Status: Rasterizer Works, Entity Dispatch Still Dormant
 
-The game boots cleanly to 500 frames in ~30 seconds (21,812 SwapBuffers, ~423K Voodoo register writes / ~183K non-zero). All the underlying infrastructure is now correct -- RTOS scheduler, state-machine dispatcher, callback system, attract-mode init, zone parser, render-state messaging -- but the framebuffer is still black because **the bridge from "attract mode setup complete" to "entity-draw functions invoked" hasn't been found yet**. The 14 entity-specific draw functions in `0x80100000-0x80140000` (which call `func_800D7600` to populate the scene graph) are never reached from any per-frame path. Next phase: MIPS disassembly tooling (Ghidra/IDA) to map the entity-dispatch chain.
+The game boots cleanly to 500 frames in ~30 seconds, the full RTOS / state-machine / callback / task plumbing all works correctly, and the **Voodoo triangle rasterizer is implemented and drawing pixels** (verified via a self-test that injects two triangles at the end of the run and dumps the front buffer):
+
+![rasterizer self-test](docs/rasterizer-selftest.png)
+
+So the rendering chain is now complete end-to-end: triangle command in -> edge-walking rasterization -> backbuffer -> SwapBuffers -> front buffer -> PPM/PNG dump. What's missing is the *game logic side* of the pipeline: the 14 entity-specific draw functions in `0x80100000-0x80140000` (which would call `func_800D7600` to populate the scene graph and then submit triangles to the Voodoo) are never reached from any per-frame path. The entity-dispatch trigger lives somewhere in the game's call graph that we haven't mapped yet. Next phase: MIPS disassembly tooling (Ghidra/IDA) to trace the entity-dispatch chain backwards from one of those functions.
 
 ### What's Working
 
@@ -68,7 +72,7 @@ So the entire **state pipeline** works (config, channel signaling, fastfill, swa
 
 - [ ] **Identify the entity-dispatch trigger** -- Use MIPS disassembly tooling (Ghidra/IDA) to trace what's *supposed* to invoke the 14 entity-draw functions in the original game's call graph. Pure C-side runtime instrumentation hit its limit (too many indirect dispatches via function pointers).
 - [ ] **Fiber-resume support for split entries** -- `func_800C6D08`/`C78E4`/`E79C0` are mid-function fiber-resume points. We currently call them cold (works because of yield-escape) but proper fiber-resume would let their prefix code run in the right context.
-- [ ] **Voodoo triangle rasterization** -- once geometry flows, implement edge-walking using the vertex-setup registers (`SVX`/`SVY`/`dXdY`).
+- [ ] **Full Voodoo triangle setup** -- the rasterizer currently does flat-shaded fill from `color1`. Need vertex color interpolation (`SRED`/`SGREEN`/`SBLUE` gradients), Z buffering, texture mapping, alpha blending.
 - [ ] **Texture Support** -- Load WMS textures and map through TMU registers.
 - [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL.
 - [ ] **DCS2 Audio** -- ADSP-2115 DSP or direct DCS 3.0 audio bank decoding.
@@ -84,6 +88,7 @@ So the entire **state pipeline** works (config, channel signaling, fastfill, swa
 | `fe44da0` | Re-recompiled 3 missing split-entry mode functions (added to `carnevil_syms.toml`) |
 | `e1dbb9e` | Yield-escape via `setjmp`/`longjmp` -- fiber-resume mid-entries now run without spinning |
 | `74b0759` | Proper DCS-ready event simulation -- attract scene funcs complete cleanly |
+| `4eef3f3` | Implemented edge-function triangle rasterizer + vertex-register storage fix -- pixels now actually render when triangles arrive |
 
 ## Architecture
 
