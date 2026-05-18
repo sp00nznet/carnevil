@@ -19,3 +19,21 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+.claude/
+
+# Build output
+build/
+
+# Copyrighted ROM files (not redistributable)
+*.u95
+*.u96
+*.u32
+*.chd
+
+# Runtime artifacts
+framebuffer.png
+framebuffer.ppm
+stderr*.log
+
+# Misc local
+build_test.bat
