@@ -161,6 +161,11 @@ void rtos_run_callbacks(uint8_t* rdram) {
                 if (fv) {
                     recomp_func_t* f = get_function(fv);
                     if (f) {
+                        /* Log slot 1-3 always (they're enabled late) so we can see
+                         * whether they actually fire after the late-enable. */
+                        if (run_count <= 5 || (i >= 1 && i <= 3 && run_count % 100 == 0))
+                            fprintf(stderr, "[rtos_cb] slot %d call 0x%08X (run %d)\n",
+                                    i, fv, run_count);
                         cb_ctx.r4 = (gpr)i;
                         f(rdram, &cb_ctx);
                     }
