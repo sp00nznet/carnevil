@@ -910,6 +910,10 @@ RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
         fprintf(stderr, "[rtos] process_dispatch #%d: %d fibers, %d active, %d blocked\n",
                 dispatch_count, g_scheduler.fiber_count, active, blocked);
     }
+    /* Experimented with pulsing ch6 every frame here (tried sending 14
+     * task-id values per frame to keep task fibers awake) -- net slightly
+     * worse rendering. Removed; the real game's ch6 event source is
+     * something more specific than "post all tids each frame". */
     rtos_sched_run_frame(&g_scheduler, ctx);
     ctx->r2 = 0;
 }
