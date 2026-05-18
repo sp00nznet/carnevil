@@ -9,6 +9,8 @@
 #include "voodoo.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include <stdint.h>
 
 void voodoo_init(voodoo_state_t* voodoo) {
     memset(voodoo, 0, sizeof(*voodoo));
@@ -173,9 +175,12 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
     case VOODOO_NOPCOMMAND:
         break;
 
-    /* Log ANY write to vertex setup registers (0x048-0x070, 0x180-0x1B0) */
+    /* Vertex setup registers — store AND log. The previous version only
+     * logged, which meant the rasterizer below read whatever stale value
+     * was in the register slot (usually 0). */
     case VOODOO_SVX: case VOODOO_SVY:
     case VOODOO_SRED: case VOODOO_SGREEN: case VOODOO_SBLUE: case VOODOO_SALPHA: {
+        voodoo->regs[reg >> 2] = value;
         static int vtx_log = 0;
         vtx_log++;
         if (vtx_log <= 30) {
@@ -186,6 +191,7 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
     }
     case VOODOO_FVX: case VOODOO_FVY:
     case VOODOO_FRED: case VOODOO_FGREEN: case VOODOO_FBLUE: case VOODOO_FALPHA: {
+        voodoo->regs[reg >> 2] = value;
         static int fvtx_log = 0;
         fvtx_log++;
         if (fvtx_log <= 30) {
@@ -199,11 +205,80 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
     case VOODOO_FTRIANGLE: {
         static int tri_count = 0;
         tri_count++;
-        if (tri_count <= 20 || tri_count % 10000 == 0) {
-            float vx = *(float*)&voodoo->regs[VOODOO_FVX / 4];
-            float vy = *(float*)&voodoo->regs[VOODOO_FVY / 4];
-            fprintf(stderr, "[voodoo] Triangle #%d at (%.1f, %.1f) cmd=0x%X\n",
-                    tri_count, vx, vy, reg);
+
+        /* Read the three vertices. Voodoo 1's triangle setup stores
+         * three vertices A, B, C at fixed register offsets. The float
+         * variant (FTRIANGLE) uses IEEE registers at 0x180/0x184 for
+         * vertex A; the original setup writes B and C via SetupDX/DY
+         * coefficients. For a minimal flat-shaded rasterizer that's
+         * usable as a smoke test, we read three vertices directly from
+         * adjacent register slots and fill the triangle with color1. */
+        float ax, ay, bx, by, cx, cy;
+        if (reg == VOODOO_FTRIANGLE) {
+            ax = *(float*)&voodoo->regs[(0x180) >> 2];
+            ay = *(float*)&voodoo->regs[(0x184) >> 2];
+            bx = *(float*)&voodoo->regs[(0x1A8) >> 2];  /* SetupBX */
+            by = *(float*)&voodoo->regs[(0x1AC) >> 2];
+            cx = *(float*)&voodoo->regs[(0x1D0) >> 2];  /* SetupCX */
+            cy = *(float*)&voodoo->regs[(0x1D4) >> 2];
+        } else {
+            /* Fixed-point 12.4 -> float */
+            ax = (int32_t)voodoo->regs[(0x048) >> 2] / 16.0f;
+            ay = (int32_t)voodoo->regs[(0x04C) >> 2] / 16.0f;
+            bx = (int32_t)voodoo->regs[(0x070) >> 2] / 16.0f;
+            by = (int32_t)voodoo->regs[(0x074) >> 2] / 16.0f;
+            cx = (int32_t)voodoo->regs[(0x098) >> 2] / 16.0f;
+            cy = (int32_t)voodoo->regs[(0x09C) >> 2] / 16.0f;
+        }
+
+        uint32_t color1 = voodoo->regs[VOODOO_COLOR1 >> 2];
+        uint16_t fill = (uint16_t)(
+            ((color1 >> 8) & 0xF800) |
+            ((color1 >> 5) & 0x07E0) |
+            ((color1 >> 3) & 0x001F));
+        /* If color1 is 0 (typical clear color), draw white so we can see
+         * that triangles are arriving. Real implementation will read
+         * vertex colors from SRED/SGREEN/SBLUE. */
+        if (fill == 0) fill = 0xFFFF;
+
+        /* Triangle bounding box, clipped to 640x480 */
+        int xmin = (int)floorf(fminf(ax, fminf(bx, cx)));
+        int ymin = (int)floorf(fminf(ay, fminf(by, cy)));
+        int xmax = (int)ceilf(fmaxf(ax, fmaxf(bx, cx)));
+        int ymax = (int)ceilf(fmaxf(ay, fmaxf(by, cy)));
+        if (xmin < 0) xmin = 0;
+        if (ymin < 0) ymin = 0;
+        if (xmax > 640) xmax = 640;
+        if (ymax > 480) ymax = 480;
+
+        if (tri_count <= 20 || tri_count % 1000 == 0) {
+            fprintf(stderr, "[voodoo] Triangle #%d A=(%.1f,%.1f) B=(%.1f,%.1f) C=(%.1f,%.1f) bbox=(%d,%d)-(%d,%d) fill=0x%04X\n",
+                    tri_count, ax, ay, bx, by, cx, cy, xmin, ymin, xmax, ymax, fill);
+        }
+
+        /* Edge-function (signed-area) rasterizer. A pixel is inside the
+         * triangle iff it has consistent sign on all three edges. */
+        float e_abc = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+        if (e_abc == 0) break;  /* degenerate */
+        int pixels_drawn = 0;
+        for (int y = ymin; y < ymax; y++) {
+            float py = y + 0.5f;
+            for (int x = xmin; x < xmax; x++) {
+                float px = x + 0.5f;
+                float w0 = (bx - ax) * (py - ay) - (by - ay) * (px - ax);
+                float w1 = (cx - bx) * (py - by) - (cy - by) * (px - bx);
+                float w2 = (ax - cx) * (py - cy) - (ay - cy) * (px - cx);
+                int inside = (e_abc > 0)
+                    ? (w0 >= 0 && w1 >= 0 && w2 >= 0)
+                    : (w0 <= 0 && w1 <= 0 && w2 <= 0);
+                if (inside) {
+                    voodoo->backbuffer[y * 640 + x] = fill;
+                    pixels_drawn++;
+                }
+            }
+        }
+        if (tri_count <= 5) {
+            fprintf(stderr, "[voodoo] Triangle #%d drew %d pixels\n", tri_count, pixels_drawn);
         }
         break;
     }
