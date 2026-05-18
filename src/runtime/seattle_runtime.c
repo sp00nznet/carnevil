@@ -1419,6 +1419,16 @@ int main(int argc, char** argv) {
         fprintf(stderr, "[init] Attract mode returned!\n");
         fflush(stderr);
 
+        /* Note: tried sweeping func_800E91E8 (per-entity-type dispatcher
+         * with hardcoded fn-pointer loads) with ids 0..15 here. Only 2
+         * branches actually invoked func_800CC1E4, both with single
+         * handlers (0x800E4214) rather than the 3-handler tuples the
+         * function's body sets up. The dispatcher seems to be used by
+         * Midway Seattle games that aren't CarnEvil — most of its
+         * branches early-exit on CarnEvil-specific state checks. The
+         * full entity-draw system is reachable only from in-game
+         * (not attract-mode) state. */
+
         head = *(uint32_t*)(g_rdram + 0x001A1E90);
         phys = head & 0x1FFFFFFF;
         free_sz = (phys < RAM_SIZE - 4) ? (*(uint32_t*)(g_rdram + phys) & ~1u) : 0;
