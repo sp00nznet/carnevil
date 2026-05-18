@@ -1,0 +1,1528 @@
+# RTOS symbol file (317 functions)
+
+[[section]]
+name = ".text"
+rom = 0x1000
+vram = 0x80000000
+size = 0x15C40
+
+  [[section.functions]]
+  name = "rtos_800040DC"
+  vram = 0x800040DC
+  size = 0x84
+
+  [[section.functions]]
+  name = "rtos_80004230"
+  vram = 0x80004230
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_800047A8"
+  vram = 0x800047A8
+  size = 0x18
+
+  [[section.functions]]
+  name = "rtos_80004B70"
+  vram = 0x80004B70
+  size = 0x1C
+
+  [[section.functions]]
+  name = "rtos_80004B9C"
+  vram = 0x80004B9C
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80004BBC"
+  vram = 0x80004BBC
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80005000"
+  vram = 0x80005000
+  size = 0x1C
+
+  [[section.functions]]
+  name = "rtos_80005050"
+  vram = 0x80005050
+  size = 0xB0
+
+  [[section.functions]]
+  name = "rtos_80005100"
+  vram = 0x80005100
+  size = 0x110
+
+  [[section.functions]]
+  name = "rtos_80005244"
+  vram = 0x80005244
+  size = 0x124
+
+  [[section.functions]]
+  name = "rtos_80005368"
+  vram = 0x80005368
+  size = 0x258
+
+  [[section.functions]]
+  name = "rtos_800055C0"
+  vram = 0x800055C0
+  size = 0x160
+
+  [[section.functions]]
+  name = "rtos_80005720"
+  vram = 0x80005720
+  size = 0x7C
+
+  [[section.functions]]
+  name = "rtos_8000579C"
+  vram = 0x8000579C
+  size = 0xA0
+
+  [[section.functions]]
+  name = "rtos_8000583C"
+  vram = 0x8000583C
+  size = 0x7C
+
+  [[section.functions]]
+  name = "rtos_800058B8"
+  vram = 0x800058B8
+  size = 0x7C
+
+  [[section.functions]]
+  name = "rtos_80005934"
+  vram = 0x80005934
+  size = 0x7C
+
+  [[section.functions]]
+  name = "rtos_800059B0"
+  vram = 0x800059B0
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005A00"
+  vram = 0x80005A00
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005A50"
+  vram = 0x80005A50
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005AA0"
+  vram = 0x80005AA0
+  size = 0xA8
+
+  [[section.functions]]
+  name = "rtos_80005B48"
+  vram = 0x80005B48
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005B98"
+  vram = 0x80005B98
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005BE8"
+  vram = 0x80005BE8
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005C38"
+  vram = 0x80005C38
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005C88"
+  vram = 0x80005C88
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_80005CD8"
+  vram = 0x80005CD8
+  size = 0xD8
+
+  [[section.functions]]
+  name = "rtos_80005DB0"
+  vram = 0x80005DB0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_80005E1C"
+  vram = 0x80005E1C
+  size = 0xE0
+
+  [[section.functions]]
+  name = "rtos_80005F0C"
+  vram = 0x80005F0C
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_80005F9C"
+  vram = 0x80005F9C
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_8000602C"
+  vram = 0x8000602C
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_80006178"
+  vram = 0x80006178
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_80006188"
+  vram = 0x80006188
+  size = 0x14
+
+  [[section.functions]]
+  name = "rtos_8000619C"
+  vram = 0x8000619C
+  size = 0x84
+
+  [[section.functions]]
+  name = "rtos_80006220"
+  vram = 0x80006220
+  size = 0x11C
+
+  [[section.functions]]
+  name = "rtos_80006360"
+  vram = 0x80006360
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80006570"
+  vram = 0x80006570
+  size = 0x30
+
+  [[section.functions]]
+  name = "rtos_800065A0"
+  vram = 0x800065A0
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_800065E0"
+  vram = 0x800065E0
+  size = 0xD8
+
+  [[section.functions]]
+  name = "rtos_800066EC"
+  vram = 0x800066EC
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_80006754"
+  vram = 0x80006754
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_800067C8"
+  vram = 0x800067C8
+  size = 0x38
+
+  [[section.functions]]
+  name = "rtos_80006800"
+  vram = 0x80006800
+  size = 0xA8
+
+  [[section.functions]]
+  name = "rtos_800068A8"
+  vram = 0x800068A8
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_80006914"
+  vram = 0x80006914
+  size = 0x30
+
+  [[section.functions]]
+  name = "rtos_80006944"
+  vram = 0x80006944
+  size = 0x38
+
+  [[section.functions]]
+  name = "rtos_80006990"
+  vram = 0x80006990
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_800069CC"
+  vram = 0x800069CC
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_800069DC"
+  vram = 0x800069DC
+  size = 0x324
+
+  [[section.functions]]
+  name = "rtos_80006D00"
+  vram = 0x80006D00
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80006D08"
+  vram = 0x80006D08
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_80006D74"
+  vram = 0x80006D74
+  size = 0x58
+
+  [[section.functions]]
+  name = "rtos_80006DCC"
+  vram = 0x80006DCC
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_80006E34"
+  vram = 0x80006E34
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80006E3C"
+  vram = 0x80006E3C
+  size = 0x70
+
+  [[section.functions]]
+  name = "rtos_80006EAC"
+  vram = 0x80006EAC
+  size = 0x104
+
+  [[section.functions]]
+  name = "rtos_80006FB0"
+  vram = 0x80006FB0
+  size = 0xB4
+
+  [[section.functions]]
+  name = "rtos_80007064"
+  vram = 0x80007064
+  size = 0x94
+
+  [[section.functions]]
+  name = "rtos_800070F8"
+  vram = 0x800070F8
+  size = 0x228
+
+  [[section.functions]]
+  name = "rtos_80007320"
+  vram = 0x80007320
+  size = 0x128
+
+  [[section.functions]]
+  name = "rtos_80007448"
+  vram = 0x80007448
+  size = 0x44
+
+  [[section.functions]]
+  name = "rtos_8000748C"
+  vram = 0x8000748C
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80007500"
+  vram = 0x80007500
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80007508"
+  vram = 0x80007508
+  size = 0x30
+
+  [[section.functions]]
+  name = "rtos_80007538"
+  vram = 0x80007538
+  size = 0xF0
+
+  [[section.functions]]
+  name = "rtos_80007628"
+  vram = 0x80007628
+  size = 0xB0
+
+  [[section.functions]]
+  name = "rtos_800076D8"
+  vram = 0x800076D8
+  size = 0x100
+
+  [[section.functions]]
+  name = "rtos_800077D8"
+  vram = 0x800077D8
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_800077F8"
+  vram = 0x800077F8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_80007834"
+  vram = 0x80007834
+  size = 0x2C
+
+  [[section.functions]]
+  name = "rtos_80007860"
+  vram = 0x80007860
+  size = 0x2C
+
+  [[section.functions]]
+  name = "rtos_8000788C"
+  vram = 0x8000788C
+  size = 0x54
+
+  [[section.functions]]
+  name = "rtos_800078E0"
+  vram = 0x800078E0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "rtos_8000792C"
+  vram = 0x8000792C
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000796C"
+  vram = 0x8000796C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "rtos_800079F8"
+  vram = 0x800079F8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "rtos_80007AB8"
+  vram = 0x80007AB8
+  size = 0x54
+
+  [[section.functions]]
+  name = "rtos_80007B0C"
+  vram = 0x80007B0C
+  size = 0xB8
+
+  [[section.functions]]
+  name = "rtos_80007BC4"
+  vram = 0x80007BC4
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80007C38"
+  vram = 0x80007C38
+  size = 0x94
+
+  [[section.functions]]
+  name = "rtos_80007CCC"
+  vram = 0x80007CCC
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80007D40"
+  vram = 0x80007D40
+  size = 0x128
+
+  [[section.functions]]
+  name = "rtos_80007E68"
+  vram = 0x80007E68
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80007EDC"
+  vram = 0x80007EDC
+  size = 0xEC
+
+  [[section.functions]]
+  name = "rtos_80007FC8"
+  vram = 0x80007FC8
+  size = 0xCC
+
+  [[section.functions]]
+  name = "rtos_80008094"
+  vram = 0x80008094
+  size = 0x104
+
+  [[section.functions]]
+  name = "rtos_80008198"
+  vram = 0x80008198
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "rtos_80008344"
+  vram = 0x80008344
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80008368"
+  vram = 0x80008368
+  size = 0x198
+
+  [[section.functions]]
+  name = "rtos_80008500"
+  vram = 0x80008500
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80008530"
+  vram = 0x80008530
+  size = 0x14C
+
+  [[section.functions]]
+  name = "rtos_8000867C"
+  vram = 0x8000867C
+  size = 0x158
+
+  [[section.functions]]
+  name = "rtos_800087D4"
+  vram = 0x800087D4
+  size = 0x78
+
+  [[section.functions]]
+  name = "rtos_8000884C"
+  vram = 0x8000884C
+  size = 0xB8
+
+  [[section.functions]]
+  name = "rtos_80008904"
+  vram = 0x80008904
+  size = 0x11C
+
+  [[section.functions]]
+  name = "rtos_80008A20"
+  vram = 0x80008A20
+  size = 0xF0
+
+  [[section.functions]]
+  name = "rtos_80008B10"
+  vram = 0x80008B10
+  size = 0x64
+
+  [[section.functions]]
+  name = "rtos_80008B74"
+  vram = 0x80008B74
+  size = 0xDC
+
+  [[section.functions]]
+  name = "rtos_80008C50"
+  vram = 0x80008C50
+  size = 0xE4
+
+  [[section.functions]]
+  name = "rtos_80008D34"
+  vram = 0x80008D34
+  size = 0xE4
+
+  [[section.functions]]
+  name = "rtos_80008E18"
+  vram = 0x80008E18
+  size = 0x84
+
+  [[section.functions]]
+  name = "rtos_80008E9C"
+  vram = 0x80008E9C
+  size = 0x28
+
+  [[section.functions]]
+  name = "rtos_80008EC4"
+  vram = 0x80008EC4
+  size = 0x7C
+
+  [[section.functions]]
+  name = "rtos_80008F40"
+  vram = 0x80008F40
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80008F64"
+  vram = 0x80008F64
+  size = 0xDC
+
+  [[section.functions]]
+  name = "rtos_80009040"
+  vram = 0x80009040
+  size = 0x294
+
+  [[section.functions]]
+  name = "rtos_800092D4"
+  vram = 0x800092D4
+  size = 0x1E0
+
+  [[section.functions]]
+  name = "rtos_800094B4"
+  vram = 0x800094B4
+  size = 0xB0
+
+  [[section.functions]]
+  name = "rtos_80009564"
+  vram = 0x80009564
+  size = 0x38
+
+  [[section.functions]]
+  name = "rtos_8000959C"
+  vram = 0x8000959C
+  size = 0xF0
+
+  [[section.functions]]
+  name = "rtos_8000968C"
+  vram = 0x8000968C
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_800096AC"
+  vram = 0x800096AC
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_80009714"
+  vram = 0x80009714
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80009734"
+  vram = 0x80009734
+  size = 0xB0
+
+  [[section.functions]]
+  name = "rtos_800097E4"
+  vram = 0x800097E4
+  size = 0xE8
+
+  [[section.functions]]
+  name = "rtos_800098CC"
+  vram = 0x800098CC
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_800098D4"
+  vram = 0x800098D4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_80009940"
+  vram = 0x80009940
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80009964"
+  vram = 0x80009964
+  size = 0x80
+
+  [[section.functions]]
+  name = "rtos_800099E4"
+  vram = 0x800099E4
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_80009A44"
+  vram = 0x80009A44
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_80009A80"
+  vram = 0x80009A80
+  size = 0x28
+
+  [[section.functions]]
+  name = "rtos_80009AA8"
+  vram = 0x80009AA8
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_80009AE8"
+  vram = 0x80009AE8
+  size = 0xA8
+
+  [[section.functions]]
+  name = "rtos_80009B90"
+  vram = 0x80009B90
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80009BB4"
+  vram = 0x80009BB4
+  size = 0x44
+
+  [[section.functions]]
+  name = "rtos_80009BF8"
+  vram = 0x80009BF8
+  size = 0x4C
+
+  [[section.functions]]
+  name = "rtos_80009C44"
+  vram = 0x80009C44
+  size = 0x58
+
+  [[section.functions]]
+  name = "rtos_80009C9C"
+  vram = 0x80009C9C
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80009CBC"
+  vram = 0x80009CBC
+  size = 0xF4
+
+  [[section.functions]]
+  name = "rtos_80009DB0"
+  vram = 0x80009DB0
+  size = 0x58
+
+  [[section.functions]]
+  name = "rtos_80009E08"
+  vram = 0x80009E08
+  size = 0xA8
+
+  [[section.functions]]
+  name = "rtos_80009EB0"
+  vram = 0x80009EB0
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_80009F18"
+  vram = 0x80009F18
+  size = 0xF0
+
+  [[section.functions]]
+  name = "rtos_8000A008"
+  vram = 0x8000A008
+  size = 0xA4
+
+  [[section.functions]]
+  name = "rtos_8000A0F8"
+  vram = 0x8000A0F8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "rtos_8000A154"
+  vram = 0x8000A154
+  size = 0xD4
+
+  [[section.functions]]
+  name = "rtos_8000A228"
+  vram = 0x8000A228
+  size = 0x304
+
+  [[section.functions]]
+  name = "rtos_8000A52C"
+  vram = 0x8000A52C
+  size = 0x58
+
+  [[section.functions]]
+  name = "rtos_8000A584"
+  vram = 0x8000A584
+  size = 0xCC
+
+  [[section.functions]]
+  name = "rtos_8000A650"
+  vram = 0x8000A650
+  size = 0xC8
+
+  [[section.functions]]
+  name = "rtos_8000A718"
+  vram = 0x8000A718
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_8000A754"
+  vram = 0x8000A754
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000A794"
+  vram = 0x8000A794
+  size = 0x78
+
+  [[section.functions]]
+  name = "rtos_8000A80C"
+  vram = 0x8000A80C
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000A84C"
+  vram = 0x8000A84C
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_8000A8AC"
+  vram = 0x8000A8AC
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_8000A8D0"
+  vram = 0x8000A8D0
+  size = 0x5C
+
+  [[section.functions]]
+  name = "rtos_8000A92C"
+  vram = 0x8000A92C
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_8000A994"
+  vram = 0x8000A994
+  size = 0x8C
+
+  [[section.functions]]
+  name = "rtos_8000AA20"
+  vram = 0x8000AA20
+  size = 0x80
+
+  [[section.functions]]
+  name = "rtos_8000AAA0"
+  vram = 0x8000AAA0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_8000AB0C"
+  vram = 0x8000AB0C
+  size = 0x80
+
+  [[section.functions]]
+  name = "rtos_8000AB8C"
+  vram = 0x8000AB8C
+  size = 0x54
+
+  [[section.functions]]
+  name = "rtos_8000ABE0"
+  vram = 0x8000ABE0
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_8000AC48"
+  vram = 0x8000AC48
+  size = 0x4C
+
+  [[section.functions]]
+  name = "rtos_8000AC94"
+  vram = 0x8000AC94
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_8000AD24"
+  vram = 0x8000AD24
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_8000AD48"
+  vram = 0x8000AD48
+  size = 0xE4
+
+  [[section.functions]]
+  name = "rtos_8000AE2C"
+  vram = 0x8000AE2C
+  size = 0x250
+
+  [[section.functions]]
+  name = "rtos_8000B07C"
+  vram = 0x8000B07C
+  size = 0x34
+
+  [[section.functions]]
+  name = "rtos_8000B0B0"
+  vram = 0x8000B0B0
+  size = 0x28
+
+  [[section.functions]]
+  name = "rtos_8000B0D8"
+  vram = 0x8000B0D8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "rtos_8000B198"
+  vram = 0x8000B198
+  size = 0x38
+
+  [[section.functions]]
+  name = "rtos_8000B1D0"
+  vram = 0x8000B1D0
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_8000B220"
+  vram = 0x8000B220
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_8000B240"
+  vram = 0x8000B240
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000B280"
+  vram = 0x8000B280
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_8000B2F0"
+  vram = 0x8000B2F0
+  size = 0x28
+
+  [[section.functions]]
+  name = "rtos_8000B318"
+  vram = 0x8000B318
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_8000B33C"
+  vram = 0x8000B33C
+  size = 0x3D0
+
+  [[section.functions]]
+  name = "rtos_8000B70C"
+  vram = 0x8000B70C
+  size = 0x44
+
+  [[section.functions]]
+  name = "rtos_8000B750"
+  vram = 0x8000B750
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "rtos_8000B94C"
+  vram = 0x8000B94C
+  size = 0xDC
+
+  [[section.functions]]
+  name = "rtos_8000BA28"
+  vram = 0x8000BA28
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_8000BA48"
+  vram = 0x8000BA48
+  size = 0x14
+
+  [[section.functions]]
+  name = "rtos_8000BA70"
+  vram = 0x8000BA70
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_8000BB40"
+  vram = 0x8000BB40
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_8000BB68"
+  vram = 0x8000BB68
+  size = 0x148
+
+  [[section.functions]]
+  name = "rtos_8000BCB0"
+  vram = 0x8000BCB0
+  size = 0xA0
+
+  [[section.functions]]
+  name = "rtos_8000BD50"
+  vram = 0x8000BD50
+  size = 0x2C
+
+  [[section.functions]]
+  name = "rtos_8000BD88"
+  vram = 0x8000BD88
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_8000BDE8"
+  vram = 0x8000BDE8
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_8000BE10"
+  vram = 0x8000BE10
+  size = 0xA0
+
+  [[section.functions]]
+  name = "rtos_8000BEB0"
+  vram = 0x8000BEB0
+  size = 0xCC
+
+  [[section.functions]]
+  name = "rtos_8000BF80"
+  vram = 0x8000BF80
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_8000BFBC"
+  vram = 0x8000BFBC
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_8000C01C"
+  vram = 0x8000C01C
+  size = 0xB8
+
+  [[section.functions]]
+  name = "rtos_8000C0D4"
+  vram = 0x8000C0D4
+  size = 0x18
+
+  [[section.functions]]
+  name = "rtos_8000C0EC"
+  vram = 0x8000C0EC
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_8000C13C"
+  vram = 0x8000C13C
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000C17C"
+  vram = 0x8000C17C
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000C184"
+  vram = 0x8000C184
+  size = 0x11C
+
+  [[section.functions]]
+  name = "rtos_8000C2A0"
+  vram = 0x8000C2A0
+  size = 0xB28
+
+  [[section.functions]]
+  name = "rtos_8000CDC8"
+  vram = 0x8000CDC8
+  size = 0x14C
+
+  [[section.functions]]
+  name = "rtos_8000CF14"
+  vram = 0x8000CF14
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_8000CF64"
+  vram = 0x8000CF64
+  size = 0xA4
+
+  [[section.functions]]
+  name = "rtos_8000D008"
+  vram = 0x8000D008
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000D048"
+  vram = 0x8000D048
+  size = 0xE0
+
+  [[section.functions]]
+  name = "rtos_8000D128"
+  vram = 0x8000D128
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000D168"
+  vram = 0x8000D168
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_8000D1A4"
+  vram = 0x8000D1A4
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000D1B4"
+  vram = 0x8000D1B4
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "rtos_8000D370"
+  vram = 0x8000D370
+  size = 0xE0
+
+  [[section.functions]]
+  name = "rtos_8000D450"
+  vram = 0x8000D450
+  size = 0x388
+
+  [[section.functions]]
+  name = "rtos_8000D7D8"
+  vram = 0x8000D7D8
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000D7E0"
+  vram = 0x8000D7E0
+  size = 0x94
+
+  [[section.functions]]
+  name = "rtos_8000D874"
+  vram = 0x8000D874
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000D87C"
+  vram = 0x8000D87C
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_8000D8F0"
+  vram = 0x8000D8F0
+  size = 0x80
+
+  [[section.functions]]
+  name = "rtos_8000D970"
+  vram = 0x8000D970
+  size = 0xE50
+
+  [[section.functions]]
+  name = "rtos_8000E7C0"
+  vram = 0x8000E7C0
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000E7D0"
+  vram = 0x8000E7D0
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_8000E80C"
+  vram = 0x8000E80C
+  size = 0xD0
+
+  [[section.functions]]
+  name = "rtos_8000E8E0"
+  vram = 0x8000E8E0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "rtos_8000E930"
+  vram = 0x8000E930
+  size = 0x2D4
+
+  [[section.functions]]
+  name = "rtos_8000EC04"
+  vram = 0x8000EC04
+  size = 0x23C
+
+  [[section.functions]]
+  name = "rtos_8000EE40"
+  vram = 0x8000EE40
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_8000EED0"
+  vram = 0x8000EED0
+  size = 0x8C
+
+  [[section.functions]]
+  name = "rtos_8000EF68"
+  vram = 0x8000EF68
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000EF70"
+  vram = 0x8000EF70
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_8000EFE4"
+  vram = 0x8000EFE4
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_8000F044"
+  vram = 0x8000F044
+  size = 0x168
+
+  [[section.functions]]
+  name = "rtos_8000F1B0"
+  vram = 0x8000F1B0
+  size = 0xFC
+
+  [[section.functions]]
+  name = "rtos_8000F2AC"
+  vram = 0x8000F2AC
+  size = 0xA8
+
+  [[section.functions]]
+  name = "rtos_8000F354"
+  vram = 0x8000F354
+  size = 0x10C
+
+  [[section.functions]]
+  name = "rtos_8000F460"
+  vram = 0x8000F460
+  size = 0x6C
+
+  [[section.functions]]
+  name = "rtos_8000F4CC"
+  vram = 0x8000F4CC
+  size = 0x38
+
+  [[section.functions]]
+  name = "rtos_8000F504"
+  vram = 0x8000F504
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000F50C"
+  vram = 0x8000F50C
+  size = 0x98
+
+  [[section.functions]]
+  name = "rtos_8000F5A4"
+  vram = 0x8000F5A4
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000F5AC"
+  vram = 0x8000F5AC
+  size = 0xC0
+
+  [[section.functions]]
+  name = "rtos_8000F66C"
+  vram = 0x8000F66C
+  size = 0x44
+
+  [[section.functions]]
+  name = "rtos_8000F6B0"
+  vram = 0x8000F6B0
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_8000F718"
+  vram = 0x8000F718
+  size = 0x5C
+
+  [[section.functions]]
+  name = "rtos_8000F774"
+  vram = 0x8000F774
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000F77C"
+  vram = 0x8000F77C
+  size = 0xD0
+
+  [[section.functions]]
+  name = "rtos_8000F84C"
+  vram = 0x8000F84C
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000F854"
+  vram = 0x8000F854
+  size = 0xDC
+
+  [[section.functions]]
+  name = "rtos_8000F930"
+  vram = 0x8000F930
+  size = 0x2C
+
+  [[section.functions]]
+  name = "rtos_8000F95C"
+  vram = 0x8000F95C
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_8000F998"
+  vram = 0x8000F998
+  size = 0x114
+
+  [[section.functions]]
+  name = "rtos_8000FAAC"
+  vram = 0x8000FAAC
+  size = 0x98
+
+  [[section.functions]]
+  name = "rtos_8000FB44"
+  vram = 0x8000FB44
+  size = 0x11C
+
+  [[section.functions]]
+  name = "rtos_8000FC60"
+  vram = 0x8000FC60
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_8000FCA0"
+  vram = 0x8000FCA0
+  size = 0x1C
+
+  [[section.functions]]
+  name = "rtos_8000FCBC"
+  vram = 0x8000FCBC
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_8000FCDC"
+  vram = 0x8000FCDC
+  size = 0x2C
+
+  [[section.functions]]
+  name = "rtos_8000FD08"
+  vram = 0x8000FD08
+  size = 0x68
+
+  [[section.functions]]
+  name = "rtos_8000FD70"
+  vram = 0x8000FD70
+  size = 0x64
+
+  [[section.functions]]
+  name = "rtos_8000FDD4"
+  vram = 0x8000FDD4
+  size = 0xB8
+
+  [[section.functions]]
+  name = "rtos_8000FE8C"
+  vram = 0x8000FE8C
+  size = 0xB0
+
+  [[section.functions]]
+  name = "rtos_8000FF3C"
+  vram = 0x8000FF3C
+  size = 0xD0
+
+  [[section.functions]]
+  name = "rtos_8001000C"
+  vram = 0x8001000C
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_80010048"
+  vram = 0x80010048
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "rtos_80010214"
+  vram = 0x80010214
+  size = 0xC8
+
+  [[section.functions]]
+  name = "rtos_800102E0"
+  vram = 0x800102E0
+  size = 0x58
+
+  [[section.functions]]
+  name = "rtos_80010338"
+  vram = 0x80010338
+  size = 0x30
+
+  [[section.functions]]
+  name = "rtos_80010368"
+  vram = 0x80010368
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_800103A8"
+  vram = 0x800103A8
+  size = 0x14
+
+  [[section.functions]]
+  name = "rtos_800103BC"
+  vram = 0x800103BC
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_800103CC"
+  vram = 0x800103CC
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_800103D4"
+  vram = 0x800103D4
+  size = 0x50C
+
+  [[section.functions]]
+  name = "rtos_800108E0"
+  vram = 0x800108E0
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80010900"
+  vram = 0x80010900
+  size = 0x74
+
+  [[section.functions]]
+  name = "rtos_80010974"
+  vram = 0x80010974
+  size = 0x214
+
+  [[section.functions]]
+  name = "rtos_80010B88"
+  vram = 0x80010B88
+  size = 0xE4
+
+  [[section.functions]]
+  name = "rtos_80010C6C"
+  vram = 0x80010C6C
+  size = 0x12C
+
+  [[section.functions]]
+  name = "rtos_80010D98"
+  vram = 0x80010D98
+  size = 0xA0
+
+  [[section.functions]]
+  name = "rtos_80010E38"
+  vram = 0x80010E38
+  size = 0x330
+
+  [[section.functions]]
+  name = "rtos_80011168"
+  vram = 0x80011168
+  size = 0x90
+
+  [[section.functions]]
+  name = "rtos_800111F8"
+  vram = 0x800111F8
+  size = 0xFC
+
+  [[section.functions]]
+  name = "rtos_800112F4"
+  vram = 0x800112F4
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_800112FC"
+  vram = 0x800112FC
+  size = 0x25C
+
+  [[section.functions]]
+  name = "rtos_80011558"
+  vram = 0x80011558
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80011560"
+  vram = 0x80011560
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_800115C0"
+  vram = 0x800115C0
+  size = 0xD8
+
+  [[section.functions]]
+  name = "rtos_80011698"
+  vram = 0x80011698
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_800116A0"
+  vram = 0x800116A0
+  size = 0x60
+
+  [[section.functions]]
+  name = "rtos_80011700"
+  vram = 0x80011700
+  size = 0xC4
+
+  [[section.functions]]
+  name = "rtos_800117C4"
+  vram = 0x800117C4
+  size = 0x17C
+
+  [[section.functions]]
+  name = "rtos_80011940"
+  vram = 0x80011940
+  size = 0xAC
+
+  [[section.functions]]
+  name = "rtos_800119EC"
+  vram = 0x800119EC
+  size = 0x3C
+
+  [[section.functions]]
+  name = "rtos_80011A28"
+  vram = 0x80011A28
+  size = 0x40
+
+  [[section.functions]]
+  name = "rtos_80011A68"
+  vram = 0x80011A68
+  size = 0x84
+
+  [[section.functions]]
+  name = "rtos_80011AEC"
+  vram = 0x80011AEC
+  size = 0x84
+
+  [[section.functions]]
+  name = "rtos_80011B70"
+  vram = 0x80011B70
+  size = 0x24
+
+  [[section.functions]]
+  name = "rtos_80011B94"
+  vram = 0x80011B94
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80011BA4"
+  vram = 0x80011BA4
+  size = 0x240
+
+  [[section.functions]]
+  name = "rtos_80011DE4"
+  vram = 0x80011DE4
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80011DEC"
+  vram = 0x80011DEC
+  size = 0x250
+
+  [[section.functions]]
+  name = "rtos_8001203C"
+  vram = 0x8001203C
+  size = 0x11C
+
+  [[section.functions]]
+  name = "rtos_80012158"
+  vram = 0x80012158
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_80012168"
+  vram = 0x80012168
+  size = 0x38C
+
+  [[section.functions]]
+  name = "rtos_800124F4"
+  vram = 0x800124F4
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "rtos_800126E4"
+  vram = 0x800126E4
+  size = 0x34
+
+  [[section.functions]]
+  name = "rtos_80012718"
+  vram = 0x80012718
+  size = 0x94
+
+  [[section.functions]]
+  name = "rtos_800127AC"
+  vram = 0x800127AC
+  size = 0xAC
+
+  [[section.functions]]
+  name = "rtos_80012858"
+  vram = 0x80012858
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80012878"
+  vram = 0x80012878
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_80012888"
+  vram = 0x80012888
+  size = 0x50
+
+  [[section.functions]]
+  name = "rtos_800128D8"
+  vram = 0x800128D8
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_800128F8"
+  vram = 0x800128F8
+  size = 0x260
+

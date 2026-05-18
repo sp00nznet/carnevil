@@ -1,0 +1,27 @@
+# CarnEvil MidwayRecomp configuration
+
+[input]
+symbols_file_path = "carnevil_syms.toml"
+rom_file_path = "extracted/GAME_padded.bin"
+entrypoint = 0x800C4000
+output_func_path = "recomp_out/funcs"
+functions_per_output_file = 50
+uses_mips3_float_mode = true
+little_endian = true
+
+[patches]
+stubs = [
+    "func_80151618",
+    "func_80151718",
+    "func_80152AB0",
+    "func_80152D74",
+    "func_8015303C",
+    "func_801555F0",
+    "func_80158FE8",
+    "func_80167220",
+    "func_80167608",
+    "func_801678C0",
+    "func_80168C8C",
+    "func_80168DD8",
+    "func_80168EDC",
+]

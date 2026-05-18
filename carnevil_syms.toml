@@ -1,0 +1,10261 @@
+# CarnEvil GAME.bin symbol file for MidwayRecomp
+# 2044 validated functions (reachability-analyzed)
+
+[[section]]
+name = ".text"
+rom = 0x1000
+vram = 0x800C4000
+size = 0xDF504
+
+  [[section.functions]]
+  name = "func_800C4000"
+  vram = 0x800C4000
+  size = 0x4
+
+  [[section.functions]]
+  name = "func_800C42AC"
+  vram = 0x800C42AC
+  size = 0x4
+
+  [[section.functions]]
+  name = "func_800C42E0"
+  vram = 0x800C42E0
+  size = 0x244
+
+  [[section.functions]]
+  name = "func_800C4524"
+  vram = 0x800C4524
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_800C4778"
+  vram = 0x800C4778
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800C47A8"
+  vram = 0x800C47A8
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_800C47B0"
+  vram = 0x800C47B0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800C4A08"
+  vram = 0x800C4A08
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_800C4CEC"
+  vram = 0x800C4CEC
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800C4D10"
+  vram = 0x800C4D10
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800C4D34"
+  vram = 0x800C4D34
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800C4D58"
+  vram = 0x800C4D58
+  size = 0x354
+
+  [[section.functions]]
+  name = "func_800C50AC"
+  vram = 0x800C50AC
+  size = 0x69C
+
+  [[section.functions]]
+  name = "func_800C5748"
+  vram = 0x800C5748
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_800C5830"
+  vram = 0x800C5830
+  size = 0x600
+
+  [[section.functions]]
+  name = "func_800C5E30"
+  vram = 0x800C5E30
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_800C5F9C"
+  vram = 0x800C5F9C
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_800C602C"
+  vram = 0x800C602C
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800C60D0"
+  vram = 0x800C60D0
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800C60FC"
+  vram = 0x800C60FC
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800C6260"
+  vram = 0x800C6260
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800C6280"
+  vram = 0x800C6280
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_800C638C"
+  vram = 0x800C638C
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_800C6434"
+  vram = 0x800C6434
+  size = 0x154
+
+  [[section.functions]]
+  name = "func_800C6588"
+  vram = 0x800C6588
+  size = 0x37C
+
+  [[section.functions]]
+  name = "func_800C6904"
+  vram = 0x800C6904
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800C6960"
+  vram = 0x800C6960
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800C69D0"
+  vram = 0x800C69D0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800C6A64"
+  vram = 0x800C6A64
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800C6AA8"
+  vram = 0x800C6AA8
+  size = 0x244
+
+  [[section.functions]]
+  name = "func_800C6D08"
+  vram = 0x800C6D08
+  size = 0x130
+
+  [[section.functions]]
+  name = "func_800C6E38"
+  vram = 0x800C6E38
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_800C6F50"
+  vram = 0x800C6F50
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_800C7030"
+  vram = 0x800C7030
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800C70D4"
+  vram = 0x800C70D4
+  size = 0x24C
+
+  [[section.functions]]
+  name = "func_800C7320"
+  vram = 0x800C7320
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800C7358"
+  vram = 0x800C7358
+  size = 0x300
+
+  [[section.functions]]
+  name = "func_800C7658"
+  vram = 0x800C7658
+  size = 0xF8
+
+  [[section.functions]]
+  name = "func_800C7750"
+  vram = 0x800C7750
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800C77BC"
+  vram = 0x800C77BC
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800C7860"
+  vram = 0x800C7860
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800C78BC"
+  vram = 0x800C78BC
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800C78E4"
+  vram = 0x800C78E4
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_800C79AC"
+  vram = 0x800C79AC
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800C7A20"
+  vram = 0x800C7A20
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800C7A38"
+  vram = 0x800C7A38
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800C7A94"
+  vram = 0x800C7A94
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800C7AE0"
+  vram = 0x800C7AE0
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_800C7B1C"
+  vram = 0x800C7B1C
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800C7B80"
+  vram = 0x800C7B80
+  size = 0x344
+
+  [[section.functions]]
+  name = "func_800C7ECC"
+  vram = 0x800C7ECC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800C7F24"
+  vram = 0x800C7F24
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800C7F34"
+  vram = 0x800C7F34
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800C7F60"
+  vram = 0x800C7F60
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_800C8114"
+  vram = 0x800C8114
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800C816C"
+  vram = 0x800C816C
+  size = 0x298
+
+  [[section.functions]]
+  name = "func_800C8404"
+  vram = 0x800C8404
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_800C840C"
+  vram = 0x800C840C
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_800C851C"
+  vram = 0x800C851C
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_800C86E0"
+  vram = 0x800C86E0
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800C8764"
+  vram = 0x800C8764
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800C87EC"
+  vram = 0x800C87EC
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_800C8A40"
+  vram = 0x800C8A40
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_800C8C98"
+  vram = 0x800C8C98
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800C8D18"
+  vram = 0x800C8D18
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800C8DF0"
+  vram = 0x800C8DF0
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_800C8F00"
+  vram = 0x800C8F00
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800C8F3C"
+  vram = 0x800C8F3C
+  size = 0x230
+
+  [[section.functions]]
+  name = "func_800C9174"
+  vram = 0x800C9174
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_800C93C8"
+  vram = 0x800C93C8
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_800C9568"
+  vram = 0x800C9568
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_800C96C8"
+  vram = 0x800C96C8
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800C978C"
+  vram = 0x800C978C
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_800C9998"
+  vram = 0x800C9998
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800C9AFC"
+  vram = 0x800C9AFC
+  size = 0x17C
+
+  [[section.functions]]
+  name = "func_800C9C78"
+  vram = 0x800C9C78
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800C9CF4"
+  vram = 0x800C9CF4
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_800C9F4C"
+  vram = 0x800C9F4C
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_800CA148"
+  vram = 0x800CA148
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_800CA1F0"
+  vram = 0x800CA1F0
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800CA250"
+  vram = 0x800CA250
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800CA278"
+  vram = 0x800CA278
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_800CA47C"
+  vram = 0x800CA47C
+  size = 0x2A8
+
+  [[section.functions]]
+  name = "func_800CA724"
+  vram = 0x800CA724
+  size = 0x2E8
+
+  [[section.functions]]
+  name = "func_800CAA0C"
+  vram = 0x800CAA0C
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_800CAC10"
+  vram = 0x800CAC10
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800CAC78"
+  vram = 0x800CAC78
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800CACCC"
+  vram = 0x800CACCC
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800CACF0"
+  vram = 0x800CACF0
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800CAD28"
+  vram = 0x800CAD28
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800CAD9C"
+  vram = 0x800CAD9C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800CADD4"
+  vram = 0x800CADD4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800CAF24"
+  vram = 0x800CAF24
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_800CAFD0"
+  vram = 0x800CAFD0
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800CB070"
+  vram = 0x800CB070
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800CB114"
+  vram = 0x800CB114
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800CB19C"
+  vram = 0x800CB19C
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800CB224"
+  vram = 0x800CB224
+  size = 0xF8
+
+  [[section.functions]]
+  name = "func_800CB31C"
+  vram = 0x800CB31C
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_800CB3C8"
+  vram = 0x800CB3C8
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800CB42C"
+  vram = 0x800CB42C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800CB48C"
+  vram = 0x800CB48C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800CB4EC"
+  vram = 0x800CB4EC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800CB54C"
+  vram = 0x800CB54C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800CB5AC"
+  vram = 0x800CB5AC
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800CB76C"
+  vram = 0x800CB76C
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_800CB828"
+  vram = 0x800CB828
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800CB83C"
+  vram = 0x800CB83C
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800CB84C"
+  vram = 0x800CB84C
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800CB86C"
+  vram = 0x800CB86C
+  size = 0x7E4
+
+  [[section.functions]]
+  name = "func_800CC050"
+  vram = 0x800CC050
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800CC0D0"
+  vram = 0x800CC0D0
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_800CC190"
+  vram = 0x800CC190
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800CC1E4"
+  vram = 0x800CC1E4
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800CC220"
+  vram = 0x800CC220
+  size = 0x25C
+
+  [[section.functions]]
+  name = "func_800CC47C"
+  vram = 0x800CC47C
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_800CC5E4"
+  vram = 0x800CC5E4
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800CC67C"
+  vram = 0x800CC67C
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800CC728"
+  vram = 0x800CC728
+  size = 0x160
+
+  [[section.functions]]
+  name = "func_800CC890"
+  vram = 0x800CC890
+  size = 0x170
+
+  [[section.functions]]
+  name = "func_800CCA00"
+  vram = 0x800CCA00
+  size = 0x184
+
+  [[section.functions]]
+  name = "func_800CCB84"
+  vram = 0x800CCB84
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_800CCC14"
+  vram = 0x800CCC14
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_800CCCB0"
+  vram = 0x800CCCB0
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_800CCD4C"
+  vram = 0x800CCD4C
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800CCEB0"
+  vram = 0x800CCEB0
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_800CCFD4"
+  vram = 0x800CCFD4
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_800CD164"
+  vram = 0x800CD164
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800CD2C8"
+  vram = 0x800CD2C8
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_800CD458"
+  vram = 0x800CD458
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800CD5BC"
+  vram = 0x800CD5BC
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_800CD758"
+  vram = 0x800CD758
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_800CD8B8"
+  vram = 0x800CD8B8
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800CD8F0"
+  vram = 0x800CD8F0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800CD920"
+  vram = 0x800CD920
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_800CDA24"
+  vram = 0x800CDA24
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_800CDB2C"
+  vram = 0x800CDB2C
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800CDB64"
+  vram = 0x800CDB64
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_800CDC6C"
+  vram = 0x800CDC6C
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_800CDDFC"
+  vram = 0x800CDDFC
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_800CDF4C"
+  vram = 0x800CDF4C
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800CDFB0"
+  vram = 0x800CDFB0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800CDFFC"
+  vram = 0x800CDFFC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800CE078"
+  vram = 0x800CE078
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800CE0E0"
+  vram = 0x800CE0E0
+  size = 0x214
+
+  [[section.functions]]
+  name = "func_800CE2F4"
+  vram = 0x800CE2F4
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800CE344"
+  vram = 0x800CE344
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800CE3D8"
+  vram = 0x800CE3D8
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_800CE53C"
+  vram = 0x800CE53C
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800CE678"
+  vram = 0x800CE678
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_800CE728"
+  vram = 0x800CE728
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800CE7A8"
+  vram = 0x800CE7A8
+  size = 0x184
+
+  [[section.functions]]
+  name = "func_800CE92C"
+  vram = 0x800CE92C
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_800CE9CC"
+  vram = 0x800CE9CC
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800CEA1C"
+  vram = 0x800CEA1C
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800CEC44"
+  vram = 0x800CEC44
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800CED50"
+  vram = 0x800CED50
+  size = 0xF8
+
+  [[section.functions]]
+  name = "func_800CEE48"
+  vram = 0x800CEE48
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_800CEEF8"
+  vram = 0x800CEEF8
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800CEFBC"
+  vram = 0x800CEFBC
+  size = 0x2A8
+
+  [[section.functions]]
+  name = "func_800CF264"
+  vram = 0x800CF264
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800CF394"
+  vram = 0x800CF394
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800CF4A4"
+  vram = 0x800CF4A4
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800CF50C"
+  vram = 0x800CF50C
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800CF564"
+  vram = 0x800CF564
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800CF5D4"
+  vram = 0x800CF5D4
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800CF644"
+  vram = 0x800CF644
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_800CF6FC"
+  vram = 0x800CF6FC
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_800CF7D0"
+  vram = 0x800CF7D0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800CF848"
+  vram = 0x800CF848
+  size = 0x1D8
+
+  [[section.functions]]
+  name = "func_800CFA20"
+  vram = 0x800CFA20
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800CFA60"
+  vram = 0x800CFA60
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFAEC"
+  vram = 0x800CFAEC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFB78"
+  vram = 0x800CFB78
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFC04"
+  vram = 0x800CFC04
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFC90"
+  vram = 0x800CFC90
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFD1C"
+  vram = 0x800CFD1C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800CFDA8"
+  vram = 0x800CFDA8
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800CFE5C"
+  vram = 0x800CFE5C
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800CFF10"
+  vram = 0x800CFF10
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800CFFC4"
+  vram = 0x800CFFC4
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800D0078"
+  vram = 0x800D0078
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800D012C"
+  vram = 0x800D012C
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800D01E0"
+  vram = 0x800D01E0
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800D0264"
+  vram = 0x800D0264
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800D02E8"
+  vram = 0x800D02E8
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800D036C"
+  vram = 0x800D036C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800D03C8"
+  vram = 0x800D03C8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800D0438"
+  vram = 0x800D0438
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800D0460"
+  vram = 0x800D0460
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800D07E4"
+  vram = 0x800D07E4
+  size = 0x144
+
+  [[section.functions]]
+  name = "func_800D0928"
+  vram = 0x800D0928
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800D09EC"
+  vram = 0x800D09EC
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_800D0AFC"
+  vram = 0x800D0AFC
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800D0B58"
+  vram = 0x800D0B58
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800D0BB0"
+  vram = 0x800D0BB0
+  size = 0x210
+
+  [[section.functions]]
+  name = "func_800D0DC0"
+  vram = 0x800D0DC0
+  size = 0x1F8
+
+  [[section.functions]]
+  name = "func_800D0FB8"
+  vram = 0x800D0FB8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800D105C"
+  vram = 0x800D105C
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_800D1168"
+  vram = 0x800D1168
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800D1260"
+  vram = 0x800D1260
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_800D1368"
+  vram = 0x800D1368
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_800D1408"
+  vram = 0x800D1408
+  size = 0x2E8
+
+  [[section.functions]]
+  name = "func_800D16F0"
+  vram = 0x800D16F0
+  size = 0x354
+
+  [[section.functions]]
+  name = "func_800D1A44"
+  vram = 0x800D1A44
+  size = 0x3E8
+
+  [[section.functions]]
+  name = "func_800D1E2C"
+  vram = 0x800D1E2C
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_800D2074"
+  vram = 0x800D2074
+  size = 0x2A8
+
+  [[section.functions]]
+  name = "func_800D231C"
+  vram = 0x800D231C
+  size = 0x338
+
+  [[section.functions]]
+  name = "func_800D2654"
+  vram = 0x800D2654
+  size = 0x438
+
+  [[section.functions]]
+  name = "func_800D2A8C"
+  vram = 0x800D2A8C
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_800D2CA8"
+  vram = 0x800D2CA8
+  size = 0x27C
+
+  [[section.functions]]
+  name = "func_800D2F24"
+  vram = 0x800D2F24
+  size = 0x2BC
+
+  [[section.functions]]
+  name = "func_800D31E0"
+  vram = 0x800D31E0
+  size = 0x30C
+
+  [[section.functions]]
+  name = "func_800D34EC"
+  vram = 0x800D34EC
+  size = 0x3BC
+
+  [[section.functions]]
+  name = "func_800D38A8"
+  vram = 0x800D38A8
+  size = 0x40C
+
+  [[section.functions]]
+  name = "func_800D3CB8"
+  vram = 0x800D3CB8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800D3D30"
+  vram = 0x800D3D30
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800D3E74"
+  vram = 0x800D3E74
+  size = 0x220
+
+  [[section.functions]]
+  name = "func_800D4094"
+  vram = 0x800D4094
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800D40DC"
+  vram = 0x800D40DC
+  size = 0x180
+
+  [[section.functions]]
+  name = "func_800D429C"
+  vram = 0x800D429C
+  size = 0x2C4
+
+  [[section.functions]]
+  name = "func_800D4568"
+  vram = 0x800D4568
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D459C"
+  vram = 0x800D459C
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800D45C0"
+  vram = 0x800D45C0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800D460C"
+  vram = 0x800D460C
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800D4620"
+  vram = 0x800D4620
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800D4630"
+  vram = 0x800D4630
+  size = 0x18
+
+  [[section.functions]]
+  name = "func_800D4648"
+  vram = 0x800D4648
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D467C"
+  vram = 0x800D467C
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D46B0"
+  vram = 0x800D46B0
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_800D46F4"
+  vram = 0x800D46F4
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800D4780"
+  vram = 0x800D4780
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800D4850"
+  vram = 0x800D4850
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800D48A8"
+  vram = 0x800D48A8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800D48EC"
+  vram = 0x800D48EC
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800D49B8"
+  vram = 0x800D49B8
+  size = 0x26C
+
+  [[section.functions]]
+  name = "func_800D4C24"
+  vram = 0x800D4C24
+  size = 0x518
+
+  [[section.functions]]
+  name = "func_800D513C"
+  vram = 0x800D513C
+  size = 0x340
+
+  [[section.functions]]
+  name = "func_800D5484"
+  vram = 0x800D5484
+  size = 0x25C
+
+  [[section.functions]]
+  name = "func_800D56E0"
+  vram = 0x800D56E0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800D5750"
+  vram = 0x800D5750
+  size = 0x3C0
+
+  [[section.functions]]
+  name = "func_800D5B10"
+  vram = 0x800D5B10
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D5B44"
+  vram = 0x800D5B44
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_800D5C00"
+  vram = 0x800D5C00
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800D5CD0"
+  vram = 0x800D5CD0
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D5D04"
+  vram = 0x800D5D04
+  size = 0x188
+
+  [[section.functions]]
+  name = "func_800D5E8C"
+  vram = 0x800D5E8C
+  size = 0x558
+
+  [[section.functions]]
+  name = "func_800D63E4"
+  vram = 0x800D63E4
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800D6410"
+  vram = 0x800D6410
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800D6424"
+  vram = 0x800D6424
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800D6438"
+  vram = 0x800D6438
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800D64E4"
+  vram = 0x800D64E4
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800D652C"
+  vram = 0x800D652C
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_800D6630"
+  vram = 0x800D6630
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800D66C4"
+  vram = 0x800D66C4
+  size = 0x1A4
+
+  [[section.functions]]
+  name = "func_800D6868"
+  vram = 0x800D6868
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_800D69A8"
+  vram = 0x800D69A8
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800D6A6C"
+  vram = 0x800D6A6C
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800D6B30"
+  vram = 0x800D6B30
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800D6B6C"
+  vram = 0x800D6B6C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800D6BC0"
+  vram = 0x800D6BC0
+  size = 0x284
+
+  [[section.functions]]
+  name = "func_800D6E44"
+  vram = 0x800D6E44
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800D6E6C"
+  vram = 0x800D6E6C
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800D6EB0"
+  vram = 0x800D6EB0
+  size = 0x71C
+
+  [[section.functions]]
+  name = "func_800D75CC"
+  vram = 0x800D75CC
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800D7600"
+  vram = 0x800D7600
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_800D7724"
+  vram = 0x800D7724
+  size = 0xF0
+
+  [[section.functions]]
+  name = "func_800D7814"
+  vram = 0x800D7814
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_800D7A30"
+  vram = 0x800D7A30
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800D7ACC"
+  vram = 0x800D7ACC
+  size = 0x2D8
+
+  [[section.functions]]
+  name = "func_800D7DA4"
+  vram = 0x800D7DA4
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800D7E68"
+  vram = 0x800D7E68
+  size = 0x358
+
+  [[section.functions]]
+  name = "func_800D81C0"
+  vram = 0x800D81C0
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800D8244"
+  vram = 0x800D8244
+  size = 0xEC
+
+  [[section.functions]]
+  name = "func_800D8330"
+  vram = 0x800D8330
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_800D83DC"
+  vram = 0x800D83DC
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_800D84F4"
+  vram = 0x800D84F4
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800D858C"
+  vram = 0x800D858C
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800D8658"
+  vram = 0x800D8658
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800D86DC"
+  vram = 0x800D86DC
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800D8748"
+  vram = 0x800D8748
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_800D88A4"
+  vram = 0x800D88A4
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800D8930"
+  vram = 0x800D8930
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_800D8A3C"
+  vram = 0x800D8A3C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800D8AD8"
+  vram = 0x800D8AD8
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800D8B48"
+  vram = 0x800D8B48
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800D8BC0"
+  vram = 0x800D8BC0
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800D8C08"
+  vram = 0x800D8C08
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800D8C74"
+  vram = 0x800D8C74
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800D8CBC"
+  vram = 0x800D8CBC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800D8D40"
+  vram = 0x800D8D40
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800D8D98"
+  vram = 0x800D8D98
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_800D8EAC"
+  vram = 0x800D8EAC
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_800D8FC0"
+  vram = 0x800D8FC0
+  size = 0x130
+
+  [[section.functions]]
+  name = "func_800D90F0"
+  vram = 0x800D90F0
+  size = 0x130
+
+  [[section.functions]]
+  name = "func_800D9220"
+  vram = 0x800D9220
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_800D93DC"
+  vram = 0x800D93DC
+  size = 0x1DC
+
+  [[section.functions]]
+  name = "func_800D95B8"
+  vram = 0x800D95B8
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_800D97A4"
+  vram = 0x800D97A4
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_800D9990"
+  vram = 0x800D9990
+  size = 0x1F4
+
+  [[section.functions]]
+  name = "func_800D9B84"
+  vram = 0x800D9B84
+  size = 0x23C
+
+  [[section.functions]]
+  name = "func_800D9DC0"
+  vram = 0x800D9DC0
+  size = 0x2E0
+
+  [[section.functions]]
+  name = "func_800DA0A0"
+  vram = 0x800DA0A0
+  size = 0x298
+
+  [[section.functions]]
+  name = "func_800DA33C"
+  vram = 0x800DA33C
+  size = 0x2E0
+
+  [[section.functions]]
+  name = "func_800DA630"
+  vram = 0x800DA630
+  size = 0x2AC
+
+  [[section.functions]]
+  name = "func_800DA8EC"
+  vram = 0x800DA8EC
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800DA980"
+  vram = 0x800DA980
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800DAA24"
+  vram = 0x800DAA24
+  size = 0x1E8
+
+  [[section.functions]]
+  name = "func_800DAC18"
+  vram = 0x800DAC18
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_800DAE18"
+  vram = 0x800DAE18
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800DAE28"
+  vram = 0x800DAE28
+  size = 0x1C8
+
+  [[section.functions]]
+  name = "func_800DAFF0"
+  vram = 0x800DAFF0
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_800DB188"
+  vram = 0x800DB188
+  size = 0x2F0
+
+  [[section.functions]]
+  name = "func_800DB480"
+  vram = 0x800DB480
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800DB4D0"
+  vram = 0x800DB4D0
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800DB4E0"
+  vram = 0x800DB4E0
+  size = 0x370
+
+  [[section.functions]]
+  name = "func_800DB850"
+  vram = 0x800DB850
+  size = 0x384
+
+  [[section.functions]]
+  name = "func_800DBBDC"
+  vram = 0x800DBBDC
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800DBC28"
+  vram = 0x800DBC28
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800DBC6C"
+  vram = 0x800DBC6C
+  size = 0x2B0
+
+  [[section.functions]]
+  name = "func_800DBF1C"
+  vram = 0x800DBF1C
+  size = 0x358
+
+  [[section.functions]]
+  name = "func_800DC274"
+  vram = 0x800DC274
+  size = 0x364
+
+  [[section.functions]]
+  name = "func_800DC5D8"
+  vram = 0x800DC5D8
+  size = 0x2C4
+
+  [[section.functions]]
+  name = "func_800DC89C"
+  vram = 0x800DC89C
+  size = 0x454
+
+  [[section.functions]]
+  name = "func_800DCCF0"
+  vram = 0x800DCCF0
+  size = 0x3E4
+
+  [[section.functions]]
+  name = "func_800DD0D4"
+  vram = 0x800DD0D4
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_800DD1B8"
+  vram = 0x800DD1B8
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_800DD590"
+  vram = 0x800DD590
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800DD660"
+  vram = 0x800DD660
+  size = 0x300
+
+  [[section.functions]]
+  name = "func_800DD960"
+  vram = 0x800DD960
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_800DDC44"
+  vram = 0x800DDC44
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800DDCC4"
+  vram = 0x800DDCC4
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_800DDD64"
+  vram = 0x800DDD64
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800DDDE8"
+  vram = 0x800DDDE8
+  size = 0x2D8
+
+  [[section.functions]]
+  name = "func_800DE0C0"
+  vram = 0x800DE0C0
+  size = 0x2E8
+
+  [[section.functions]]
+  name = "func_800DE3A8"
+  vram = 0x800DE3A8
+  size = 0x354
+
+  [[section.functions]]
+  name = "func_800DE700"
+  vram = 0x800DE700
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800DE770"
+  vram = 0x800DE770
+  size = 0x14C4
+
+  [[section.functions]]
+  name = "func_800DFC34"
+  vram = 0x800DFC34
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_800DFD90"
+  vram = 0x800DFD90
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_800DFE64"
+  vram = 0x800DFE64
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_800DFF38"
+  vram = 0x800DFF38
+  size = 0x18C
+
+  [[section.functions]]
+  name = "func_800E00C4"
+  vram = 0x800E00C4
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_800E026C"
+  vram = 0x800E026C
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800E03A8"
+  vram = 0x800E03A8
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "func_800E0598"
+  vram = 0x800E0598
+  size = 0x3A0
+
+  [[section.functions]]
+  name = "func_800E0938"
+  vram = 0x800E0938
+  size = 0x3A0
+
+  [[section.functions]]
+  name = "func_800E0CD8"
+  vram = 0x800E0CD8
+  size = 0x2FC
+
+  [[section.functions]]
+  name = "func_800E0FD4"
+  vram = 0x800E0FD4
+  size = 0x378
+
+  [[section.functions]]
+  name = "func_800E134C"
+  vram = 0x800E134C
+  size = 0x3A0
+
+  [[section.functions]]
+  name = "func_800E16EC"
+  vram = 0x800E16EC
+  size = 0x348
+
+  [[section.functions]]
+  name = "func_800E1A34"
+  vram = 0x800E1A34
+  size = 0x350
+
+  [[section.functions]]
+  name = "func_800E1D84"
+  vram = 0x800E1D84
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_800E1EF0"
+  vram = 0x800E1EF0
+  size = 0x39C
+
+  [[section.functions]]
+  name = "func_800E228C"
+  vram = 0x800E228C
+  size = 0x39C
+
+  [[section.functions]]
+  name = "func_800E2628"
+  vram = 0x800E2628
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800E2688"
+  vram = 0x800E2688
+  size = 0xC
+
+  [[section.functions]]
+  name = "func_800E2694"
+  vram = 0x800E2694
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800E26E0"
+  vram = 0x800E26E0
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800E270C"
+  vram = 0x800E270C
+  size = 0x314
+
+  [[section.functions]]
+  name = "func_800E2A20"
+  vram = 0x800E2A20
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800E2BE0"
+  vram = 0x800E2BE0
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_800E2CC4"
+  vram = 0x800E2CC4
+  size = 0x4AC
+
+  [[section.functions]]
+  name = "func_800E3170"
+  vram = 0x800E3170
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800E3240"
+  vram = 0x800E3240
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_800E33AC"
+  vram = 0x800E33AC
+  size = 0x2B8
+
+  [[section.functions]]
+  name = "func_800E3664"
+  vram = 0x800E3664
+  size = 0x2B8
+
+  [[section.functions]]
+  name = "func_800E391C"
+  vram = 0x800E391C
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_800E3A10"
+  vram = 0x800E3A10
+  size = 0xF8
+
+  [[section.functions]]
+  name = "func_800E3B10"
+  vram = 0x800E3B10
+  size = 0x6F0
+
+  [[section.functions]]
+  name = "func_800E4200"
+  vram = 0x800E4200
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800E4214"
+  vram = 0x800E4214
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800E4258"
+  vram = 0x800E4258
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_800E4370"
+  vram = 0x800E4370
+  size = 0x2BC
+
+  [[section.functions]]
+  name = "func_800E462C"
+  vram = 0x800E462C
+  size = 0x2B4
+
+  [[section.functions]]
+  name = "func_800E48E0"
+  vram = 0x800E48E0
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800E4914"
+  vram = 0x800E4914
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800E4940"
+  vram = 0x800E4940
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800E49A8"
+  vram = 0x800E49A8
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800E4A00"
+  vram = 0x800E4A00
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_800E4B1C"
+  vram = 0x800E4B1C
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_800E4C84"
+  vram = 0x800E4C84
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_800E4D84"
+  vram = 0x800E4D84
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_800E4E8C"
+  vram = 0x800E4E8C
+  size = 0x344
+
+  [[section.functions]]
+  name = "func_800E51D0"
+  vram = 0x800E51D0
+  size = 0x228
+
+  [[section.functions]]
+  name = "func_800E53F8"
+  vram = 0x800E53F8
+  size = 0x230
+
+  [[section.functions]]
+  name = "func_800E5628"
+  vram = 0x800E5628
+  size = 0x3DC
+
+  [[section.functions]]
+  name = "func_800E5A04"
+  vram = 0x800E5A04
+  size = 0x474
+
+  [[section.functions]]
+  name = "func_800E5E78"
+  vram = 0x800E5E78
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_800E5FC8"
+  vram = 0x800E5FC8
+  size = 0x318
+
+  [[section.functions]]
+  name = "func_800E62E0"
+  vram = 0x800E62E0
+  size = 0x348
+
+  [[section.functions]]
+  name = "func_800E6628"
+  vram = 0x800E6628
+  size = 0x6F8
+
+  [[section.functions]]
+  name = "func_800E6D20"
+  vram = 0x800E6D20
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800E6DA0"
+  vram = 0x800E6DA0
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800E6DF8"
+  vram = 0x800E6DF8
+  size = 0x368
+
+  [[section.functions]]
+  name = "func_800E7160"
+  vram = 0x800E7160
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800E71A4"
+  vram = 0x800E71A4
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800E71B8"
+  vram = 0x800E71B8
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800E71D8"
+  vram = 0x800E71D8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800E721C"
+  vram = 0x800E721C
+  size = 0x240
+
+  [[section.functions]]
+  name = "func_800E7464"
+  vram = 0x800E7464
+  size = 0x478
+
+  [[section.functions]]
+  name = "func_800E78E4"
+  vram = 0x800E78E4
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800E7968"
+  vram = 0x800E7968
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800E79C0"
+  vram = 0x800E79C0
+  size = 0x214
+
+  [[section.functions]]
+  name = "func_800E7BD4"
+  vram = 0x800E7BD4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800E7C2C"
+  vram = 0x800E7C2C
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_800E7DD8"
+  vram = 0x800E7DD8
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800E7E60"
+  vram = 0x800E7E60
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800E7E90"
+  vram = 0x800E7E90
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800E7EC0"
+  vram = 0x800E7EC0
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800E7EF0"
+  vram = 0x800E7EF0
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800E7F18"
+  vram = 0x800E7F18
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800E7F38"
+  vram = 0x800E7F38
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_800E8180"
+  vram = 0x800E8180
+  size = 0x27C
+
+  [[section.functions]]
+  name = "func_800E83FC"
+  vram = 0x800E83FC
+  size = 0x3EC
+
+  [[section.functions]]
+  name = "func_800E87E8"
+  vram = 0x800E87E8
+  size = 0x410
+
+  [[section.functions]]
+  name = "func_800E8BF8"
+  vram = 0x800E8BF8
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_800E8DB8"
+  vram = 0x800E8DB8
+  size = 0x174
+
+  [[section.functions]]
+  name = "func_800E8F34"
+  vram = 0x800E8F34
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_800E91D0"
+  vram = 0x800E91D0
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_800E91E8"
+  vram = 0x800E91E8
+  size = 0xF0C
+
+  [[section.functions]]
+  name = "func_800EA0F4"
+  vram = 0x800EA0F4
+  size = 0xD8
+
+  [[section.functions]]
+  name = "func_800EA1CC"
+  vram = 0x800EA1CC
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EA210"
+  vram = 0x800EA210
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_800EA2E0"
+  vram = 0x800EA2E0
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800EA354"
+  vram = 0x800EA354
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_800EA414"
+  vram = 0x800EA414
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800EA4E8"
+  vram = 0x800EA4E8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800EA558"
+  vram = 0x800EA558
+  size = 0x270
+
+  [[section.functions]]
+  name = "func_800EA7C8"
+  vram = 0x800EA7C8
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800EA898"
+  vram = 0x800EA898
+  size = 0x280
+
+  [[section.functions]]
+  name = "func_800EAB18"
+  vram = 0x800EAB18
+  size = 0x170
+
+  [[section.functions]]
+  name = "func_800EAC88"
+  vram = 0x800EAC88
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800EACB8"
+  vram = 0x800EACB8
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800EAD40"
+  vram = 0x800EAD40
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800EADC0"
+  vram = 0x800EADC0
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_800EAFDC"
+  vram = 0x800EAFDC
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800EB050"
+  vram = 0x800EB050
+  size = 0x3C0
+
+  [[section.functions]]
+  name = "func_800EB410"
+  vram = 0x800EB410
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800EB444"
+  vram = 0x800EB444
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800EB498"
+  vram = 0x800EB498
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_800EB5BC"
+  vram = 0x800EB5BC
+  size = 0x1C8
+
+  [[section.functions]]
+  name = "func_800EB788"
+  vram = 0x800EB788
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800EB7B4"
+  vram = 0x800EB7B4
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800EB7DC"
+  vram = 0x800EB7DC
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_800EB914"
+  vram = 0x800EB914
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800EB964"
+  vram = 0x800EB964
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_800EB9A0"
+  vram = 0x800EB9A0
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800EB9E0"
+  vram = 0x800EB9E0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800EBA2C"
+  vram = 0x800EBA2C
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800EBAA4"
+  vram = 0x800EBAA4
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800EBADC"
+  vram = 0x800EBADC
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800EBAFC"
+  vram = 0x800EBAFC
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_800EBB10"
+  vram = 0x800EBB10
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800EBB64"
+  vram = 0x800EBB64
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800EBBB8"
+  vram = 0x800EBBB8
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800EBC18"
+  vram = 0x800EBC18
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800EBC78"
+  vram = 0x800EBC78
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_800EBCB4"
+  vram = 0x800EBCB4
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_800EBCF0"
+  vram = 0x800EBCF0
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800EBD70"
+  vram = 0x800EBD70
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800EBDF8"
+  vram = 0x800EBDF8
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800EBE50"
+  vram = 0x800EBE50
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800EBE88"
+  vram = 0x800EBE88
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800EBEA8"
+  vram = 0x800EBEA8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800EBED0"
+  vram = 0x800EBED0
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800EBF38"
+  vram = 0x800EBF38
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800EBF58"
+  vram = 0x800EBF58
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800EBFA8"
+  vram = 0x800EBFA8
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800EBFE0"
+  vram = 0x800EBFE0
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800EC020"
+  vram = 0x800EC020
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EC064"
+  vram = 0x800EC064
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EC0A8"
+  vram = 0x800EC0A8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EC0EC"
+  vram = 0x800EC0EC
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EC130"
+  vram = 0x800EC130
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800EC174"
+  vram = 0x800EC174
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800EC1B0"
+  vram = 0x800EC1B0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800EC21C"
+  vram = 0x800EC21C
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_800EC408"
+  vram = 0x800EC408
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800EC46C"
+  vram = 0x800EC46C
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800EC4D0"
+  vram = 0x800EC4D0
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_800EC5E8"
+  vram = 0x800EC5E8
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_800EC704"
+  vram = 0x800EC704
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_800EC828"
+  vram = 0x800EC828
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_800EC990"
+  vram = 0x800EC990
+  size = 0xEC
+
+  [[section.functions]]
+  name = "func_800ECA7C"
+  vram = 0x800ECA7C
+  size = 0x220
+
+  [[section.functions]]
+  name = "func_800ECE50"
+  vram = 0x800ECE50
+  size = 0x178
+
+  [[section.functions]]
+  name = "func_800ECFC8"
+  vram = 0x800ECFC8
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800ED038"
+  vram = 0x800ED038
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800ED0C4"
+  vram = 0x800ED0C4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800ED130"
+  vram = 0x800ED130
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_800ED28C"
+  vram = 0x800ED28C
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800ED2C4"
+  vram = 0x800ED2C4
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_800ED458"
+  vram = 0x800ED458
+  size = 0x234
+
+  [[section.functions]]
+  name = "func_800ED68C"
+  vram = 0x800ED68C
+  size = 0x24C
+
+  [[section.functions]]
+  name = "func_800ED8D8"
+  vram = 0x800ED8D8
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_800ED9A0"
+  vram = 0x800ED9A0
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_800EDB48"
+  vram = 0x800EDB48
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800EDB90"
+  vram = 0x800EDB90
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800EDC60"
+  vram = 0x800EDC60
+  size = 0x1E8
+
+  [[section.functions]]
+  name = "func_800EDE48"
+  vram = 0x800EDE48
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800EDE98"
+  vram = 0x800EDE98
+  size = 0xBF8
+
+  [[section.functions]]
+  name = "func_800EEA90"
+  vram = 0x800EEA90
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800EEB5C"
+  vram = 0x800EEB5C
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800EEC14"
+  vram = 0x800EEC14
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800EED80"
+  vram = 0x800EED80
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_800EEE90"
+  vram = 0x800EEE90
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_800EEFB4"
+  vram = 0x800EEFB4
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800EF0FC"
+  vram = 0x800EF0FC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800EF1A4"
+  vram = 0x800EF1A4
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800EF264"
+  vram = 0x800EF264
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800EF2EC"
+  vram = 0x800EF2EC
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800EF3AC"
+  vram = 0x800EF3AC
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800EF43C"
+  vram = 0x800EF43C
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800EF4E0"
+  vram = 0x800EF4E0
+  size = 0x2070
+
+  [[section.functions]]
+  name = "func_800F1550"
+  vram = 0x800F1550
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800F15B8"
+  vram = 0x800F15B8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F15E0"
+  vram = 0x800F15E0
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F1608"
+  vram = 0x800F1608
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800F1640"
+  vram = 0x800F1640
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F1668"
+  vram = 0x800F1668
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F1690"
+  vram = 0x800F1690
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800F16D0"
+  vram = 0x800F16D0
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800F1754"
+  vram = 0x800F1754
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F177C"
+  vram = 0x800F177C
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F17A4"
+  vram = 0x800F17A4
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F17CC"
+  vram = 0x800F17CC
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F17F4"
+  vram = 0x800F17F4
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F181C"
+  vram = 0x800F181C
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800F1884"
+  vram = 0x800F1884
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_800F1944"
+  vram = 0x800F1944
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_800F19F8"
+  vram = 0x800F19F8
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_800F1BA8"
+  vram = 0x800F1BA8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F1BD8"
+  vram = 0x800F1BD8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800F1C00"
+  vram = 0x800F1C00
+  size = 0x47C
+
+  [[section.functions]]
+  name = "func_800F2080"
+  vram = 0x800F2080
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_800F2130"
+  vram = 0x800F2130
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800F2188"
+  vram = 0x800F2188
+  size = 0x458
+
+  [[section.functions]]
+  name = "func_800F25E0"
+  vram = 0x800F25E0
+  size = 0x144
+
+  [[section.functions]]
+  name = "func_800F2724"
+  vram = 0x800F2724
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_800F27C4"
+  vram = 0x800F27C4
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800F284C"
+  vram = 0x800F284C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800F289C"
+  vram = 0x800F289C
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800F28BC"
+  vram = 0x800F28BC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800F2948"
+  vram = 0x800F2948
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_800F29E8"
+  vram = 0x800F29E8
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800F2A5C"
+  vram = 0x800F2A5C
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800F2A94"
+  vram = 0x800F2A94
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_800F2B54"
+  vram = 0x800F2B54
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800F3138"
+  vram = 0x800F3138
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_800F3220"
+  vram = 0x800F3220
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800F3268"
+  vram = 0x800F3268
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800F32C4"
+  vram = 0x800F32C4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800F331C"
+  vram = 0x800F331C
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800F3364"
+  vram = 0x800F3364
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800F33FC"
+  vram = 0x800F33FC
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800F3420"
+  vram = 0x800F3420
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800F3480"
+  vram = 0x800F3480
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_800F363C"
+  vram = 0x800F363C
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_800F3748"
+  vram = 0x800F3748
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_800F3850"
+  vram = 0x800F3850
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_800F3964"
+  vram = 0x800F3964
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F3994"
+  vram = 0x800F3994
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_800F3A3C"
+  vram = 0x800F3A3C
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800F3AD4"
+  vram = 0x800F3AD4
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_800F3C3C"
+  vram = 0x800F3C3C
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_800F3C80"
+  vram = 0x800F3C80
+  size = 0x410
+
+  [[section.functions]]
+  name = "func_800F4090"
+  vram = 0x800F4090
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800F41D0"
+  vram = 0x800F41D0
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_800F4368"
+  vram = 0x800F4368
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_800F4438"
+  vram = 0x800F4438
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800F4504"
+  vram = 0x800F4504
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_800F46D0"
+  vram = 0x800F46D0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F4700"
+  vram = 0x800F4700
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800F4788"
+  vram = 0x800F4788
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800F4808"
+  vram = 0x800F4808
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_800F49A4"
+  vram = 0x800F49A4
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_800F49DC"
+  vram = 0x800F49DC
+  size = 0x420
+
+  [[section.functions]]
+  name = "func_800F4DFC"
+  vram = 0x800F4DFC
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_800F4E30"
+  vram = 0x800F4E30
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_800F4ECC"
+  vram = 0x800F4ECC
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F4F44"
+  vram = 0x800F4F44
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F4FBC"
+  vram = 0x800F4FBC
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F5034"
+  vram = 0x800F5034
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F50AC"
+  vram = 0x800F50AC
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_800F5120"
+  vram = 0x800F5120
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F5198"
+  vram = 0x800F5198
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F5210"
+  vram = 0x800F5210
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F5288"
+  vram = 0x800F5288
+  size = 0x30C
+
+  [[section.functions]]
+  name = "func_800F5594"
+  vram = 0x800F5594
+  size = 0x2E0
+
+  [[section.functions]]
+  name = "func_800F5874"
+  vram = 0x800F5874
+  size = 0x430
+
+  [[section.functions]]
+  name = "func_800F5CA4"
+  vram = 0x800F5CA4
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_800F5D24"
+  vram = 0x800F5D24
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_800F5E04"
+  vram = 0x800F5E04
+  size = 0x328
+
+  [[section.functions]]
+  name = "func_800F612C"
+  vram = 0x800F612C
+  size = 0x3C8
+
+  [[section.functions]]
+  name = "func_800F64F4"
+  vram = 0x800F64F4
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800F6564"
+  vram = 0x800F6564
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_800F6624"
+  vram = 0x800F6624
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_800F66C4"
+  vram = 0x800F66C4
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800F670C"
+  vram = 0x800F670C
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_800F67E8"
+  vram = 0x800F67E8
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_800F6890"
+  vram = 0x800F6890
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800F68F0"
+  vram = 0x800F68F0
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800F6988"
+  vram = 0x800F6988
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F69B8"
+  vram = 0x800F69B8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F69E8"
+  vram = 0x800F69E8
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800F6A08"
+  vram = 0x800F6A08
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800F6A28"
+  vram = 0x800F6A28
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800F6A68"
+  vram = 0x800F6A68
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_800F6C70"
+  vram = 0x800F6C70
+  size = 0x214
+
+  [[section.functions]]
+  name = "func_800F6E84"
+  vram = 0x800F6E84
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_800F6F14"
+  vram = 0x800F6F14
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800F6FD8"
+  vram = 0x800F6FD8
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_800F70EC"
+  vram = 0x800F70EC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F711C"
+  vram = 0x800F711C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800F71B0"
+  vram = 0x800F71B0
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_800F7238"
+  vram = 0x800F7238
+  size = 0x154
+
+  [[section.functions]]
+  name = "func_800F738C"
+  vram = 0x800F738C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800F73DC"
+  vram = 0x800F73DC
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800F7518"
+  vram = 0x800F7518
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_800F7540"
+  vram = 0x800F7540
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800F75B8"
+  vram = 0x800F75B8
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_800F7674"
+  vram = 0x800F7674
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_800F772C"
+  vram = 0x800F772C
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_800F7814"
+  vram = 0x800F7814
+  size = 0x2A4
+
+  [[section.functions]]
+  name = "func_800F7AB8"
+  vram = 0x800F7AB8
+  size = 0x720
+
+  [[section.functions]]
+  name = "func_800F81D8"
+  vram = 0x800F81D8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800F8208"
+  vram = 0x800F8208
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_800F8350"
+  vram = 0x800F8350
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_800F8418"
+  vram = 0x800F8418
+  size = 0x3C4
+
+  [[section.functions]]
+  name = "func_800F87DC"
+  vram = 0x800F87DC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800F883C"
+  vram = 0x800F883C
+  size = 0xA24
+
+  [[section.functions]]
+  name = "func_800F9260"
+  vram = 0x800F9260
+  size = 0x7E4
+
+  [[section.functions]]
+  name = "func_800F9A44"
+  vram = 0x800F9A44
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800F9AF8"
+  vram = 0x800F9AF8
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_800F9BBC"
+  vram = 0x800F9BBC
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800F9D7C"
+  vram = 0x800F9D7C
+  size = 0x2CC
+
+  [[section.functions]]
+  name = "func_800FA048"
+  vram = 0x800FA048
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_800FA16C"
+  vram = 0x800FA16C
+  size = 0xF0
+
+  [[section.functions]]
+  name = "func_800FA25C"
+  vram = 0x800FA25C
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800FA440"
+  vram = 0x800FA440
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FA48C"
+  vram = 0x800FA48C
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_800FA52C"
+  vram = 0x800FA52C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FA594"
+  vram = 0x800FA594
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_800FA630"
+  vram = 0x800FA630
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FA68C"
+  vram = 0x800FA68C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800FA6F8"
+  vram = 0x800FA6F8
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FA760"
+  vram = 0x800FA760
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800FA7A4"
+  vram = 0x800FA7A4
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FA7F0"
+  vram = 0x800FA7F0
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800FA848"
+  vram = 0x800FA848
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FA8C4"
+  vram = 0x800FA8C4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800FA924"
+  vram = 0x800FA924
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800FA954"
+  vram = 0x800FA954
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FA9CC"
+  vram = 0x800FA9CC
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAA28"
+  vram = 0x800FAA28
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAA84"
+  vram = 0x800FAA84
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FAAE0"
+  vram = 0x800FAAE0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FAB5C"
+  vram = 0x800FAB5C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800FAB8C"
+  vram = 0x800FAB8C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FABE8"
+  vram = 0x800FABE8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAC44"
+  vram = 0x800FAC44
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FACC0"
+  vram = 0x800FACC0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800FAD2C"
+  vram = 0x800FAD2C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FAD78"
+  vram = 0x800FAD78
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FADC4"
+  vram = 0x800FADC4
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FAE10"
+  vram = 0x800FAE10
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAE6C"
+  vram = 0x800FAE6C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAEC8"
+  vram = 0x800FAEC8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAF24"
+  vram = 0x800FAF24
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAF80"
+  vram = 0x800FAF80
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FAFDC"
+  vram = 0x800FAFDC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FB058"
+  vram = 0x800FB058
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FB0D4"
+  vram = 0x800FB0D4
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_800FB150"
+  vram = 0x800FB150
+  size = 0x174
+
+  [[section.functions]]
+  name = "func_800FB2C4"
+  vram = 0x800FB2C4
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800FB318"
+  vram = 0x800FB318
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_800FB368"
+  vram = 0x800FB368
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_800FB3F4"
+  vram = 0x800FB3F4
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800FB4EC"
+  vram = 0x800FB4EC
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_800FB598"
+  vram = 0x800FB598
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800FB664"
+  vram = 0x800FB664
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800FB730"
+  vram = 0x800FB730
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_800FB758"
+  vram = 0x800FB758
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_800FB824"
+  vram = 0x800FB824
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "func_800FBA14"
+  vram = 0x800FBA14
+  size = 0x144
+
+  [[section.functions]]
+  name = "func_800FBB58"
+  vram = 0x800FBB58
+  size = 0x154
+
+  [[section.functions]]
+  name = "func_800FBCAC"
+  vram = 0x800FBCAC
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800FBD24"
+  vram = 0x800FBD24
+  size = 0x1E0
+
+  [[section.functions]]
+  name = "func_800FBF04"
+  vram = 0x800FBF04
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_800FC108"
+  vram = 0x800FC108
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_800FC224"
+  vram = 0x800FC224
+  size = 0x260
+
+  [[section.functions]]
+  name = "func_800FC484"
+  vram = 0x800FC484
+  size = 0x4A4
+
+  [[section.functions]]
+  name = "func_800FC928"
+  vram = 0x800FC928
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_800FCB7C"
+  vram = 0x800FCB7C
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_800FCBF4"
+  vram = 0x800FCBF4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_800FCC60"
+  vram = 0x800FCC60
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_800FCDA0"
+  vram = 0x800FCDA0
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800FCE18"
+  vram = 0x800FCE18
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_800FCFA8"
+  vram = 0x800FCFA8
+  size = 0x18C
+
+  [[section.functions]]
+  name = "func_800FD134"
+  vram = 0x800FD134
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_800FD1CC"
+  vram = 0x800FD1CC
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_800FD268"
+  vram = 0x800FD268
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_800FD31C"
+  vram = 0x800FD31C
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800FD370"
+  vram = 0x800FD370
+  size = 0x1D4
+
+  [[section.functions]]
+  name = "func_800FD548"
+  vram = 0x800FD548
+  size = 0x1C
+
+  [[section.functions]]
+  name = "func_800FD564"
+  vram = 0x800FD564
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_800FD5C0"
+  vram = 0x800FD5C0
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_800FD5EC"
+  vram = 0x800FD5EC
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800FD640"
+  vram = 0x800FD640
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_800FD6A8"
+  vram = 0x800FD6A8
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800FD73C"
+  vram = 0x800FD73C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_800FD7D0"
+  vram = 0x800FD7D0
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_800FD8AC"
+  vram = 0x800FD8AC
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_800FDAB8"
+  vram = 0x800FDAB8
+  size = 0x1E0
+
+  [[section.functions]]
+  name = "func_800FDCA0"
+  vram = 0x800FDCA0
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_800FDCE0"
+  vram = 0x800FDCE0
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_800FDD50"
+  vram = 0x800FDD50
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_800FDDB4"
+  vram = 0x800FDDB4
+  size = 0x1DC
+
+  [[section.functions]]
+  name = "func_800FDF98"
+  vram = 0x800FDF98
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_800FDFF8"
+  vram = 0x800FDFF8
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_800FE050"
+  vram = 0x800FE050
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_800FE140"
+  vram = 0x800FE140
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_800FE308"
+  vram = 0x800FE308
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_800FE35C"
+  vram = 0x800FE35C
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_800FE494"
+  vram = 0x800FE494
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_800FE4E4"
+  vram = 0x800FE4E4
+  size = 0x284
+
+  [[section.functions]]
+  name = "func_800FE768"
+  vram = 0x800FE768
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800FE788"
+  vram = 0x800FE788
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_800FE88C"
+  vram = 0x800FE88C
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_800FE970"
+  vram = 0x800FE970
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_800FE990"
+  vram = 0x800FE990
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800FE9C0"
+  vram = 0x800FE9C0
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_800FEAD8"
+  vram = 0x800FEAD8
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_800FEC1C"
+  vram = 0x800FEC1C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FEC68"
+  vram = 0x800FEC68
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_800FED48"
+  vram = 0x800FED48
+  size = 0x288
+
+  [[section.functions]]
+  name = "func_800FEFD8"
+  vram = 0x800FEFD8
+  size = 0x5AC
+
+  [[section.functions]]
+  name = "func_800FF58C"
+  vram = 0x800FF58C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FF5D8"
+  vram = 0x800FF5D8
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_800FF6C0"
+  vram = 0x800FF6C0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_800FF6F0"
+  vram = 0x800FF6F0
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_800FF79C"
+  vram = 0x800FF79C
+  size = 0x228
+
+  [[section.functions]]
+  name = "func_800FF9CC"
+  vram = 0x800FF9CC
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_800FFA24"
+  vram = 0x800FFA24
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_800FFAE8"
+  vram = 0x800FFAE8
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_800FFC38"
+  vram = 0x800FFC38
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_800FFE3C"
+  vram = 0x800FFE3C
+  size = 0x1F4
+
+  [[section.functions]]
+  name = "func_80100030"
+  vram = 0x80100030
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80100048"
+  vram = 0x80100048
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_80100110"
+  vram = 0x80100110
+  size = 0x1F4
+
+  [[section.functions]]
+  name = "func_8010030C"
+  vram = 0x8010030C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80100358"
+  vram = 0x80100358
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_801003BC"
+  vram = 0x801003BC
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80100480"
+  vram = 0x80100480
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_80100504"
+  vram = 0x80100504
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80100534"
+  vram = 0x80100534
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_801005BC"
+  vram = 0x801005BC
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8010062C"
+  vram = 0x8010062C
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_80100790"
+  vram = 0x80100790
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801007F0"
+  vram = 0x801007F0
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_801008E4"
+  vram = 0x801008E4
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_80100978"
+  vram = 0x80100978
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_801009DC"
+  vram = 0x801009DC
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80100A98"
+  vram = 0x80100A98
+  size = 0x378
+
+  [[section.functions]]
+  name = "func_80100E10"
+  vram = 0x80100E10
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80100E40"
+  vram = 0x80100E40
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80100F28"
+  vram = 0x80100F28
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_80100FC8"
+  vram = 0x80100FC8
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_80101160"
+  vram = 0x80101160
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801011B8"
+  vram = 0x801011B8
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "func_801013A8"
+  vram = 0x801013A8
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_801013CC"
+  vram = 0x801013CC
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80101444"
+  vram = 0x80101444
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_801014C8"
+  vram = 0x801014C8
+  size = 0x2B0
+
+  [[section.functions]]
+  name = "func_80101778"
+  vram = 0x80101778
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_80101898"
+  vram = 0x80101898
+  size = 0x228
+
+  [[section.functions]]
+  name = "func_80101AC0"
+  vram = 0x80101AC0
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_80101C6C"
+  vram = 0x80101C6C
+  size = 0x350
+
+  [[section.functions]]
+  name = "func_80101FBC"
+  vram = 0x80101FBC
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_801020B8"
+  vram = 0x801020B8
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_80102248"
+  vram = 0x80102248
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_80102268"
+  vram = 0x80102268
+  size = 0x2CC
+
+  [[section.functions]]
+  name = "func_80102534"
+  vram = 0x80102534
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801025C0"
+  vram = 0x801025C0
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8010267C"
+  vram = 0x8010267C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801026AC"
+  vram = 0x801026AC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8010270C"
+  vram = 0x8010270C
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80102770"
+  vram = 0x80102770
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80102904"
+  vram = 0x80102904
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_801029BC"
+  vram = 0x801029BC
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80102A10"
+  vram = 0x80102A10
+  size = 0x234
+
+  [[section.functions]]
+  name = "func_80102C44"
+  vram = 0x80102C44
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80102CD0"
+  vram = 0x80102CD0
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80102D8C"
+  vram = 0x80102D8C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80102DBC"
+  vram = 0x80102DBC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80102E1C"
+  vram = 0x80102E1C
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80102E80"
+  vram = 0x80102E80
+  size = 0x158
+
+  [[section.functions]]
+  name = "func_80102FD8"
+  vram = 0x80102FD8
+  size = 0xF8
+
+  [[section.functions]]
+  name = "func_801030D0"
+  vram = 0x801030D0
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80103120"
+  vram = 0x80103120
+  size = 0x29C
+
+  [[section.functions]]
+  name = "func_801033BC"
+  vram = 0x801033BC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80103448"
+  vram = 0x80103448
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_801034E0"
+  vram = 0x801034E0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80103510"
+  vram = 0x80103510
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80103570"
+  vram = 0x80103570
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_801035D4"
+  vram = 0x801035D4
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80103768"
+  vram = 0x80103768
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_8010380C"
+  vram = 0x8010380C
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_80103848"
+  vram = 0x80103848
+  size = 0x2A0
+
+  [[section.functions]]
+  name = "func_80103AE8"
+  vram = 0x80103AE8
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80103B74"
+  vram = 0x80103B74
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80103C34"
+  vram = 0x80103C34
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80103C64"
+  vram = 0x80103C64
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80103CC4"
+  vram = 0x80103CC4
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80103D28"
+  vram = 0x80103D28
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_80103EC4"
+  vram = 0x80103EC4
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80103F7C"
+  vram = 0x80103F7C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80103FD0"
+  vram = 0x80103FD0
+  size = 0x2D0
+
+  [[section.functions]]
+  name = "func_801042A0"
+  vram = 0x801042A0
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8010432C"
+  vram = 0x8010432C
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_801043EC"
+  vram = 0x801043EC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8010441C"
+  vram = 0x8010441C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8010447C"
+  vram = 0x8010447C
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_801044E0"
+  vram = 0x801044E0
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80104674"
+  vram = 0x80104674
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_8010472C"
+  vram = 0x8010472C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80104780"
+  vram = 0x80104780
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_80104A64"
+  vram = 0x80104A64
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80104AF0"
+  vram = 0x80104AF0
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80104BB0"
+  vram = 0x80104BB0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80104BE0"
+  vram = 0x80104BE0
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80104C40"
+  vram = 0x80104C40
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80104CA4"
+  vram = 0x80104CA4
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80104E38"
+  vram = 0x80104E38
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80104EF0"
+  vram = 0x80104EF0
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80104F40"
+  vram = 0x80104F40
+  size = 0x23C
+
+  [[section.functions]]
+  name = "func_8010517C"
+  vram = 0x8010517C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80105240"
+  vram = 0x80105240
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_8010534C"
+  vram = 0x8010534C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8010537C"
+  vram = 0x8010537C
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80105404"
+  vram = 0x80105404
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80105474"
+  vram = 0x80105474
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_801055D0"
+  vram = 0x801055D0
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80105630"
+  vram = 0x80105630
+  size = 0x23C
+
+  [[section.functions]]
+  name = "func_8010586C"
+  vram = 0x8010586C
+  size = 0x184
+
+  [[section.functions]]
+  name = "func_801059F0"
+  vram = 0x801059F0
+  size = 0x260
+
+  [[section.functions]]
+  name = "func_80105C50"
+  vram = 0x80105C50
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_80105D20"
+  vram = 0x80105D20
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_80106004"
+  vram = 0x80106004
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80106034"
+  vram = 0x80106034
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_801060BC"
+  vram = 0x801060BC
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8010613C"
+  vram = 0x8010613C
+  size = 0x170
+
+  [[section.functions]]
+  name = "func_801062AC"
+  vram = 0x801062AC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80106304"
+  vram = 0x80106304
+  size = 0x17C
+
+  [[section.functions]]
+  name = "func_80106480"
+  vram = 0x80106480
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801064E0"
+  vram = 0x801064E0
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80106674"
+  vram = 0x80106674
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_80106744"
+  vram = 0x80106744
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_801067C0"
+  vram = 0x801067C0
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_801068C0"
+  vram = 0x801068C0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801068F0"
+  vram = 0x801068F0
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_80106998"
+  vram = 0x80106998
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_80106A30"
+  vram = 0x80106A30
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_80106B9C"
+  vram = 0x80106B9C
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_80106BD4"
+  vram = 0x80106BD4
+  size = 0x240
+
+  [[section.functions]]
+  name = "func_80106E14"
+  vram = 0x80106E14
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_80106E98"
+  vram = 0x80106E98
+  size = 0x3AC
+
+  [[section.functions]]
+  name = "func_80107244"
+  vram = 0x80107244
+  size = 0x7A4
+
+  [[section.functions]]
+  name = "func_801079F0"
+  vram = 0x801079F0
+  size = 0x4B0
+
+  [[section.functions]]
+  name = "func_80107EA0"
+  vram = 0x80107EA0
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80107F88"
+  vram = 0x80107F88
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_8010811C"
+  vram = 0x8010811C
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_801082DC"
+  vram = 0x801082DC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8010830C"
+  vram = 0x8010830C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8010836C"
+  vram = 0x8010836C
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_801083AC"
+  vram = 0x801083AC
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_801083E0"
+  vram = 0x801083E0
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80108420"
+  vram = 0x80108420
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_80108454"
+  vram = 0x80108454
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80108494"
+  vram = 0x80108494
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_801084C8"
+  vram = 0x801084C8
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80108508"
+  vram = 0x80108508
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_8010853C"
+  vram = 0x8010853C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8010859C"
+  vram = 0x8010859C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801085E8"
+  vram = 0x801085E8
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_80108668"
+  vram = 0x80108668
+  size = 0x18C
+
+  [[section.functions]]
+  name = "func_801087F4"
+  vram = 0x801087F4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8010884C"
+  vram = 0x8010884C
+  size = 0x5CC
+
+  [[section.functions]]
+  name = "func_80108E18"
+  vram = 0x80108E18
+  size = 0xEC
+
+  [[section.functions]]
+  name = "func_80108F04"
+  vram = 0x80108F04
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80108F40"
+  vram = 0x80108F40
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80108F7C"
+  vram = 0x80108F7C
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80108FB8"
+  vram = 0x80108FB8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8010900C"
+  vram = 0x8010900C
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_80109124"
+  vram = 0x80109124
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_801091C4"
+  vram = 0x801091C4
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80109248"
+  vram = 0x80109248
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_801093B0"
+  vram = 0x801093B0
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_80109540"
+  vram = 0x80109540
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80109580"
+  vram = 0x80109580
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8010960C"
+  vram = 0x8010960C
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8010968C"
+  vram = 0x8010968C
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_801097C4"
+  vram = 0x801097C4
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_801097FC"
+  vram = 0x801097FC
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_801098AC"
+  vram = 0x801098AC
+  size = 0x370
+
+  [[section.functions]]
+  name = "func_80109C1C"
+  vram = 0x80109C1C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80109CEC"
+  vram = 0x80109CEC
+  size = 0x14C
+
+  [[section.functions]]
+  name = "func_80109E38"
+  vram = 0x80109E38
+  size = 0x514
+
+  [[section.functions]]
+  name = "func_8010A34C"
+  vram = 0x8010A34C
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8010A394"
+  vram = 0x8010A394
+  size = 0x188
+
+  [[section.functions]]
+  name = "func_8010A51C"
+  vram = 0x8010A51C
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_8010A620"
+  vram = 0x8010A620
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_8010A824"
+  vram = 0x8010A824
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8010A864"
+  vram = 0x8010A864
+  size = 0x6D8
+
+  [[section.functions]]
+  name = "func_8010AF3C"
+  vram = 0x8010AF3C
+  size = 0x2D4
+
+  [[section.functions]]
+  name = "func_8010B210"
+  vram = 0x8010B210
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_8010B2D4"
+  vram = 0x8010B2D4
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8010B360"
+  vram = 0x8010B360
+  size = 0x564
+
+  [[section.functions]]
+  name = "func_8010B8C4"
+  vram = 0x8010B8C4
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_8010B9D4"
+  vram = 0x8010B9D4
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_8010BAE8"
+  vram = 0x8010BAE8
+  size = 0xE24
+
+  [[section.functions]]
+  name = "func_8010C90C"
+  vram = 0x8010C90C
+  size = 0x8F8
+
+  [[section.functions]]
+  name = "func_8010D204"
+  vram = 0x8010D204
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8010D29C"
+  vram = 0x8010D29C
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8010D334"
+  vram = 0x8010D334
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8010D3D0"
+  vram = 0x8010D3D0
+  size = 0x12C
+
+  [[section.functions]]
+  name = "func_8010D4FC"
+  vram = 0x8010D4FC
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_8010D6A8"
+  vram = 0x8010D6A8
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_8010D79C"
+  vram = 0x8010D79C
+  size = 0x12C
+
+  [[section.functions]]
+  name = "func_8010D8C8"
+  vram = 0x8010D8C8
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_8010D9EC"
+  vram = 0x8010D9EC
+  size = 0x61C
+
+  [[section.functions]]
+  name = "func_8010E008"
+  vram = 0x8010E008
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8010E094"
+  vram = 0x8010E094
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_8010E250"
+  vram = 0x8010E250
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8010E2C8"
+  vram = 0x8010E2C8
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_8010E400"
+  vram = 0x8010E400
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_8010E548"
+  vram = 0x8010E548
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_8010E6D8"
+  vram = 0x8010E6D8
+  size = 0x388
+
+  [[section.functions]]
+  name = "func_8010EA60"
+  vram = 0x8010EA60
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8010EAB4"
+  vram = 0x8010EAB4
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_8010EBF0"
+  vram = 0x8010EBF0
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_8010ECFC"
+  vram = 0x8010ECFC
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_8010ED30"
+  vram = 0x8010ED30
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8010ED68"
+  vram = 0x8010ED68
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_8010ED88"
+  vram = 0x8010ED88
+  size = 0x85C
+
+  [[section.functions]]
+  name = "func_8010F5E4"
+  vram = 0x8010F5E4
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8010F68C"
+  vram = 0x8010F68C
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_8010F858"
+  vram = 0x8010F858
+  size = 0x1E4
+
+  [[section.functions]]
+  name = "func_8010FA3C"
+  vram = 0x8010FA3C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8010FA9C"
+  vram = 0x8010FA9C
+  size = 0xF0
+
+  [[section.functions]]
+  name = "func_8010FB8C"
+  vram = 0x8010FB8C
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_8010FC88"
+  vram = 0x8010FC88
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8010FCD0"
+  vram = 0x8010FCD0
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8010FD78"
+  vram = 0x8010FD78
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8010FE28"
+  vram = 0x8010FE28
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8010FE60"
+  vram = 0x8010FE60
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_8010FE74"
+  vram = 0x8010FE74
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_8010FE90"
+  vram = 0x8010FE90
+  size = 0x6E8
+
+  [[section.functions]]
+  name = "func_80110578"
+  vram = 0x80110578
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_801105A0"
+  vram = 0x801105A0
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_801105C8"
+  vram = 0x801105C8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_801105F0"
+  vram = 0x801105F0
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_80110628"
+  vram = 0x80110628
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80110668"
+  vram = 0x80110668
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80110690"
+  vram = 0x80110690
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_80114118"
+  vram = 0x80114118
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80114154"
+  vram = 0x80114154
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_80114204"
+  vram = 0x80114204
+  size = 0x1C8
+
+  [[section.functions]]
+  name = "func_801143CC"
+  vram = 0x801143CC
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_8011456C"
+  vram = 0x8011456C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801145FC"
+  vram = 0x801145FC
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_80114744"
+  vram = 0x80114744
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_80114894"
+  vram = 0x80114894
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_801149A8"
+  vram = 0x801149A8
+  size = 0x12C
+
+  [[section.functions]]
+  name = "func_80114AD4"
+  vram = 0x80114AD4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80114B90"
+  vram = 0x80114B90
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80114BF4"
+  vram = 0x80114BF4
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80114C88"
+  vram = 0x80114C88
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_80114D38"
+  vram = 0x80114D38
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_80114D5C"
+  vram = 0x80114D5C
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_80114EF4"
+  vram = 0x80114EF4
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80114F24"
+  vram = 0x80114F24
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_80114F2C"
+  vram = 0x80114F2C
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_801150E8"
+  vram = 0x801150E8
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115154"
+  vram = 0x80115154
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801151B0"
+  vram = 0x801151B0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8011522C"
+  vram = 0x8011522C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801152B8"
+  vram = 0x801152B8
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115324"
+  vram = 0x80115324
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80115370"
+  vram = 0x80115370
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_801153DC"
+  vram = 0x801153DC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80115468"
+  vram = 0x80115468
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_801154E4"
+  vram = 0x801154E4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115550"
+  vram = 0x80115550
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801155AC"
+  vram = 0x801155AC
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115618"
+  vram = 0x80115618
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80115664"
+  vram = 0x80115664
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_801156D0"
+  vram = 0x801156D0
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8011572C"
+  vram = 0x8011572C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80115788"
+  vram = 0x80115788
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_801157F4"
+  vram = 0x801157F4
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80115870"
+  vram = 0x80115870
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801158CC"
+  vram = 0x801158CC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80115958"
+  vram = 0x80115958
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80115A14"
+  vram = 0x80115A14
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80115A44"
+  vram = 0x80115A44
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80115AD0"
+  vram = 0x80115AD0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80115B1C"
+  vram = 0x80115B1C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115B88"
+  vram = 0x80115B88
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80115BE4"
+  vram = 0x80115BE4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115C6C"
+  vram = 0x80115C6C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115CD8"
+  vram = 0x80115CD8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80115D34"
+  vram = 0x80115D34
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115DA0"
+  vram = 0x80115DA0
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80115E2C"
+  vram = 0x80115E2C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80115F08"
+  vram = 0x80115F08
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80115FA0"
+  vram = 0x80115FA0
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8011619C"
+  vram = 0x8011619C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80116258"
+  vram = 0x80116258
+  size = 0x580
+
+  [[section.functions]]
+  name = "func_801167D8"
+  vram = 0x801167D8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80116808"
+  vram = 0x80116808
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_80116910"
+  vram = 0x80116910
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_801169C8"
+  vram = 0x801169C8
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_80116BE0"
+  vram = 0x80116BE0
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80116C38"
+  vram = 0x80116C38
+  size = 0xC08
+
+  [[section.functions]]
+  name = "func_80117840"
+  vram = 0x80117840
+  size = 0x47C
+
+  [[section.functions]]
+  name = "func_80117CBC"
+  vram = 0x80117CBC
+  size = 0x350
+
+  [[section.functions]]
+  name = "func_8011800C"
+  vram = 0x8011800C
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_801181A4"
+  vram = 0x801181A4
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_80118240"
+  vram = 0x80118240
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_801182E0"
+  vram = 0x801182E0
+  size = 0x260
+
+  [[section.functions]]
+  name = "func_80118540"
+  vram = 0x80118540
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_801185FC"
+  vram = 0x801185FC
+  size = 0x3D0
+
+  [[section.functions]]
+  name = "func_801189CC"
+  vram = 0x801189CC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801189FC"
+  vram = 0x801189FC
+  size = 0x158
+
+  [[section.functions]]
+  name = "func_80118B54"
+  vram = 0x80118B54
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80118C14"
+  vram = 0x80118C14
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_80118DE0"
+  vram = 0x80118DE0
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80118E38"
+  vram = 0x80118E38
+  size = 0x614
+
+  [[section.functions]]
+  name = "func_8011944C"
+  vram = 0x8011944C
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_801194FC"
+  vram = 0x801194FC
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_80119614"
+  vram = 0x80119614
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_801196D0"
+  vram = 0x801196D0
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80119740"
+  vram = 0x80119740
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_80119910"
+  vram = 0x80119910
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_80119AC8"
+  vram = 0x80119AC8
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_80119BD8"
+  vram = 0x80119BD8
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_80119D28"
+  vram = 0x80119D28
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80119F24"
+  vram = 0x80119F24
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80119FE0"
+  vram = 0x80119FE0
+  size = 0x160
+
+  [[section.functions]]
+  name = "func_8011A140"
+  vram = 0x8011A140
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8011A170"
+  vram = 0x8011A170
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8011A218"
+  vram = 0x8011A218
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8011A2B0"
+  vram = 0x8011A2B0
+  size = 0x180
+
+  [[section.functions]]
+  name = "func_8011A430"
+  vram = 0x8011A430
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8011A488"
+  vram = 0x8011A488
+  size = 0x684
+
+  [[section.functions]]
+  name = "func_8011AB0C"
+  vram = 0x8011AB0C
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_8011ACDC"
+  vram = 0x8011ACDC
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8011AE94"
+  vram = 0x8011AE94
+  size = 0x230
+
+  [[section.functions]]
+  name = "func_8011B0C8"
+  vram = 0x8011B0C8
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8011B2C4"
+  vram = 0x8011B2C4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8011B380"
+  vram = 0x8011B380
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_8011B4A4"
+  vram = 0x8011B4A4
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8011B4D4"
+  vram = 0x8011B4D4
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8011B57C"
+  vram = 0x8011B57C
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8011B614"
+  vram = 0x8011B614
+  size = 0x180
+
+  [[section.functions]]
+  name = "func_8011B794"
+  vram = 0x8011B794
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8011B7EC"
+  vram = 0x8011B7EC
+  size = 0x260
+
+  [[section.functions]]
+  name = "func_8011BA4C"
+  vram = 0x8011BA4C
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_8011BAF0"
+  vram = 0x8011BAF0
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_8011BCFC"
+  vram = 0x8011BCFC
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8011BDB8"
+  vram = 0x8011BDB8
+  size = 0x49C
+
+  [[section.functions]]
+  name = "func_8011C254"
+  vram = 0x8011C254
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8011C284"
+  vram = 0x8011C284
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_8011C3C4"
+  vram = 0x8011C3C4
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_8011C48C"
+  vram = 0x8011C48C
+  size = 0x3EC
+
+  [[section.functions]]
+  name = "func_8011C878"
+  vram = 0x8011C878
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8011C8D0"
+  vram = 0x8011C8D0
+  size = 0x9EC
+
+  [[section.functions]]
+  name = "func_8011D2BC"
+  vram = 0x8011D2BC
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_8011D4C8"
+  vram = 0x8011D4C8
+  size = 0x264
+
+  [[section.functions]]
+  name = "func_8011D72C"
+  vram = 0x8011D72C
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8011D7AC"
+  vram = 0x8011D7AC
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_8011D870"
+  vram = 0x8011D870
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_8011D938"
+  vram = 0x8011D938
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_8011DB44"
+  vram = 0x8011DB44
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8011DC00"
+  vram = 0x8011DC00
+  size = 0x3C0
+
+  [[section.functions]]
+  name = "func_8011DFC0"
+  vram = 0x8011DFC0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8011DFF0"
+  vram = 0x8011DFF0
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_8011E1B0"
+  vram = 0x8011E1B0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8011E22C"
+  vram = 0x8011E22C
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_8011E3F0"
+  vram = 0x8011E3F0
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8011E448"
+  vram = 0x8011E448
+  size = 0x7E0
+
+  [[section.functions]]
+  name = "func_8011EC28"
+  vram = 0x8011EC28
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_8011ED94"
+  vram = 0x8011ED94
+  size = 0x234
+
+  [[section.functions]]
+  name = "func_8011EFC8"
+  vram = 0x8011EFC8
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_8011F098"
+  vram = 0x8011F098
+  size = 0x154
+
+  [[section.functions]]
+  name = "func_8011F1EC"
+  vram = 0x8011F1EC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8011F278"
+  vram = 0x8011F278
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8011F304"
+  vram = 0x8011F304
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8011F360"
+  vram = 0x8011F360
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_8011F500"
+  vram = 0x8011F500
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8011F538"
+  vram = 0x8011F538
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_8011F634"
+  vram = 0x8011F634
+  size = 0x468
+
+  [[section.functions]]
+  name = "func_8011FA9C"
+  vram = 0x8011FA9C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8011FB58"
+  vram = 0x8011FB58
+  size = 0x450
+
+  [[section.functions]]
+  name = "func_8011FFB0"
+  vram = 0x8011FFB0
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_80120020"
+  vram = 0x80120020
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_8012018C"
+  vram = 0x8012018C
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_801202CC"
+  vram = 0x801202CC
+  size = 0x278
+
+  [[section.functions]]
+  name = "func_80120544"
+  vram = 0x80120544
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801205A4"
+  vram = 0x801205A4
+  size = 0x92C
+
+  [[section.functions]]
+  name = "func_80120ED0"
+  vram = 0x80120ED0
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_80120FEC"
+  vram = 0x80120FEC
+  size = 0x280
+
+  [[section.functions]]
+  name = "func_8012126C"
+  vram = 0x8012126C
+  size = 0x1F4
+
+  [[section.functions]]
+  name = "func_80121460"
+  vram = 0x80121460
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801214C0"
+  vram = 0x801214C0
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_80121554"
+  vram = 0x80121554
+  size = 0xEC
+
+  [[section.functions]]
+  name = "func_80121640"
+  vram = 0x80121640
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801216CC"
+  vram = 0x801216CC
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80121728"
+  vram = 0x80121728
+  size = 0x110
+
+  [[section.functions]]
+  name = "func_80121838"
+  vram = 0x80121838
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_80121864"
+  vram = 0x80121864
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_801218EC"
+  vram = 0x801218EC
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_80121998"
+  vram = 0x80121998
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_80121A8C"
+  vram = 0x80121A8C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_80121BA0"
+  vram = 0x80121BA0
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80121E14"
+  vram = 0x80121E14
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_80121E88"
+  vram = 0x80121E88
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_801220A0"
+  vram = 0x801220A0
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80122164"
+  vram = 0x80122164
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_80122270"
+  vram = 0x80122270
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801222A0"
+  vram = 0x801222A0
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_80122348"
+  vram = 0x80122348
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_801223D0"
+  vram = 0x801223D0
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_8012252C"
+  vram = 0x8012252C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8012258C"
+  vram = 0x8012258C
+  size = 0x2D4
+
+  [[section.functions]]
+  name = "func_80122860"
+  vram = 0x80122860
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_801229F8"
+  vram = 0x801229F8
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80122BF4"
+  vram = 0x80122BF4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80122CB0"
+  vram = 0x80122CB0
+  size = 0x2EC
+
+  [[section.functions]]
+  name = "func_80122F9C"
+  vram = 0x80122F9C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80122FCC"
+  vram = 0x80122FCC
+  size = 0x118
+
+  [[section.functions]]
+  name = "func_801230E4"
+  vram = 0x801230E4
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_801231A4"
+  vram = 0x801231A4
+  size = 0x238
+
+  [[section.functions]]
+  name = "func_801233DC"
+  vram = 0x801233DC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80123434"
+  vram = 0x80123434
+  size = 0x458
+
+  [[section.functions]]
+  name = "func_8012388C"
+  vram = 0x8012388C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_80123920"
+  vram = 0x80123920
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_80123ADC"
+  vram = 0x80123ADC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80123C9C"
+  vram = 0x80123C9C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80123D08"
+  vram = 0x80123D08
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80123D74"
+  vram = 0x80123D74
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_80123E10"
+  vram = 0x80123E10
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80123E6C"
+  vram = 0x80123E6C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80123ED8"
+  vram = 0x80123ED8
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80123F64"
+  vram = 0x80123F64
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80123FF0"
+  vram = 0x80123FF0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012405C"
+  vram = 0x8012405C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_801240C8"
+  vram = 0x801240C8
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80124154"
+  vram = 0x80124154
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801241E0"
+  vram = 0x801241E0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012424C"
+  vram = 0x8012424C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801242A8"
+  vram = 0x801242A8
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_80124344"
+  vram = 0x80124344
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_801243F0"
+  vram = 0x801243F0
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012445C"
+  vram = 0x8012445C
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_80124508"
+  vram = 0x80124508
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80124554"
+  vram = 0x80124554
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801245A0"
+  vram = 0x801245A0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801245EC"
+  vram = 0x801245EC
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80124658"
+  vram = 0x80124658
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80124820"
+  vram = 0x80124820
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80124A1C"
+  vram = 0x80124A1C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80124AD8"
+  vram = 0x80124AD8
+  size = 0x4F4
+
+  [[section.functions]]
+  name = "func_80124FCC"
+  vram = 0x80124FCC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80124FFC"
+  vram = 0x80124FFC
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_80125124"
+  vram = 0x80125124
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_801251E4"
+  vram = 0x801251E4
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_80125384"
+  vram = 0x80125384
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801253DC"
+  vram = 0x801253DC
+  size = 0x690
+
+  [[section.functions]]
+  name = "func_80125A6C"
+  vram = 0x80125A6C
+  size = 0x130
+
+  [[section.functions]]
+  name = "func_80125B9C"
+  vram = 0x80125B9C
+  size = 0x1F8
+
+  [[section.functions]]
+  name = "func_80125D94"
+  vram = 0x80125D94
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_80125E58"
+  vram = 0x80125E58
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80125F10"
+  vram = 0x80125F10
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80125FC8"
+  vram = 0x80125FC8
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_801261C4"
+  vram = 0x801261C4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80126280"
+  vram = 0x80126280
+  size = 0x508
+
+  [[section.functions]]
+  name = "func_80126788"
+  vram = 0x80126788
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801267B8"
+  vram = 0x801267B8
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_801268A0"
+  vram = 0x801268A0
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_80126950"
+  vram = 0x80126950
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_80126B14"
+  vram = 0x80126B14
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80126B90"
+  vram = 0x80126B90
+  size = 0xC2C
+
+  [[section.functions]]
+  name = "func_801277BC"
+  vram = 0x801277BC
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_80127A04"
+  vram = 0x80127A04
+  size = 0x2F4
+
+  [[section.functions]]
+  name = "func_80127CF8"
+  vram = 0x80127CF8
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_80127E48"
+  vram = 0x80127E48
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80127ED4"
+  vram = 0x80127ED4
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80127F50"
+  vram = 0x80127F50
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8012814C"
+  vram = 0x8012814C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80128208"
+  vram = 0x80128208
+  size = 0x31C
+
+  [[section.functions]]
+  name = "func_80128524"
+  vram = 0x80128524
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80128554"
+  vram = 0x80128554
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_801285FC"
+  vram = 0x801285FC
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_80128694"
+  vram = 0x80128694
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80128890"
+  vram = 0x80128890
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_80128924"
+  vram = 0x80128924
+  size = 0x3B4
+
+  [[section.functions]]
+  name = "func_80128CD8"
+  vram = 0x80128CD8
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80128D54"
+  vram = 0x80128D54
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_80128F00"
+  vram = 0x80128F00
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80128F70"
+  vram = 0x80128F70
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_80129188"
+  vram = 0x80129188
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8012924C"
+  vram = 0x8012924C
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_80129358"
+  vram = 0x80129358
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80129388"
+  vram = 0x80129388
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80129410"
+  vram = 0x80129410
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80129480"
+  vram = 0x80129480
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_801295E4"
+  vram = 0x801295E4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80129644"
+  vram = 0x80129644
+  size = 0x1B4
+
+  [[section.functions]]
+  name = "func_801297F8"
+  vram = 0x801297F8
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_80129910"
+  vram = 0x80129910
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80129B0C"
+  vram = 0x80129B0C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80129BC8"
+  vram = 0x80129BC8
+  size = 0x5F0
+
+  [[section.functions]]
+  name = "func_8012A1B8"
+  vram = 0x8012A1B8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8012A1E8"
+  vram = 0x8012A1E8
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_8012A310"
+  vram = 0x8012A310
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_8012A3D0"
+  vram = 0x8012A3D0
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8012A588"
+  vram = 0x8012A588
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8012A5E0"
+  vram = 0x8012A5E0
+  size = 0x838
+
+  [[section.functions]]
+  name = "func_8012AE18"
+  vram = 0x8012AE18
+  size = 0x1DC
+
+  [[section.functions]]
+  name = "func_8012AFF4"
+  vram = 0x8012AFF4
+  size = 0x238
+
+  [[section.functions]]
+  name = "func_8012B22C"
+  vram = 0x8012B22C
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8012B29C"
+  vram = 0x8012B29C
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8012B314"
+  vram = 0x8012B314
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8012B390"
+  vram = 0x8012B390
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8012B58C"
+  vram = 0x8012B58C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8012B648"
+  vram = 0x8012B648
+  size = 0x62C
+
+  [[section.functions]]
+  name = "func_8012BC74"
+  vram = 0x8012BC74
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8012BCA4"
+  vram = 0x8012BCA4
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_8012BDCC"
+  vram = 0x8012BDCC
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8012BE7C"
+  vram = 0x8012BE7C
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_8012C038"
+  vram = 0x8012C038
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8012C090"
+  vram = 0x8012C090
+  size = 0x810
+
+  [[section.functions]]
+  name = "func_8012C8A0"
+  vram = 0x8012C8A0
+  size = 0x2F8
+
+  [[section.functions]]
+  name = "func_8012CB98"
+  vram = 0x8012CB98
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8012CD50"
+  vram = 0x8012CD50
+  size = 0x158
+
+  [[section.functions]]
+  name = "func_8012CEA8"
+  vram = 0x8012CEA8
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8012CF20"
+  vram = 0x8012CF20
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8012CF98"
+  vram = 0x8012CF98
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8012CFF8"
+  vram = 0x8012CFF8
+  size = 0x338
+
+  [[section.functions]]
+  name = "func_8012D330"
+  vram = 0x8012D330
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8012D3EC"
+  vram = 0x8012D3EC
+  size = 0x9DC
+
+  [[section.functions]]
+  name = "func_8012DDC8"
+  vram = 0x8012DDC8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8012DDF8"
+  vram = 0x8012DDF8
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_8012DFA0"
+  vram = 0x8012DFA0
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_8012E080"
+  vram = 0x8012E080
+  size = 0x2D0
+
+  [[section.functions]]
+  name = "func_8012E350"
+  vram = 0x8012E350
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8012E3A8"
+  vram = 0x8012E3A8
+  size = 0xAD0
+
+  [[section.functions]]
+  name = "func_8012EE78"
+  vram = 0x8012EE78
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8012EF20"
+  vram = 0x8012EF20
+  size = 0x17C
+
+  [[section.functions]]
+  name = "func_8012F09C"
+  vram = 0x8012F09C
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8012F0F4"
+  vram = 0x8012F0F4
+  size = 0x12C
+
+  [[section.functions]]
+  name = "func_8012F748"
+  vram = 0x8012F748
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8012F794"
+  vram = 0x8012F794
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012F800"
+  vram = 0x8012F800
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012F86C"
+  vram = 0x8012F86C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012F8D8"
+  vram = 0x8012F8D8
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8012F954"
+  vram = 0x8012F954
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8012F9D0"
+  vram = 0x8012F9D0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8012FA1C"
+  vram = 0x8012FA1C
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012FA88"
+  vram = 0x8012FA88
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FAE4"
+  vram = 0x8012FAE4
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012FB50"
+  vram = 0x8012FB50
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012FBBC"
+  vram = 0x8012FBBC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8012FC38"
+  vram = 0x8012FC38
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8012FC84"
+  vram = 0x8012FC84
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FCE0"
+  vram = 0x8012FCE0
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FD3C"
+  vram = 0x8012FD3C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FD98"
+  vram = 0x8012FD98
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FDF4"
+  vram = 0x8012FDF4
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8012FE40"
+  vram = 0x8012FE40
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8012FE8C"
+  vram = 0x8012FE8C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8012FF18"
+  vram = 0x8012FF18
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8012FF74"
+  vram = 0x8012FF74
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8012FFE0"
+  vram = 0x8012FFE0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8013002C"
+  vram = 0x8013002C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80130078"
+  vram = 0x80130078
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801300C4"
+  vram = 0x801300C4
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80130110"
+  vram = 0x80130110
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8013014C"
+  vram = 0x8013014C
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_801301C0"
+  vram = 0x801301C0
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80130228"
+  vram = 0x80130228
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80130264"
+  vram = 0x80130264
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801302B0"
+  vram = 0x801302B0
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_80130324"
+  vram = 0x80130324
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_801303A0"
+  vram = 0x801303A0
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801303FC"
+  vram = 0x801303FC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80130478"
+  vram = 0x80130478
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801304D8"
+  vram = 0x801304D8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80130514"
+  vram = 0x80130514
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80130550"
+  vram = 0x80130550
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8013059C"
+  vram = 0x8013059C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801305F8"
+  vram = 0x801305F8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80130634"
+  vram = 0x80130634
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_801306B0"
+  vram = 0x801306B0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801306E0"
+  vram = 0x801306E0
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80130710"
+  vram = 0x80130710
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80130750"
+  vram = 0x80130750
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8013094C"
+  vram = 0x8013094C
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80130A34"
+  vram = 0x80130A34
+  size = 0x33C
+
+  [[section.functions]]
+  name = "func_80130D70"
+  vram = 0x80130D70
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80130DA0"
+  vram = 0x80130DA0
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80130E88"
+  vram = 0x80130E88
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_80130F38"
+  vram = 0x80130F38
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_801310D4"
+  vram = 0x801310D4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013112C"
+  vram = 0x8013112C
+  size = 0x4C8
+
+  [[section.functions]]
+  name = "func_801315F4"
+  vram = 0x801315F4
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_801316D4"
+  vram = 0x801316D4
+  size = 0x230
+
+  [[section.functions]]
+  name = "func_80131904"
+  vram = 0x80131904
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_801319A4"
+  vram = 0x801319A4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80131A04"
+  vram = 0x80131A04
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80131A68"
+  vram = 0x80131A68
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80131C64"
+  vram = 0x80131C64
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80131D20"
+  vram = 0x80131D20
+  size = 0x49C
+
+  [[section.functions]]
+  name = "func_801321BC"
+  vram = 0x801321BC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801321EC"
+  vram = 0x801321EC
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_801322D4"
+  vram = 0x801322D4
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_80132374"
+  vram = 0x80132374
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_80132514"
+  vram = 0x80132514
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013256C"
+  vram = 0x8013256C
+  size = 0x704
+
+  [[section.functions]]
+  name = "func_80132C70"
+  vram = 0x80132C70
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_80132DB8"
+  vram = 0x80132DB8
+  size = 0x1F8
+
+  [[section.functions]]
+  name = "func_80132FB0"
+  vram = 0x80132FB0
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80133014"
+  vram = 0x80133014
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80133074"
+  vram = 0x80133074
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801330D8"
+  vram = 0x801330D8
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_801332D4"
+  vram = 0x801332D4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80133390"
+  vram = 0x80133390
+  size = 0x390
+
+  [[section.functions]]
+  name = "func_80133720"
+  vram = 0x80133720
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80133750"
+  vram = 0x80133750
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_801337F8"
+  vram = 0x801337F8
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_80133890"
+  vram = 0x80133890
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_80133A28"
+  vram = 0x80133A28
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80133A80"
+  vram = 0x80133A80
+  size = 0x4F8
+
+  [[section.functions]]
+  name = "func_80133F78"
+  vram = 0x80133F78
+  size = 0x160
+
+  [[section.functions]]
+  name = "func_801340D8"
+  vram = 0x801340D8
+  size = 0x1F4
+
+  [[section.functions]]
+  name = "func_801342CC"
+  vram = 0x801342CC
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_80134374"
+  vram = 0x80134374
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801343D4"
+  vram = 0x801343D4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80134438"
+  vram = 0x80134438
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80134634"
+  vram = 0x80134634
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_801346F0"
+  vram = 0x801346F0
+  size = 0x51C
+
+  [[section.functions]]
+  name = "func_80134C0C"
+  vram = 0x80134C0C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80134C3C"
+  vram = 0x80134C3C
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_80134D84"
+  vram = 0x80134D84
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_80134E4C"
+  vram = 0x80134E4C
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_80134FFC"
+  vram = 0x80134FFC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80135054"
+  vram = 0x80135054
+  size = 0xA9C
+
+  [[section.functions]]
+  name = "func_80135AF0"
+  vram = 0x80135AF0
+  size = 0x1B4
+
+  [[section.functions]]
+  name = "func_80135CA4"
+  vram = 0x80135CA4
+  size = 0x4E0
+
+  [[section.functions]]
+  name = "func_80136184"
+  vram = 0x80136184
+  size = 0x154
+
+  [[section.functions]]
+  name = "func_801362D8"
+  vram = 0x801362D8
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80136338"
+  vram = 0x80136338
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80136398"
+  vram = 0x80136398
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80136594"
+  vram = 0x80136594
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_80136650"
+  vram = 0x80136650
+  size = 0x374
+
+  [[section.functions]]
+  name = "func_801369C4"
+  vram = 0x801369C4
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_801369F4"
+  vram = 0x801369F4
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_80136A9C"
+  vram = 0x80136A9C
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_80136B34"
+  vram = 0x80136B34
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_80136CCC"
+  vram = 0x80136CCC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80136D24"
+  vram = 0x80136D24
+  size = 0x91C
+
+  [[section.functions]]
+  name = "func_80137640"
+  vram = 0x80137640
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_80137924"
+  vram = 0x80137924
+  size = 0x224
+
+  [[section.functions]]
+  name = "func_80137B48"
+  vram = 0x80137B48
+  size = 0x26C
+
+  [[section.functions]]
+  name = "func_80137DB4"
+  vram = 0x80137DB4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80137E14"
+  vram = 0x80137E14
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80137E78"
+  vram = 0x80137E78
+  size = 0x12C
+
+  [[section.functions]]
+  name = "func_80137FA4"
+  vram = 0x80137FA4
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_80138154"
+  vram = 0x80138154
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_80138228"
+  vram = 0x80138228
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80138298"
+  vram = 0x80138298
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80138324"
+  vram = 0x80138324
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_801383A4"
+  vram = 0x801383A4
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_801384DC"
+  vram = 0x801384DC
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_801385E4"
+  vram = 0x801385E4
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013861C"
+  vram = 0x8013861C
+  size = 0x270
+
+  [[section.functions]]
+  name = "func_8013888C"
+  vram = 0x8013888C
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_80138954"
+  vram = 0x80138954
+  size = 0x500
+
+  [[section.functions]]
+  name = "func_80138E54"
+  vram = 0x80138E54
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80138E84"
+  vram = 0x80138E84
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80138EAC"
+  vram = 0x80138EAC
+  size = 0xF0
+
+  [[section.functions]]
+  name = "func_80138F9C"
+  vram = 0x80138F9C
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8013904C"
+  vram = 0x8013904C
+  size = 0x2A8
+
+  [[section.functions]]
+  name = "func_801392F4"
+  vram = 0x801392F4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013934C"
+  vram = 0x8013934C
+  size = 0x1240
+
+  [[section.functions]]
+  name = "func_8013A58C"
+  vram = 0x8013A58C
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_8013A5E0"
+  vram = 0x8013A5E0
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_8013A6AC"
+  vram = 0x8013A6AC
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013A704"
+  vram = 0x8013A704
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013A764"
+  vram = 0x8013A764
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013A7C4"
+  vram = 0x8013A7C4
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_8013A9DC"
+  vram = 0x8013A9DC
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_8013AAF0"
+  vram = 0x8013AAF0
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8013AB14"
+  vram = 0x8013AB14
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8013AB70"
+  vram = 0x8013AB70
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013ABD0"
+  vram = 0x8013ABD0
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8013ABF4"
+  vram = 0x8013ABF4
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8013AC18"
+  vram = 0x8013AC18
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_8013AC74"
+  vram = 0x8013AC74
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8013ACE4"
+  vram = 0x8013ACE4
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8013AD08"
+  vram = 0x8013AD08
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8013AD34"
+  vram = 0x8013AD34
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013AD6C"
+  vram = 0x8013AD6C
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8013ADE0"
+  vram = 0x8013ADE0
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013AE18"
+  vram = 0x8013AE18
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013AE50"
+  vram = 0x8013AE50
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8013AEC4"
+  vram = 0x8013AEC4
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8013AF38"
+  vram = 0x8013AF38
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8013AFAC"
+  vram = 0x8013AFAC
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8013AFF4"
+  vram = 0x8013AFF4
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013B070"
+  vram = 0x8013B070
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8013B164"
+  vram = 0x8013B164
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8013B214"
+  vram = 0x8013B214
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8013B308"
+  vram = 0x8013B308
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_8013B3A8"
+  vram = 0x8013B3A8
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_8013B430"
+  vram = 0x8013B430
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8013B4A4"
+  vram = 0x8013B4A4
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8013B520"
+  vram = 0x8013B520
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_8013B71C"
+  vram = 0x8013B71C
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8013B7D8"
+  vram = 0x8013B7D8
+  size = 0x4EC
+
+  [[section.functions]]
+  name = "func_8013BCC4"
+  vram = 0x8013BCC4
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8013BCF4"
+  vram = 0x8013BCF4
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_8013BDFC"
+  vram = 0x8013BDFC
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_8013BEB4"
+  vram = 0x8013BEB4
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8013C06C"
+  vram = 0x8013C06C
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013C0C4"
+  vram = 0x8013C0C4
+  size = 0x568
+
+  [[section.functions]]
+  name = "func_8013C648"
+  vram = 0x8013C648
+  size = 0x14C
+
+  [[section.functions]]
+  name = "func_8013C794"
+  vram = 0x8013C794
+  size = 0x214
+
+  [[section.functions]]
+  name = "func_8013C9A8"
+  vram = 0x8013C9A8
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_8013CA48"
+  vram = 0x8013CA48
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013CAA8"
+  vram = 0x8013CAA8
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013CB08"
+  vram = 0x8013CB08
+  size = 0x2DC
+
+  [[section.functions]]
+  name = "func_8013CDE4"
+  vram = 0x8013CDE4
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8013CEA0"
+  vram = 0x8013CEA0
+  size = 0x2DC
+
+  [[section.functions]]
+  name = "func_8013D17C"
+  vram = 0x8013D17C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8013D1AC"
+  vram = 0x8013D1AC
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8013D254"
+  vram = 0x8013D254
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8013D2EC"
+  vram = 0x8013D2EC
+  size = 0x1A4
+
+  [[section.functions]]
+  name = "func_8013D490"
+  vram = 0x8013D490
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013D4E8"
+  vram = 0x8013D4E8
+  size = 0xB88
+
+  [[section.functions]]
+  name = "func_8013E070"
+  vram = 0x8013E070
+  size = 0x1B4
+
+  [[section.functions]]
+  name = "func_8013E224"
+  vram = 0x8013E224
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_8013E47C"
+  vram = 0x8013E47C
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_8013E560"
+  vram = 0x8013E560
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_8013E778"
+  vram = 0x8013E778
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8013E83C"
+  vram = 0x8013E83C
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_8013E948"
+  vram = 0x8013E948
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8013E978"
+  vram = 0x8013E978
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_8013EA00"
+  vram = 0x8013EA00
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8013EA70"
+  vram = 0x8013EA70
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_8013EBD4"
+  vram = 0x8013EBD4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013EC34"
+  vram = 0x8013EC34
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_8013EE7C"
+  vram = 0x8013EE7C
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_8013F008"
+  vram = 0x8013F008
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8013F060"
+  vram = 0x8013F060
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8013F0CC"
+  vram = 0x8013F0CC
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8013F10C"
+  vram = 0x8013F10C
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8013F14C"
+  vram = 0x8013F14C
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8013F18C"
+  vram = 0x8013F18C
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8013F1D0"
+  vram = 0x8013F1D0
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8013F230"
+  vram = 0x8013F230
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8013F258"
+  vram = 0x8013F258
+  size = 0x3E8
+
+  [[section.functions]]
+  name = "func_8013F640"
+  vram = 0x8013F640
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013F678"
+  vram = 0x8013F678
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013F6B0"
+  vram = 0x8013F6B0
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_8013F6DC"
+  vram = 0x8013F6DC
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8013F724"
+  vram = 0x8013F724
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8013F784"
+  vram = 0x8013F784
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013F7BC"
+  vram = 0x8013F7BC
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8013F838"
+  vram = 0x8013F838
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_8013F9FC"
+  vram = 0x8013F9FC
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8013FA7C"
+  vram = 0x8013FA7C
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_8013FAD0"
+  vram = 0x8013FAD0
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_8013FBCC"
+  vram = 0x8013FBCC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8013FBFC"
+  vram = 0x8013FBFC
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8013FC34"
+  vram = 0x8013FC34
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8013FC84"
+  vram = 0x8013FC84
+  size = 0x144
+
+  [[section.functions]]
+  name = "func_8013FE18"
+  vram = 0x8013FE18
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_8013FEF4"
+  vram = 0x8013FEF4
+  size = 0x45C
+
+  [[section.functions]]
+  name = "func_80140350"
+  vram = 0x80140350
+  size = 0x204
+
+  [[section.functions]]
+  name = "func_80140554"
+  vram = 0x80140554
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_80140770"
+  vram = 0x80140770
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_80140870"
+  vram = 0x80140870
+  size = 0x308
+
+  [[section.functions]]
+  name = "func_80140B80"
+  vram = 0x80140B80
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80140BFC"
+  vram = 0x80140BFC
+  size = 0x200
+
+  [[section.functions]]
+  name = "func_80140E00"
+  vram = 0x80140E00
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80140E28"
+  vram = 0x80140E28
+  size = 0x2E0
+
+  [[section.functions]]
+  name = "func_80141108"
+  vram = 0x80141108
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_80141138"
+  vram = 0x80141138
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80141168"
+  vram = 0x80141168
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_80141190"
+  vram = 0x80141190
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80141220"
+  vram = 0x80141220
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8014126C"
+  vram = 0x8014126C
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_801412BC"
+  vram = 0x801412BC
+  size = 0x948
+
+  [[section.functions]]
+  name = "func_80141C04"
+  vram = 0x80141C04
+  size = 0x868
+
+  [[section.functions]]
+  name = "func_80142474"
+  vram = 0x80142474
+  size = 0x1D4
+
+  [[section.functions]]
+  name = "func_80142648"
+  vram = 0x80142648
+  size = 0x134
+
+  [[section.functions]]
+  name = "func_8014277C"
+  vram = 0x8014277C
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_80142820"
+  vram = 0x80142820
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80142850"
+  vram = 0x80142850
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_80142988"
+  vram = 0x80142988
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_80142A68"
+  vram = 0x80142A68
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "func_80142C58"
+  vram = 0x80142C58
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_80142E04"
+  vram = 0x80142E04
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80142EC0"
+  vram = 0x80142EC0
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80142F10"
+  vram = 0x80142F10
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_8014303C"
+  vram = 0x8014303C
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_801431F0"
+  vram = 0x801431F0
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_80143318"
+  vram = 0x80143318
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_80143460"
+  vram = 0x80143460
+  size = 0x1C8
+
+  [[section.functions]]
+  name = "func_80143640"
+  vram = 0x80143640
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80143690"
+  vram = 0x80143690
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_801436B8"
+  vram = 0x801436B8
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_801436F8"
+  vram = 0x801436F8
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_80143788"
+  vram = 0x80143788
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_801437AC"
+  vram = 0x801437AC
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_801438B0"
+  vram = 0x801438B0
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_801438D0"
+  vram = 0x801438D0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80143950"
+  vram = 0x80143950
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_801439E8"
+  vram = 0x801439E8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80143A10"
+  vram = 0x80143A10
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80143A40"
+  vram = 0x80143A40
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_80143BA8"
+  vram = 0x80143BA8
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_80143C10"
+  vram = 0x80143C10
+  size = 0x264
+
+  [[section.functions]]
+  name = "func_80143E74"
+  vram = 0x80143E74
+  size = 0x440
+
+  [[section.functions]]
+  name = "func_801442B4"
+  vram = 0x801442B4
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_801443A0"
+  vram = 0x801443A0
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_80144448"
+  vram = 0x80144448
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80144458"
+  vram = 0x80144458
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_80144460"
+  vram = 0x80144460
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801444AC"
+  vram = 0x801444AC
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801444F8"
+  vram = 0x801444F8
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_80144608"
+  vram = 0x80144608
+  size = 0x274
+
+  [[section.functions]]
+  name = "func_8014487C"
+  vram = 0x8014487C
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_801448EC"
+  vram = 0x801448EC
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_80144A10"
+  vram = 0x80144A10
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_80144AE0"
+  vram = 0x80144AE0
+  size = 0x1C
+
+  [[section.functions]]
+  name = "func_80144B00"
+  vram = 0x80144B00
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_80144C28"
+  vram = 0x80144C28
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_80144C60"
+  vram = 0x80144C60
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80144C80"
+  vram = 0x80144C80
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80144C90"
+  vram = 0x80144C90
+  size = 0x1C
+
+  [[section.functions]]
+  name = "func_80144CB0"
+  vram = 0x80144CB0
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_80144DD8"
+  vram = 0x80144DD8
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80144E30"
+  vram = 0x80144E30
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80144E70"
+  vram = 0x80144E70
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_80144EB8"
+  vram = 0x80144EB8
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_80144ED8"
+  vram = 0x80144ED8
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_80144EF8"
+  vram = 0x80144EF8
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_80144FD8"
+  vram = 0x80144FD8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_80145020"
+  vram = 0x80145020
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_801451FC"
+  vram = 0x801451FC
+  size = 0x140
+
+  [[section.functions]]
+  name = "func_80145368"
+  vram = 0x80145368
+  size = 0x18
+
+  [[section.functions]]
+  name = "func_80145380"
+  vram = 0x80145380
+  size = 0x14
+
+  [[section.functions]]
+  name = "func_80145394"
+  vram = 0x80145394
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_80145418"
+  vram = 0x80145418
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_801454A8"
+  vram = 0x801454A8
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_80145538"
+  vram = 0x80145538
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80145558"
+  vram = 0x80145558
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_80145654"
+  vram = 0x80145654
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_8014576C"
+  vram = 0x8014576C
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_801457F0"
+  vram = 0x801457F0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8014586C"
+  vram = 0x8014586C
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_80145AD8"
+  vram = 0x80145AD8
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80145B98"
+  vram = 0x80145B98
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_80145C94"
+  vram = 0x80145C94
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80145CE4"
+  vram = 0x80145CE4
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_80145DE0"
+  vram = 0x80145DE0
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_80145F98"
+  vram = 0x80145F98
+  size = 0x124
+
+  [[section.functions]]
+  name = "func_801460BC"
+  vram = 0x801460BC
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_80146168"
+  vram = 0x80146168
+  size = 0x138
+
+  [[section.functions]]
+  name = "func_801462A0"
+  vram = 0x801462A0
+  size = 0x18C
+
+  [[section.functions]]
+  name = "func_8014642C"
+  vram = 0x8014642C
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_80146588"
+  vram = 0x80146588
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8014675C"
+  vram = 0x8014675C
+  size = 0x1C
+
+  [[section.functions]]
+  name = "func_801467B8"
+  vram = 0x801467B8
+  size = 0x13C
+
+  [[section.functions]]
+  name = "func_801468F4"
+  vram = 0x801468F4
+  size = 0x308
+
+  [[section.functions]]
+  name = "func_80146BFC"
+  vram = 0x80146BFC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80146C90"
+  vram = 0x80146C90
+  size = 0x39C
+
+  [[section.functions]]
+  name = "func_8014704C"
+  vram = 0x8014704C
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_80147184"
+  vram = 0x80147184
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80147194"
+  vram = 0x80147194
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80147240"
+  vram = 0x80147240
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_8014726C"
+  vram = 0x8014726C
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_80147298"
+  vram = 0x80147298
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_801472C4"
+  vram = 0x801472C4
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_8014730C"
+  vram = 0x8014730C
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_801473F4"
+  vram = 0x801473F4
+  size = 0x1C
+
+  [[section.functions]]
+  name = "func_80147468"
+  vram = 0x80147468
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801474C0"
+  vram = 0x801474C0
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_80147520"
+  vram = 0x80147520
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_80147634"
+  vram = 0x80147634
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_801479E4"
+  vram = 0x801479E4
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80147AD0"
+  vram = 0x80147AD0
+  size = 0x15C
+
+  [[section.functions]]
+  name = "func_80147C2C"
+  vram = 0x80147C2C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80147C5C"
+  vram = 0x80147C5C
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_80147CAC"
+  vram = 0x80147CAC
+  size = 0x2CC
+
+  [[section.functions]]
+  name = "func_80147F78"
+  vram = 0x80147F78
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80147FC4"
+  vram = 0x80147FC4
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80147FF4"
+  vram = 0x80147FF4
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_80148028"
+  vram = 0x80148028
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_80148140"
+  vram = 0x80148140
+  size = 0x1B4
+
+  [[section.functions]]
+  name = "func_801482F4"
+  vram = 0x801482F4
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_801483AC"
+  vram = 0x801483AC
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_8014845C"
+  vram = 0x8014845C
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_80148530"
+  vram = 0x80148530
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_80148714"
+  vram = 0x80148714
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801487D8"
+  vram = 0x801487D8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_80148858"
+  vram = 0x80148858
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801488B0"
+  vram = 0x801488B0
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80148928"
+  vram = 0x80148928
+  size = 0x1D4
+
+  [[section.functions]]
+  name = "func_80148AFC"
+  vram = 0x80148AFC
+  size = 0x25C
+
+  [[section.functions]]
+  name = "func_80148D58"
+  vram = 0x80148D58
+  size = 0x27C
+
+  [[section.functions]]
+  name = "func_80148FD4"
+  vram = 0x80148FD4
+  size = 0x170
+
+  [[section.functions]]
+  name = "func_80149144"
+  vram = 0x80149144
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_801491C4"
+  vram = 0x801491C4
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8014923C"
+  vram = 0x8014923C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_801492C8"
+  vram = 0x801492C8
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_801493CC"
+  vram = 0x801493CC
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_80149450"
+  vram = 0x80149450
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_801494E0"
+  vram = 0x801494E0
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8014959C"
+  vram = 0x8014959C
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_801495F8"
+  vram = 0x801495F8
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_80149698"
+  vram = 0x80149698
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80149720"
+  vram = 0x80149720
+  size = 0x90
+
+  [[section.functions]]
+  name = "func_801497B0"
+  vram = 0x801497B0
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_80149878"
+  vram = 0x80149878
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80149930"
+  vram = 0x80149930
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_80149A1C"
+  vram = 0x80149A1C
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_80149ABC"
+  vram = 0x80149ABC
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80149B70"
+  vram = 0x80149B70
+  size = 0x84
+
+  [[section.functions]]
+  name = "func_80149BF4"
+  vram = 0x80149BF4
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80149C4C"
+  vram = 0x80149C4C
+  size = 0x2FC
+
+  [[section.functions]]
+  name = "func_80149F48"
+  vram = 0x80149F48
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80149FC8"
+  vram = 0x80149FC8
+  size = 0x2C4
+
+  [[section.functions]]
+  name = "func_8014A28C"
+  vram = 0x8014A28C
+  size = 0x1F8
+
+  [[section.functions]]
+  name = "func_8014A4B0"
+  vram = 0x8014A4B0
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_8014A574"
+  vram = 0x8014A574
+  size = 0x454
+
+  [[section.functions]]
+  name = "func_8014A9C8"
+  vram = 0x8014A9C8
+  size = 0x25C
+
+  [[section.functions]]
+  name = "func_8014AC24"
+  vram = 0x8014AC24
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8014AC54"
+  vram = 0x8014AC54
+  size = 0x3C0
+
+  [[section.functions]]
+  name = "func_8014B014"
+  vram = 0x8014B014
+  size = 0x1F0
+
+  [[section.functions]]
+  name = "func_8014B204"
+  vram = 0x8014B204
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_8014B28C"
+  vram = 0x8014B28C
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8014B2DC"
+  vram = 0x8014B2DC
+  size = 0x4B4
+
+  [[section.functions]]
+  name = "func_8014B790"
+  vram = 0x8014B790
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8014B810"
+  vram = 0x8014B810
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_8014B8D0"
+  vram = 0x8014B8D0
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_8014BA88"
+  vram = 0x8014BA88
+  size = 0x188
+
+  [[section.functions]]
+  name = "func_8014BC10"
+  vram = 0x8014BC10
+  size = 0x2DC
+
+  [[section.functions]]
+  name = "func_8014BEEC"
+  vram = 0x8014BEEC
+  size = 0x2C8
+
+  [[section.functions]]
+  name = "func_8014C1B4"
+  vram = 0x8014C1B4
+  size = 0x29C
+
+  [[section.functions]]
+  name = "func_8014C450"
+  vram = 0x8014C450
+  size = 0xBC
+
+  [[section.functions]]
+  name = "func_8014C620"
+  vram = 0x8014C620
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_8014C7EC"
+  vram = 0x8014C7EC
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8014C84C"
+  vram = 0x8014C84C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_8014C8E0"
+  vram = 0x8014C8E0
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_8014C9A8"
+  vram = 0x8014C9A8
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8014CA80"
+  vram = 0x8014CA80
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8014CAA8"
+  vram = 0x8014CAA8
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_8014CB04"
+  vram = 0x8014CB04
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8014CBE4"
+  vram = 0x8014CBE4
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_8014CDD0"
+  vram = 0x8014CDD0
+  size = 0x208
+
+  [[section.functions]]
+  name = "func_8014CFD8"
+  vram = 0x8014CFD8
+  size = 0x444
+
+  [[section.functions]]
+  name = "func_8014D41C"
+  vram = 0x8014D41C
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_8014D538"
+  vram = 0x8014D538
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_8014D644"
+  vram = 0x8014D644
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_8014D70C"
+  vram = 0x8014D70C
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_8014D7C0"
+  vram = 0x8014D7C0
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_8014D8E8"
+  vram = 0x8014D8E8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8014D944"
+  vram = 0x8014D944
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_8014DB8C"
+  vram = 0x8014DB8C
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_8014DBF0"
+  vram = 0x8014DBF0
+  size = 0x114
+
+  [[section.functions]]
+  name = "func_8014DD04"
+  vram = 0x8014DD04
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8014DDB8"
+  vram = 0x8014DDB8
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8014DE00"
+  vram = 0x8014DE00
+  size = 0x24
+
+  [[section.functions]]
+  name = "func_8014DE28"
+  vram = 0x8014DE28
+  size = 0x1B4
+
+  [[section.functions]]
+  name = "func_8014DFE0"
+  vram = 0x8014DFE0
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_8014E008"
+  vram = 0x8014E008
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8014E088"
+  vram = 0x8014E088
+  size = 0x340
+
+  [[section.functions]]
+  name = "func_8014E3C8"
+  vram = 0x8014E3C8
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_8014E4E4"
+  vram = 0x8014E4E4
+  size = 0x14C
+
+  [[section.functions]]
+  name = "func_8014E63C"
+  vram = 0x8014E63C
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8014E680"
+  vram = 0x8014E680
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8014E6F8"
+  vram = 0x8014E6F8
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_8014E764"
+  vram = 0x8014E764
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8014E7C4"
+  vram = 0x8014E7C4
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_8014E884"
+  vram = 0x8014E884
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_8014E968"
+  vram = 0x8014E968
+  size = 0x2DC
+
+  [[section.functions]]
+  name = "func_8014EC4C"
+  vram = 0x8014EC4C
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8014EC90"
+  vram = 0x8014EC90
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_8014ECFC"
+  vram = 0x8014ECFC
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_8014ED98"
+  vram = 0x8014ED98
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8014EDF8"
+  vram = 0x8014EDF8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8014EE68"
+  vram = 0x8014EE68
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_8014EED0"
+  vram = 0x8014EED0
+  size = 0x218
+
+  [[section.functions]]
+  name = "func_8014F0E8"
+  vram = 0x8014F0E8
+  size = 0x228
+
+  [[section.functions]]
+  name = "func_8014F310"
+  vram = 0x8014F310
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_8014F40C"
+  vram = 0x8014F40C
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_8014F534"
+  vram = 0x8014F534
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8014F668"
+  vram = 0x8014F668
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_8014F6E4"
+  vram = 0x8014F6E4
+  size = 0xE0
+
+  [[section.functions]]
+  name = "func_8014F7C4"
+  vram = 0x8014F7C4
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_8014F838"
+  vram = 0x8014F838
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8014F888"
+  vram = 0x8014F888
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8014F8D4"
+  vram = 0x8014F8D4
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_8014F948"
+  vram = 0x8014F948
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_8014F97C"
+  vram = 0x8014F97C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8014F9AC"
+  vram = 0x8014F9AC
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8014F9DC"
+  vram = 0x8014F9DC
+  size = 0x2C
+
+  [[section.functions]]
+  name = "func_8014FA10"
+  vram = 0x8014FA10
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_8014FA48"
+  vram = 0x8014FA48
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_8014FC38"
+  vram = 0x8014FC38
+  size = 0x1D4
+
+  [[section.functions]]
+  name = "func_8014FE54"
+  vram = 0x8014FE54
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8014FEB0"
+  vram = 0x8014FEB0
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_8014FF54"
+  vram = 0x8014FF54
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8014FFC4"
+  vram = 0x8014FFC4
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_80150064"
+  vram = 0x80150064
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80150098"
+  vram = 0x80150098
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_80150240"
+  vram = 0x80150240
+  size = 0x178
+
+  [[section.functions]]
+  name = "func_801503B8"
+  vram = 0x801503B8
+  size = 0x59C
+
+  [[section.functions]]
+  name = "func_80150958"
+  vram = 0x80150958
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_80150B04"
+  vram = 0x80150B04
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_80150CD0"
+  vram = 0x80150CD0
+  size = 0x128
+
+  [[section.functions]]
+  name = "func_80150DF8"
+  vram = 0x80150DF8
+  size = 0x388
+
+  [[section.functions]]
+  name = "func_80151180"
+  vram = 0x80151180
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_80151344"
+  vram = 0x80151344
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_80151500"
+  vram = 0x80151500
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80151528"
+  vram = 0x80151528
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80151550"
+  vram = 0x80151550
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_80151590"
+  vram = 0x80151590
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_801515E0"
+  vram = 0x801515E0
+  size = 0x34
+
+  [[section.functions]]
+  name = "func_801516E8"
+  vram = 0x801516E8
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_80151718"
+  vram = 0x80151718
+  size = 0x448
+
+  [[section.functions]]
+  name = "func_80151B74"
+  vram = 0x80151B74
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80151BF0"
+  vram = 0x80151BF0
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80151C6C"
+  vram = 0x80151C6C
+  size = 0x18
+
+  [[section.functions]]
+  name = "func_80151C84"
+  vram = 0x80151C84
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80151D28"
+  vram = 0x80151D28
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80151D84"
+  vram = 0x80151D84
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80151DE0"
+  vram = 0x80151DE0
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_80151E24"
+  vram = 0x80151E24
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_80151E68"
+  vram = 0x80151E68
+  size = 0x278
+
+  [[section.functions]]
+  name = "func_801520E0"
+  vram = 0x801520E0
+  size = 0x39C
+
+  [[section.functions]]
+  name = "func_8015247C"
+  vram = 0x8015247C
+  size = 0x314
+
+  [[section.functions]]
+  name = "func_80152790"
+  vram = 0x80152790
+  size = 0x320
+
+  [[section.functions]]
+  name = "func_80152AB0"
+  vram = 0x80152AB0
+  size = 0x2C4
+
+  [[section.functions]]
+  name = "func_80152D74"
+  vram = 0x80152D74
+  size = 0x2C8
+
+  [[section.functions]]
+  name = "func_8015303C"
+  vram = 0x8015303C
+  size = 0x330
+
+  [[section.functions]]
+  name = "func_8015336C"
+  vram = 0x8015336C
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_80153430"
+  vram = 0x80153430
+  size = 0x24C
+
+  [[section.functions]]
+  name = "func_8015367C"
+  vram = 0x8015367C
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_801538DC"
+  vram = 0x801538DC
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_80153B2C"
+  vram = 0x80153B2C
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_80153D94"
+  vram = 0x80153D94
+  size = 0x288
+
+  [[section.functions]]
+  name = "func_8015401C"
+  vram = 0x8015401C
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_80154274"
+  vram = 0x80154274
+  size = 0x264
+
+  [[section.functions]]
+  name = "func_801544D8"
+  vram = 0x801544D8
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_80154730"
+  vram = 0x80154730
+  size = 0x268
+
+  [[section.functions]]
+  name = "func_801549A8"
+  vram = 0x801549A8
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_80154BF8"
+  vram = 0x80154BF8
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_80154E5C"
+  vram = 0x80154E5C
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_801550B0"
+  vram = 0x801550B0
+  size = 0x258
+
+  [[section.functions]]
+  name = "func_8015531C"
+  vram = 0x8015531C
+  size = 0x2D4
+
+  [[section.functions]]
+  name = "func_801555F0"
+  vram = 0x801555F0
+  size = 0x254
+
+  [[section.functions]]
+  name = "func_80155888"
+  vram = 0x80155888
+  size = 0xFD4
+
+  [[section.functions]]
+  name = "func_8015685C"
+  vram = 0x8015685C
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_80156910"
+  vram = 0x80156910
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_801569D0"
+  vram = 0x801569D0
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_80156A74"
+  vram = 0x80156A74
+  size = 0xE8
+
+  [[section.functions]]
+  name = "func_80156B5C"
+  vram = 0x80156B5C
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80156B78"
+  vram = 0x80156B78
+  size = 0x434
+
+  [[section.functions]]
+  name = "func_80156FAC"
+  vram = 0x80156FAC
+  size = 0x5A4
+
+  [[section.functions]]
+  name = "func_80157550"
+  vram = 0x80157550
+  size = 0x310
+
+  [[section.functions]]
+  name = "func_80157860"
+  vram = 0x80157860
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_80157A0C"
+  vram = 0x80157A0C
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_80157AC8"
+  vram = 0x80157AC8
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "func_80157C98"
+  vram = 0x80157C98
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_80157D00"
+  vram = 0x80157D00
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_80157D58"
+  vram = 0x80157D58
+  size = 0x2E4
+
+  [[section.functions]]
+  name = "func_8015803C"
+  vram = 0x8015803C
+  size = 0x190
+
+  [[section.functions]]
+  name = "func_801581CC"
+  vram = 0x801581CC
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_80158278"
+  vram = 0x80158278
+  size = 0x4A4
+
+  [[section.functions]]
+  name = "func_8015871C"
+  vram = 0x8015871C
+  size = 0x4A8
+
+  [[section.functions]]
+  name = "func_80158BC4"
+  vram = 0x80158BC4
+  size = 0x2A4
+
+  [[section.functions]]
+  name = "func_80158E68"
+  vram = 0x80158E68
+  size = 0xF4
+
+  [[section.functions]]
+  name = "func_80158F5C"
+  vram = 0x80158F5C
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_80158FE8"
+  vram = 0x80158FE8
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_80159238"
+  vram = 0x80159238
+  size = 0x294
+
+  [[section.functions]]
+  name = "func_801594CC"
+  vram = 0x801594CC
+  size = 0x2D0
+
+  [[section.functions]]
+  name = "func_801597A4"
+  vram = 0x801597A4
+  size = 0x1E0
+
+  [[section.functions]]
+  name = "func_80159984"
+  vram = 0x80159984
+  size = 0x300
+
+  [[section.functions]]
+  name = "func_80159C84"
+  vram = 0x80159C84
+  size = 0x35C
+
+  [[section.functions]]
+  name = "func_80159FE8"
+  vram = 0x80159FE8
+  size = 0x274
+
+  [[section.functions]]
+  name = "func_8015A25C"
+  vram = 0x8015A25C
+  size = 0x184
+
+  [[section.functions]]
+  name = "func_8015A3E0"
+  vram = 0x8015A3E0
+  size = 0x198
+
+  [[section.functions]]
+  name = "func_8015A580"
+  vram = 0x8015A580
+  size = 0x1A0
+
+  [[section.functions]]
+  name = "func_8015A720"
+  vram = 0x8015A720
+  size = 0x5E4
+
+  [[section.functions]]
+  name = "func_8015AD08"
+  vram = 0x8015AD08
+  size = 0x2E8
+
+  [[section.functions]]
+  name = "func_8015AFF0"
+  vram = 0x8015AFF0
+  size = 0x300
+
+  [[section.functions]]
+  name = "func_8015B2F0"
+  vram = 0x8015B2F0
+  size = 0x208
+
+  [[section.functions]]
+  name = "func_8015B4F8"
+  vram = 0x8015B4F8
+  size = 0x170
+
+  [[section.functions]]
+  name = "func_8015B668"
+  vram = 0x8015B668
+  size = 0x3F8
+
+  [[section.functions]]
+  name = "func_8015BA60"
+  vram = 0x8015BA60
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8015BAB0"
+  vram = 0x8015BAB0
+  size = 0x40C
+
+  [[section.functions]]
+  name = "func_8015BEBC"
+  vram = 0x8015BEBC
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8015BF2C"
+  vram = 0x8015BF2C
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_8015BFB4"
+  vram = 0x8015BFB4
+  size = 0x9C
+
+  [[section.functions]]
+  name = "func_8015C050"
+  vram = 0x8015C050
+  size = 0x9A0
+
+  [[section.functions]]
+  name = "func_8015C9F8"
+  vram = 0x8015C9F8
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_8015CBD0"
+  vram = 0x8015CBD0
+  size = 0x1D8
+
+  [[section.functions]]
+  name = "func_8015CDB0"
+  vram = 0x8015CDB0
+  size = 0xAC
+
+  [[section.functions]]
+  name = "func_8015CE60"
+  vram = 0x8015CE60
+  size = 0x1A4
+
+  [[section.functions]]
+  name = "func_8015D004"
+  vram = 0x8015D004
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8015D064"
+  vram = 0x8015D064
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8015D0C4"
+  vram = 0x8015D0C4
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8015D124"
+  vram = 0x8015D124
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_8015D144"
+  vram = 0x8015D144
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_8015D248"
+  vram = 0x8015D248
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_8015D318"
+  vram = 0x8015D318
+  size = 0x344
+
+  [[section.functions]]
+  name = "func_8015D65C"
+  vram = 0x8015D65C
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_8015D664"
+  vram = 0x8015D664
+  size = 0xC
+
+  [[section.functions]]
+  name = "func_8015D670"
+  vram = 0x8015D670
+  size = 0x458
+
+  [[section.functions]]
+  name = "func_8015DAC8"
+  vram = 0x8015DAC8
+  size = 0x2C8
+
+  [[section.functions]]
+  name = "func_8015DD90"
+  vram = 0x8015DD90
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_8015DE6C"
+  vram = 0x8015DE6C
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_8015DF2C"
+  vram = 0x8015DF2C
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8015DF6C"
+  vram = 0x8015DF6C
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8015DFC0"
+  vram = 0x8015DFC0
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8015E008"
+  vram = 0x8015E008
+  size = 0x1F8
+
+  [[section.functions]]
+  name = "func_8015E24C"
+  vram = 0x8015E24C
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8015E300"
+  vram = 0x8015E300
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_8015E3F0"
+  vram = 0x8015E3F0
+  size = 0x1EC
+
+  [[section.functions]]
+  name = "func_8015E664"
+  vram = 0x8015E664
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8015E70C"
+  vram = 0x8015E70C
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8015E7B4"
+  vram = 0x8015E7B4
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_8015EA04"
+  vram = 0x8015EA04
+  size = 0x148
+
+  [[section.functions]]
+  name = "func_8015EB4C"
+  vram = 0x8015EB4C
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_8015EC20"
+  vram = 0x8015EC20
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8015EC7C"
+  vram = 0x8015EC7C
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_8015ED34"
+  vram = 0x8015ED34
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8015ED94"
+  vram = 0x8015ED94
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_8015EE70"
+  vram = 0x8015EE70
+  size = 0x200
+
+  [[section.functions]]
+  name = "func_8015F070"
+  vram = 0x8015F070
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8015F0B8"
+  vram = 0x8015F0B8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_8015F178"
+  vram = 0x8015F178
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8015F23C"
+  vram = 0x8015F23C
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8015F2F0"
+  vram = 0x8015F2F0
+  size = 0x18
+
+  [[section.functions]]
+  name = "func_8015F314"
+  vram = 0x8015F314
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8015F3D0"
+  vram = 0x8015F3D0
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_8015F4A4"
+  vram = 0x8015F4A4
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_8015F558"
+  vram = 0x8015F558
+  size = 0x2A0
+
+  [[section.functions]]
+  name = "func_8015F804"
+  vram = 0x8015F804
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_8015F8E0"
+  vram = 0x8015F8E0
+  size = 0xC8
+
+  [[section.functions]]
+  name = "func_8015F9B0"
+  vram = 0x8015F9B0
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8015FA3C"
+  vram = 0x8015FA3C
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_8015FB80"
+  vram = 0x8015FB80
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8015FBB0"
+  vram = 0x8015FBB0
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_8015FC58"
+  vram = 0x8015FC58
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8015FD70"
+  vram = 0x8015FD70
+  size = 0x100
+
+  [[section.functions]]
+  name = "func_8015FE70"
+  vram = 0x8015FE70
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8015FE98"
+  vram = 0x8015FE98
+  size = 0x2A0
+
+  [[section.functions]]
+  name = "func_80160180"
+  vram = 0x80160180
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_801601C8"
+  vram = 0x801601C8
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_80160318"
+  vram = 0x80160318
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80160390"
+  vram = 0x80160390
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80160408"
+  vram = 0x80160408
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80160490"
+  vram = 0x80160490
+  size = 0x260
+
+  [[section.functions]]
+  name = "func_801606F0"
+  vram = 0x801606F0
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_801607A8"
+  vram = 0x801607A8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_801607E8"
+  vram = 0x801607E8
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_80160838"
+  vram = 0x80160838
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80160898"
+  vram = 0x80160898
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_80160914"
+  vram = 0x80160914
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_801609AC"
+  vram = 0x801609AC
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_80160A44"
+  vram = 0x80160A44
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_80160ABC"
+  vram = 0x80160ABC
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_80160B30"
+  vram = 0x80160B30
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_80160B78"
+  vram = 0x80160B78
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_80160BC0"
+  vram = 0x80160BC0
+  size = 0xA4
+
+  [[section.functions]]
+  name = "func_80160C64"
+  vram = 0x80160C64
+  size = 0x6C
+
+  [[section.functions]]
+  name = "func_80160DB0"
+  vram = 0x80160DB0
+  size = 0x390
+
+  [[section.functions]]
+  name = "func_80161140"
+  vram = 0x80161140
+  size = 0x9D0
+
+  [[section.functions]]
+  name = "func_80161B18"
+  vram = 0x80161B18
+  size = 0x130
+
+  [[section.functions]]
+  name = "func_80161C50"
+  vram = 0x80161C50
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_80161D44"
+  vram = 0x80161D44
+  size = 0x64
+
+  [[section.functions]]
+  name = "func_80161DB8"
+  vram = 0x80161DB8
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80161E1C"
+  vram = 0x80161E1C
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_80161F10"
+  vram = 0x80161F10
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8016202C"
+  vram = 0x8016202C
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_801620C8"
+  vram = 0x801620C8
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80162120"
+  vram = 0x80162120
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80162184"
+  vram = 0x80162184
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_801621DC"
+  vram = 0x801621DC
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80162264"
+  vram = 0x80162264
+  size = 0x18
+
+  [[section.functions]]
+  name = "func_80162280"
+  vram = 0x80162280
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_8016234C"
+  vram = 0x8016234C
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_80162568"
+  vram = 0x80162568
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_80162620"
+  vram = 0x80162620
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_801626A8"
+  vram = 0x801626A8
+  size = 0x700
+
+  [[section.functions]]
+  name = "func_80162DA8"
+  vram = 0x80162DA8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80162E68"
+  vram = 0x80162E68
+  size = 0x374
+
+  [[section.functions]]
+  name = "func_801631DC"
+  vram = 0x801631DC
+  size = 0x14C
+
+  [[section.functions]]
+  name = "func_801633BC"
+  vram = 0x801633BC
+  size = 0x10C
+
+  [[section.functions]]
+  name = "func_801634C8"
+  vram = 0x801634C8
+  size = 0xC4
+
+  [[section.functions]]
+  name = "func_801635E8"
+  vram = 0x801635E8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80163874"
+  vram = 0x80163874
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_80163948"
+  vram = 0x80163948
+  size = 0xFC
+
+  [[section.functions]]
+  name = "func_80163A44"
+  vram = 0x80163A44
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80163ACC"
+  vram = 0x80163ACC
+  size = 0x20C
+
+  [[section.functions]]
+  name = "func_80163CD8"
+  vram = 0x80163CD8
+  size = 0x22C
+
+  [[section.functions]]
+  name = "func_80163F04"
+  vram = 0x80163F04
+  size = 0x1AC
+
+  [[section.functions]]
+  name = "func_801640B0"
+  vram = 0x801640B0
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_80164260"
+  vram = 0x80164260
+  size = 0x308
+
+  [[section.functions]]
+  name = "func_80164568"
+  vram = 0x80164568
+  size = 0x11C
+
+  [[section.functions]]
+  name = "func_80164684"
+  vram = 0x80164684
+  size = 0x158
+
+  [[section.functions]]
+  name = "func_80164928"
+  vram = 0x80164928
+  size = 0x354
+
+  [[section.functions]]
+  name = "func_80164C88"
+  vram = 0x80164C88
+  size = 0x3A4
+
+  [[section.functions]]
+  name = "func_8016502C"
+  vram = 0x8016502C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8016505C"
+  vram = 0x8016505C
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8016508C"
+  vram = 0x8016508C
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_801650EC"
+  vram = 0x801650EC
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_80165128"
+  vram = 0x80165128
+  size = 0x474
+
+  [[section.functions]]
+  name = "func_801655A0"
+  vram = 0x801655A0
+  size = 0x134
+
+  [[section.functions]]
+  name = "func_801656D4"
+  vram = 0x801656D4
+  size = 0x5D4
+
+  [[section.functions]]
+  name = "func_80165CA8"
+  vram = 0x80165CA8
+  size = 0x74
+
+  [[section.functions]]
+  name = "func_80165D1C"
+  vram = 0x80165D1C
+  size = 0x54C
+
+  [[section.functions]]
+  name = "func_80166268"
+  vram = 0x80166268
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_8016636C"
+  vram = 0x8016636C
+  size = 0xD8
+
+  [[section.functions]]
+  name = "func_80166450"
+  vram = 0x80166450
+  size = 0xB4
+
+  [[section.functions]]
+  name = "func_8016650C"
+  vram = 0x8016650C
+  size = 0x1FC
+
+  [[section.functions]]
+  name = "func_80166730"
+  vram = 0x80166730
+  size = 0x94
+
+  [[section.functions]]
+  name = "func_801667D4"
+  vram = 0x801667D4
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_801669A4"
+  vram = 0x801669A4
+  size = 0x1C8
+
+  [[section.functions]]
+  name = "func_80166B6C"
+  vram = 0x80166B6C
+  size = 0x194
+
+  [[section.functions]]
+  name = "func_80166D00"
+  vram = 0x80166D00
+  size = 0x1E8
+
+  [[section.functions]]
+  name = "func_80166EE8"
+  vram = 0x80166EE8
+  size = 0x1BC
+
+  [[section.functions]]
+  name = "func_801670A4"
+  vram = 0x801670A4
+  size = 0x17C
+
+  [[section.functions]]
+  name = "func_80167220"
+  vram = 0x80167220
+  size = 0x230
+
+  [[section.functions]]
+  name = "func_80167450"
+  vram = 0x80167450
+  size = 0x1B8
+
+  [[section.functions]]
+  name = "func_80167608"
+  vram = 0x80167608
+  size = 0x16C
+
+  [[section.functions]]
+  name = "func_80167778"
+  vram = 0x80167778
+  size = 0x8
+
+  [[section.functions]]
+  name = "func_80167780"
+  vram = 0x80167780
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_801677A0"
+  vram = 0x801677A0
+  size = 0x20
+
+  [[section.functions]]
+  name = "func_801677C0"
+  vram = 0x801677C0
+  size = 0x88
+
+  [[section.functions]]
+  name = "func_80167848"
+  vram = 0x80167848
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_801678C0"
+  vram = 0x801678C0
+  size = 0x250
+
+  [[section.functions]]
+  name = "func_80167B50"
+  vram = 0x80167B50
+  size = 0x38
+
+  [[section.functions]]
+  name = "func_80167B88"
+  vram = 0x80167B88
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_80167BE0"
+  vram = 0x80167BE0
+  size = 0x19C
+
+  [[section.functions]]
+  name = "func_80167D84"
+  vram = 0x80167D84
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_80167F4C"
+  vram = 0x80167F4C
+  size = 0x150
+
+  [[section.functions]]
+  name = "func_801680B0"
+  vram = 0x801680B0
+  size = 0x6F0
+
+  [[section.functions]]
+  name = "func_801687A0"
+  vram = 0x801687A0
+  size = 0x4EC
+
+  [[section.functions]]
+  name = "func_80168C8C"
+  vram = 0x80168C8C
+  size = 0x14C
+
+  [[section.functions]]
+  name = "func_80168DD8"
+  vram = 0x80168DD8
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_80168EDC"
+  vram = 0x80168EDC
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_80168FD0"
+  vram = 0x80168FD0
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_80169024"
+  vram = 0x80169024
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_80169080"
+  vram = 0x80169080
+  size = 0x8C
+
+  [[section.functions]]
+  name = "func_8016910C"
+  vram = 0x8016910C
+  size = 0x3CC
+
+  [[section.functions]]
+  name = "func_801694D8"
+  vram = 0x801694D8
+  size = 0xCC
+
+  [[section.functions]]
+  name = "func_801695A4"
+  vram = 0x801695A4
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_80169708"
+  vram = 0x80169708
+  size = 0x184
+
+  [[section.functions]]
+  name = "func_8016988C"
+  vram = 0x8016988C
+  size = 0x164
+
+  [[section.functions]]
+  name = "func_801699F8"
+  vram = 0x801699F8
+  size = 0xD8
+
+  [[section.functions]]
+  name = "func_80169AD0"
+  vram = 0x80169AD0
+  size = 0x18C
+
+  [[section.functions]]
+  name = "func_80169C64"
+  vram = 0x80169C64
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_80169CB8"
+  vram = 0x80169CB8
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_80169CE0"
+  vram = 0x80169CE0
+  size = 0x108
+
+  [[section.functions]]
+  name = "func_80169DE8"
+  vram = 0x80169DE8
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_80169EA8"
+  vram = 0x80169EA8
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_80169F84"
+  vram = 0x80169F84
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_8016A068"
+  vram = 0x8016A068
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_8016A16C"
+  vram = 0x8016A16C
+  size = 0xD4
+
+  [[section.functions]]
+  name = "func_8016A240"
+  vram = 0x8016A240
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_8016A384"
+  vram = 0x8016A384
+  size = 0x104
+
+  [[section.functions]]
+  name = "func_8016A488"
+  vram = 0x8016A488
+  size = 0xB8
+
+  [[section.functions]]
+  name = "func_8016A540"
+  vram = 0x8016A540
+  size = 0x80
+
+  [[section.functions]]
+  name = "func_8016A5C0"
+  vram = 0x8016A5C0
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8016A604"
+  vram = 0x8016A604
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8016A648"
+  vram = 0x8016A648
+  size = 0x44
+
+  [[section.functions]]
+  name = "func_8016A68C"
+  vram = 0x8016A68C
+  size = 0xD0
+
+  [[section.functions]]
+  name = "func_8016A75C"
+  vram = 0x8016A75C
+  size = 0x1DC
+
+  [[section.functions]]
+  name = "func_8016A938"
+  vram = 0x8016A938
+  size = 0xC0
+
+  [[section.functions]]
+  name = "func_8016A9F8"
+  vram = 0x8016A9F8
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_8016AADC"
+  vram = 0x8016AADC
+  size = 0xDC
+
+  [[section.functions]]
+  name = "func_8016ABB8"
+  vram = 0x8016ABB8
+  size = 0x2DC
+
+  [[section.functions]]
+  name = "func_8016AE94"
+  vram = 0x8016AE94
+  size = 0x2B0
+
+  [[section.functions]]
+  name = "func_8016B144"
+  vram = 0x8016B144
+  size = 0x1E4
+
+  [[section.functions]]
+  name = "func_8016B328"
+  vram = 0x8016B328
+  size = 0x1C0
+
+  [[section.functions]]
+  name = "func_8016B4E8"
+  vram = 0x8016B4E8
+  size = 0x54
+
+  [[section.functions]]
+  name = "func_8016B53C"
+  vram = 0x8016B53C
+  size = 0xE4
+
+  [[section.functions]]
+  name = "func_8016B620"
+  vram = 0x8016B620
+  size = 0x98
+
+  [[section.functions]]
+  name = "func_8016B6B8"
+  vram = 0x8016B6B8
+  size = 0x1CC
+
+  [[section.functions]]
+  name = "func_8016B884"
+  vram = 0x8016B884
+  size = 0x1E0
+
+  [[section.functions]]
+  name = "func_8016BA64"
+  vram = 0x8016BA64
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_8016BC34"
+  vram = 0x8016BC34
+  size = 0x1D0
+
+  [[section.functions]]
+  name = "func_8016BE04"
+  vram = 0x8016BE04
+  size = 0x220
+
+  [[section.functions]]
+  name = "func_8016C024"
+  vram = 0x8016C024
+  size = 0x21C
+
+  [[section.functions]]
+  name = "func_8016C240"
+  vram = 0x8016C240
+  size = 0x248
+
+  [[section.functions]]
+  name = "func_8016C490"
+  vram = 0x8016C490
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8016C4E8"
+  vram = 0x8016C4E8
+  size = 0x70
+
+  [[section.functions]]
+  name = "func_8016C558"
+  vram = 0x8016C558
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8016C588"
+  vram = 0x8016C588
+  size = 0xA8
+
+  [[section.functions]]
+  name = "func_8016C630"
+  vram = 0x8016C630
+  size = 0x178
+
+  [[section.functions]]
+  name = "func_8016C7A8"
+  vram = 0x8016C7A8
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8016C7E4"
+  vram = 0x8016C7E4
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8016C820"
+  vram = 0x8016C820
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8016C848"
+  vram = 0x8016C848
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8016C870"
+  vram = 0x8016C870
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8016C8BC"
+  vram = 0x8016C8BC
+  size = 0x4C
+
+  [[section.functions]]
+  name = "func_8016C908"
+  vram = 0x8016C908
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8016C960"
+  vram = 0x8016C960
+  size = 0x58
+
+  [[section.functions]]
+  name = "func_8016C9B8"
+  vram = 0x8016C9B8
+  size = 0x3B8
+
+  [[section.functions]]
+  name = "func_8016CD78"
+  vram = 0x8016CD78
+  size = 0xA0
+
+  [[section.functions]]
+  name = "func_8016CE18"
+  vram = 0x8016CE18
+  size = 0x30
+
+  [[section.functions]]
+  name = "func_8016CE48"
+  vram = 0x8016CE48
+  size = 0x50
+
+  [[section.functions]]
+  name = "func_8016CE98"
+  vram = 0x8016CE98
+  size = 0x48
+
+  [[section.functions]]
+  name = "func_8016CEE0"
+  vram = 0x8016CEE0
+  size = 0x60
+
+  [[section.functions]]
+  name = "func_8016CF40"
+  vram = 0x8016CF40
+  size = 0x28
+
+  [[section.functions]]
+  name = "func_8016CF68"
+  vram = 0x8016CF68
+  size = 0xB0
+
+  [[section.functions]]
+  name = "func_8016D018"
+  vram = 0x8016D018
+  size = 0x180
+
+  [[section.functions]]
+  name = "func_8016D198"
+  vram = 0x8016D198
+  size = 0x188
+
+  [[section.functions]]
+  name = "func_8016D320"
+  vram = 0x8016D320
+  size = 0x68
+
+  [[section.functions]]
+  name = "func_8016D388"
+  vram = 0x8016D388
+  size = 0x40
+
+  [[section.functions]]
+  name = "func_8016D3C8"
+  vram = 0x8016D3C8
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_8016D3E8"
+  vram = 0x8016D3E8
+  size = 0x78
+
+  [[section.functions]]
+  name = "func_8016D460"
+  vram = 0x8016D460
+  size = 0x7C
+
+  [[section.functions]]
+  name = "func_8016D4DC"
+  vram = 0x8016D4DC
+  size = 0x5C
+
+  [[section.functions]]
+  name = "func_8016D538"
+  vram = 0x8016D538
+  size = 0x1A8
+
+  [[section.functions]]
+  name = "func_8016D728"
+  vram = 0x8016D728
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_8016D768"
+  vram = 0x8016D768
+  size = 0x3C
+
+  [[section.functions]]
+  name = "func_801A2A3C"
+  vram = 0x801A2A3C
+  size = 0x10
+
+  [[section.functions]]
+  name = "func_80151618"
+  vram = 0x80151618
+  size = 0xE98
+
+
+  [[section.functions]]
+  name = "func_800C47E0"
+  vram = 0x800C47E0
+  size = 0x228
+
+  [[section.functions]]
+  name = "func_801515C8"
+  vram = 0x801515C8
+  size = 0x50
+
+
