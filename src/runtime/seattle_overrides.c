@@ -776,11 +776,7 @@ RECOMP_FUNC void func_801A2A3C(uint8_t* rdram, recomp_context* ctx) {
     }
 
     rtos_log_count++;
-    if (rtos_log_count <= 3) {
-        fprintf(stderr, "[rtos] create_task(%d, func_%08X)\n", task_id, callback);
-    } else if (rtos_log_count == 4) {
-        fprintf(stderr, "[rtos] create_task ... (suppressing)\n");
-    }
+    fprintf(stderr, "[rtos] create_task(%d, func_%08X)\n", task_id, callback);
     if (rtos_log_count == 1) {
         override_check_heap(rdram, "at first create_task");
     }

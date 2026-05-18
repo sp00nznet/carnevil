@@ -744,9 +744,7 @@ void rtos_create_task(uint8_t* rdram, recomp_context* ctx) {
         task_count++;
     }
 
-    if (task_count <= 3) {
-        fprintf(stderr, "[rtos] create_task(%d, func_%08X)\n", task_id, callback);
-    }
+    fprintf(stderr, "[rtos] create_task(%d, func_%08X)\n", task_id, callback);
 
     ctx->r2 = 0; /* Success */
 }
