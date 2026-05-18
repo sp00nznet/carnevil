@@ -1254,16 +1254,16 @@ RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
     (*sync1)++;
     (*sync2) = (*sync1) - 1;
 
-    /* Set DCS/sound ready flag */
-    *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
-
-    /* If yield is called too many times (infinite loop detection),
-     * force-set various flags that polling loops check. */
-    if (g_yield_counter > 500) {
-        /* Set all common polling flags to break out of loops */
-        *(uint32_t*)(rdram + 0x001DDDE0) |= 0xFF;  /* all DCS flags */
-        *(uint32_t*)(rdram + 0x002122E0) |= 0x10000; /* zone loaded flag */
-        *(uint32_t*)(rdram + 0x001E50AC) = 0;  /* clear loading trigger */
+    /* DCS state simulation: only when yield-escape is armed (i.e. we're
+     * inside an attract scene func or per-frame mode call), set bit 0x4
+     * at 0x001DDDE0 after a few yields. func_800CAFD0/CB19C set that
+     * address to 0x1 (a state transition) then wait for the DCS driver
+     * to OR-in bit 0x4 as the "ready" signal. We stub DCS, so we have
+     * to set the bit ourselves — but only when the function is genuinely
+     * blocking on it (a few yields in), not preemptively (which would
+     * make brand-new wait-loops skip on their first iteration). */
+    if (g_yield_escape_armed && g_yield_counter == 10) {
+        *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
     }
 
     ctx->r2 = 0;
@@ -1465,18 +1465,47 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
     if (call_count == 1) {
         extern recomp_func_t* get_function(int32_t);
 
-        /* Set DCS ready flag so scene functions don't block on polls */
+        /* Pre-set bit 0x4 at 0x001DDDE0 ("DCS ready" flag).
+         * func_800CAFD0 and func_800CB19C have wait-loops polling this
+         * bit; in the real game it gets set asynchronously by the DCS
+         * audio chip's "ready" signal. Our DCS is stubbed so nothing ever
+         * sets it naturally. Without this preempt the functions yield-loop
+         * for nothing — no other code runs in the meantime because our
+         * scheduler doesn't preempt during yields.
+         *
+         * Earlier, this set lived inside func_80151618 (yield), which had
+         * the bad side-effect of also unblocking *new* polls created later
+         * in the run. Pre-setting here keeps it scoped to attract init. */
         *(uint32_t*)(rdram + 0x001DDDE0) |= 0x04;
 
-        /* Call the attract mode scene functions in order */
+        /* Call the attract mode scene functions in order.
+         * Arm yield-escape so they can progress past internal yield-loops
+         * (they call func_80151618 expecting fiber suspension). */
         uint32_t scene_funcs[] = { 0x800CAFD0, 0x800CAF24, 0x800CB19C, 0x800CB31C };
+        extern jmp_buf g_yield_escape_buf;
+        extern int g_yield_escape_armed;
         for (int i = 0; i < 4; i++) {
             recomp_func_t* sfn = get_function((int32_t)scene_funcs[i]);
             if (sfn) {
                 fprintf(stderr, "[attract] Calling scene func 0x%08X...\n", scene_funcs[i]);
                 ctx->r4 = (gpr)i;
-                sfn(rdram, ctx);
-                fprintf(stderr, "[attract] Scene func 0x%08X returned\n", scene_funcs[i]);
+                int yc_save = g_yield_counter;
+                int thresh_save = g_yield_escape_threshold;
+                g_yield_counter = 0;
+                g_yield_escape_threshold = 50000;  /* high threshold for init */
+                g_yield_escape_armed = 1;
+                int reason = setjmp(g_yield_escape_buf);
+                if (reason == 0) {
+                    sfn(rdram, ctx);
+                    fprintf(stderr, "[attract] Scene func 0x%08X returned (yields=%d)\n",
+                            scene_funcs[i], g_yield_counter);
+                } else {
+                    fprintf(stderr, "[attract] Scene func 0x%08X yield-escaped after %d yields\n",
+                            scene_funcs[i], g_yield_counter);
+                }
+                g_yield_escape_armed = 0;
+                g_yield_counter = yc_save;
+                g_yield_escape_threshold = thresh_save;
             }
         }
 
