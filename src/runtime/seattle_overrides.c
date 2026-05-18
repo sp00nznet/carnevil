@@ -901,12 +901,14 @@ static int dispatch_count = 0;
 
 RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
     dispatch_count++;
-    if (dispatch_count <= 3) {
-        int active = 0;
-        for (int i = 0; i < g_scheduler.fiber_count; i++)
+    if (dispatch_count <= 3 || dispatch_count % 100 == 0) {
+        int active = 0, blocked = 0;
+        for (int i = 0; i < g_scheduler.fiber_count; i++) {
             if (g_scheduler.fibers[i].active) active++;
-        fprintf(stderr, "[rtos] process_dispatch #%d: %d fibers, %d active\n",
-                dispatch_count, g_scheduler.fiber_count, active);
+            if (g_scheduler.fibers[i].blocked) blocked++;
+        }
+        fprintf(stderr, "[rtos] process_dispatch #%d: %d fibers, %d active, %d blocked\n",
+                dispatch_count, g_scheduler.fiber_count, active, blocked);
     }
     rtos_sched_run_frame(&g_scheduler, ctx);
     ctx->r2 = 0;
