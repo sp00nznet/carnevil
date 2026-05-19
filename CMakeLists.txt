@@ -14,7 +14,7 @@ target_include_directories(carnevil_runtime PUBLIC
 
 # Recompiled game code + RTOS code
 file(GLOB RECOMP_SOURCES recomp_out/funcs/funcs_*.c)
-file(GLOB RTOS_SOURCES recomp_out/rtos_funcs/funcs_*.c)
+file(GLOB RTOS_SOURCES recomp_out/rtos_funcs/rtos_funcs_*.c)
 
 add_library(carnevil_recomp STATIC ${RECOMP_SOURCES})
 

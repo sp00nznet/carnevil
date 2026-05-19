@@ -2,6 +2,7 @@
 symbols_file_path = "rtos_syms.toml"
 rom_file_path = "extracted/RTOS_padded.bin"
 output_func_path = "recomp_out/rtos_funcs"
+output_func_prefix = "rtos_funcs_"
 functions_per_output_file = 50
 uses_mips3_float_mode = true
 little_endian = true
