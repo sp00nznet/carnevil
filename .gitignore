@@ -37,3 +37,4 @@ stderr*.log
 
 # Misc local
 build_test.bat
+ghidra_*.log
