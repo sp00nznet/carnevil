@@ -1146,6 +1146,15 @@ int main(int argc, char** argv) {
     printf("  Phase 1: Init...\n");
     fflush(stdout);
 
+    /* Tried: overlay MAME's 8MB live dump (D:/recomp/mame/attract_sdram.bin
+     * captured at frame 3000+ when real CarnEvil is rendering 3D attract)
+     * straight into our RAM before recomp_entrypoint. Loaded fine, but the
+     * overlay's heap_head pointer points into RAM regions our runtime hasn't
+     * allocated, and our recompiled init re-runs RTOS / device setup which
+     * clobbers parts of the overlay. Net result: 0 KB heap free, every
+     * malloc fails. Would need a post-init partial overlay (preserve scene-
+     * graph / entity regions; let our init handle heap / device state). */
+
     /* The entry_point calls: sys_init -> main_init -> func_800C4234 -> main_loop.
      * On real hardware, main_loop is called once per frame by the RTOS.
      * Since we don't have an RTOS, we let entry_point run (which does one frame),
@@ -1472,7 +1481,7 @@ int main(int argc, char** argv) {
                 head, (free_sz & ~1u) / 1024);
     }
 
-    int max_frames = 500; /* Reduced for testing - DCS2 polling fixed */
+    int max_frames = 500; /* Real CarnEvil shows 3D demo around frame 3000, but our run doesn't progress past initial attract state -- no point running longer */
 
     /* Heap management: save heap state AFTER first frame's permanent allocs.
      * Frame 0 does the 1.75MB render buffer alloc.
