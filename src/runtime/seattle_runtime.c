@@ -603,6 +603,26 @@ void seattle_null_stub(uint8_t* rdram, recomp_context* ctx) {
 recomp_func_t* get_function(int32_t vram) {
     /* Log vector table lookups to trace RTOS API usage */
     uint32_t uv = (uint32_t)vram;
+
+    /* Detect lookups for the 145 RTOS resume PCs we just registered.
+     * These are the addresses MAME shows scene-graph nodes pointing to
+     * during real 3D attract rendering. If anything in our run looks
+     * them up, that's the dispatch path we need to invoke. */
+    if (uv >= 0x80004000 && uv < 0x8001C000 && (uv & 3) == 0) {
+        static int resume_log = 0;
+        /* Skip the known start-of-function addresses (those resolve
+         * normally via the existing table). We're specifically interested
+         * in lookups for ADDRESSES BETWEEN known function starts. */
+        static uint32_t hit_buckets[1024] = {0};
+        uint32_t bkt = (uv >> 4) & 1023;
+        if (hit_buckets[bkt] != uv) {
+            hit_buckets[bkt] = uv;
+            resume_log++;
+            if (resume_log <= 30) {
+                fprintf(stderr, "[resume_lookup] get_function(0x%08X)\n", uv);
+            }
+        }
+    }
     if (uv >= 0x800C408C && uv <= 0x800C42CC) {
         static uint32_t vec_counts[72] = {0};
         int idx = (uv - 0x800C408C) / 8;

@@ -2252,3 +2252,100 @@ size = 0x15C40
   name = "rtos_8000F94C"
   vram = 0x8000F94C
   size = 0x10
+
+  # Lookup-miss addresses observed at runtime — these get jump'd to by
+  # the running code but weren't in the reachability analysis. Adding them
+  # so the recompiler emits real bodies instead of null_stub no-ops.
+
+  [[section.functions]]
+  name = "rtos_800040D4"
+  vram = 0x800040D4
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_80004E3C"
+  vram = 0x80004E3C
+  size = 0x1C4
+
+  [[section.functions]]
+  name = "rtos_80005048"
+  vram = 0x80005048
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000BA60"
+  vram = 0x8000BA60
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000BAC0_x"
+  vram = 0x8000BAC0
+  size = 0x80
+
+  [[section.functions]]
+  name = "rtos_8000BB60"
+  vram = 0x8000BB60
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000BD80"
+  vram = 0x8000BD80
+  size = 0x8
+
+  [[section.functions]]
+  name = "rtos_8000BE08"
+  vram = 0x8000BE08
+  size = 0x8
+
+
+  # Round 2 lookup-miss additions
+
+  [[section.functions]]
+  name = "rtos_8000BD70_lm"
+  vram = 0x8000BD70
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_80012708_lm"
+  vram = 0x80012708
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_80004368_lm"
+  vram = 0x80004368
+  size = 0x440
+
+  [[section.functions]]
+  name = "rtos_8000BFAC_lm"
+  vram = 0x8000BFAC
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000EE30_lm"
+  vram = 0x8000EE30
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000F034_lm"
+  vram = 0x8000F034
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_8000F764_lm"
+  vram = 0x8000F764
+  size = 0x10
+
+  [[section.functions]]
+  name = "rtos_800060BC_lm"
+  vram = 0x800060BC
+  size = 0xBC
+
+  [[section.functions]]
+  name = "rtos_80006200_lm"
+  vram = 0x80006200
+  size = 0x20
+
+  [[section.functions]]
+  name = "rtos_80006210_lm"
+  vram = 0x80006210
+  size = 0x10

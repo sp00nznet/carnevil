@@ -455,6 +455,31 @@ extern void rtos_8000BE50(uint8_t* rdram, recomp_context* ctx);
 extern void rtos_80010C74(uint8_t* rdram, recomp_context* ctx);
 extern void rtos_8000F94C(uint8_t* rdram, recomp_context* ctx);
 
+/* Auto-added mid-function entries from MAME dump analysis */
+
+
+/* lookup-miss additions */
+extern void rtos_800040D4(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80004E3C(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80005048(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BA60(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BAC0_x(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BB60(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BD80(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BE08(uint8_t* rdram, recomp_context* ctx);
+
+/* round 2 lookup-miss additions */
+extern void rtos_8000BD70_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80012708_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80004368_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000BFAC_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000EE30_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000F034_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000F764_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_800060BC_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80006200_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_80006210_lm(uint8_t* rdram, recomp_context* ctx);
+
 void rtos_register_all(void) {
     seattle_register_func(0x800040DC, rtos_800040DC);
     seattle_register_func(0x80004230, rtos_80004230);
@@ -907,4 +932,29 @@ void rtos_register_all(void) {
     seattle_register_func(0x8000BE50, rtos_8000BE50);
     seattle_register_func(0x80010C74, rtos_80010C74);
     seattle_register_func(0x8000F94C, rtos_8000F94C);
+
+    /* Auto-added mid-function entries from MAME dump analysis */
+
+
+    /* lookup-miss additions */
+    seattle_register_func(0x800040D4, rtos_800040D4);
+    seattle_register_func(0x80004E3C, rtos_80004E3C);
+    seattle_register_func(0x80005048, rtos_80005048);
+    seattle_register_func(0x8000BA60, rtos_8000BA60);
+    seattle_register_func(0x8000BAC0, rtos_8000BAC0_x);
+    seattle_register_func(0x8000BB60, rtos_8000BB60);
+    seattle_register_func(0x8000BD80, rtos_8000BD80);
+    seattle_register_func(0x8000BE08, rtos_8000BE08);
+
+    /* round 2 lookup-miss additions */
+    seattle_register_func(0x8000BD70, rtos_8000BD70_lm);
+    seattle_register_func(0x80012708, rtos_80012708_lm);
+    seattle_register_func(0x80004368, rtos_80004368_lm);
+    seattle_register_func(0x8000BFAC, rtos_8000BFAC_lm);
+    seattle_register_func(0x8000EE30, rtos_8000EE30_lm);
+    seattle_register_func(0x8000F034, rtos_8000F034_lm);
+    seattle_register_func(0x8000F764, rtos_8000F764_lm);
+    seattle_register_func(0x800060BC, rtos_800060BC_lm);
+    seattle_register_func(0x80006200, rtos_80006200_lm);
+    seattle_register_func(0x80006210, rtos_80006210_lm);
 }
