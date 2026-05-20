@@ -1155,6 +1155,25 @@ int main(int argc, char** argv) {
      * malloc fails. Would need a post-init partial overlay (preserve scene-
      * graph / entity regions; let our init handle heap / device state). */
 
+    /* MAME-dump analysis note: in real CarnEvil at frame 3000+, addresses
+     * 0x801A3110/0x801A3114/0x801E5DA8 hold pointers into the scene-graph
+     * node region (heap ~0x803F7xxx). In our recomp they stay at their BSS
+     * init values (0x4A / 0x2FD / 0) — nothing populates them, because the
+     * code path that builds the scene graph never runs. Those addresses
+     * are not even referenced by the recompiled game code via direct
+     * lui+offset addressing, so the writer uses a computed address or it's
+     * RTOS-side. Left here as a breadcrumb for the next investigation. */
+
+    /* MAME-overlay render mode was tried and removed: loading the 8 MB
+     * SDRAM snapshot then cold-calling the render functions produced 0
+     * Voodoo writes (the functions are gated on per-frame state-machine
+     * progress a cold call doesn't satisfy), and scanning the snapshot
+     * for replayable Galileo DMA command lists found only false
+     * positives -- the lists are transient (built, kicked, consumed
+     * within a frame) so an arbitrary snapshot rarely holds one.
+     * Replaying rendering needs the live Voodoo command STREAM, not a
+     * RAM snapshot -- capture that with MAME's LUA debugger instead. */
+
     /* The entry_point calls: sys_init -> main_init -> func_800C4234 -> main_loop.
      * On real hardware, main_loop is called once per frame by the RTOS.
      * Since we don't have an RTOS, we let entry_point run (which does one frame),
