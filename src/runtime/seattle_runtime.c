@@ -320,6 +320,7 @@ void seattle_io_write32(uint32_t paddr, uint32_t value) {
         uint32_t reg = reg_off >> 2;
         if (reg < 256) io.galileo_regs[reg] = value;
 
+
         /* DMA Control register writes trigger DMA transfers.
          * GT64010 DMA channels (offsets from Galileo base 0x08000000):
          *   0x800+ch*4: Byte Count (ch 0-3)
