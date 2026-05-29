@@ -135,6 +135,29 @@ cmake --build . --config Release
 
 Requires: MSVC 2022+, CMake 3.20+, game ROM files (not included)
 
+## Function Naming Pipeline
+
+The recompiler names functions from `carnevil_syms.toml`. A tooling pipeline
+derives meaningful names from Ghidra analysis so generated code reads
+`main_init_sound(...)` instead of `func_800C5E30(...)`:
+
+```bash
+# 1. Export Ghidra analysis (functions/symbols/decompiled JSON; string xrefs)
+analyzeHeadless.bat <proj> carnevil-game -process GAME.elf -noanalysis \
+  -postScript tools/ghidra_export_analysis.py -scriptPath tools
+# 2. Derive names (self-naming debug strings + descriptive slugs + RE seed list)
+python tools/derive_names.py            # -> ghidra_export/name_map.json
+# 3. Apply to syms (skips the 64 src/runtime-overridden funcs)
+python tools/merge_names_to_syms.py
+# 4. After a regen, keep registration consistent with the new names
+python tools/gen_func_registration.py   # -> src/runtime/func_registration.inc
+```
+
+The biggest naming signal is CarnEvil's own debug strings, many of which contain
+the function name (`coin_volume_proc():`, `sst1InitSli`, `snd_load_bank`). Names
+keep an `_ADDR8` suffix for uniqueness and round-trip traceability. Steps 1-3 are
+inert until the next regen (the C++ build doesn't read syms).
+
 ## Why Static Recompilation?
 
 MAME emulates CarnEvil already, but emulation has overhead and limitations. Static recompilation converts the original MIPS machine code directly into equivalent C code that compiles natively. The result runs at full speed without a CPU interpreter, and the translated code can be understood, modified, and enhanced.
