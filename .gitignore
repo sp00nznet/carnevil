@@ -45,3 +45,12 @@ ghidra_export/symbols.json
 ghidra_export/decompiled.json
 ghidra_export/functions_full.json
 ghidra_export/full_run.log
+
+# session working artifacts
+hits_executed.txt
+overlay.log
+tree_funcs.txt
+test_recomp.toml
+stderr*.log
+ghidra_export/handwritten_refs.txt
+ghidra_export/runtime_refs.txt

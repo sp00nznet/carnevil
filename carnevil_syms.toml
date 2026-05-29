@@ -23,7 +23,7 @@ size = 0xDF504
   size = 0x244
 
   [[section.functions]]
-  name = "process_dispatch_returned_800C4524"
+  name = "func_800C4524"
   vram = 0x800C4524
   size = 0x254
 
@@ -68,7 +68,7 @@ size = 0xDF504
   size = 0x354
 
   [[section.functions]]
-  name = "utime_800C50AC"
+  name = "func_800C50AC"
   vram = 0x800C50AC
   size = 0x69C
 
@@ -78,7 +78,7 @@ size = 0xDF504
   size = 0xE8
 
   [[section.functions]]
-  name = "starting_game_with_unknown_wave_800C5830"
+  name = "func_800C5830"
   vram = 0x800C5830
   size = 0x600
 
@@ -573,7 +573,7 @@ size = 0xDF504
   size = 0x54
 
   [[section.functions]]
-  name = "entity_register_800CC1E4"
+  name = "func_800CC1E4"
   vram = 0x800CC1E4
   size = 0x34
 
@@ -1198,7 +1198,7 @@ size = 0xDF504
   size = 0x340
 
   [[section.functions]]
-  name = "render_submit_dispatch_800D5484"
+  name = "func_800D5484"
   vram = 0x800D5484
   size = 0x25C
 
@@ -1233,7 +1233,7 @@ size = 0xDF504
   size = 0x34
 
   [[section.functions]]
-  name = "scene_graph_render_800D5D04"
+  name = "func_800D5D04"
   vram = 0x800D5D04
   size = 0x188
 
@@ -1333,7 +1333,7 @@ size = 0xDF504
   size = 0x34
 
   [[section.functions]]
-  name = "scene_node_create_800D7600"
+  name = "func_800D7600"
   vram = 0x800D7600
   size = 0x124
 
@@ -4798,7 +4798,7 @@ size = 0xDF504
   size = 0x14
 
   [[section.functions]]
-  name = "zone_parser_8010FE90"
+  name = "func_8010FE90"
   vram = 0x8010FE90
   size = 0x6E8
 
@@ -8128,7 +8128,7 @@ size = 0xDF504
   size = 0x1D4
 
   [[section.functions]]
-  name = "mode_register_entry_80148AFC"
+  name = "func_80148AFC"
   vram = 0x80148AFC
   size = 0x25C
 
@@ -8743,7 +8743,7 @@ size = 0xDF504
   size = 0x448
 
   [[section.functions]]
-  name = "mode_register_80151B74"
+  name = "func_80151B74"
   vram = 0x80151B74
   size = 0x7C
 
@@ -10249,7 +10249,7 @@ size = 0xDF504
 
 
   [[section.functions]]
-  name = "task_body_800C47E0"
+  name = "func_800C47E0"
   vram = 0x800C47E0
   size = 0x228
 
