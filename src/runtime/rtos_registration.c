@@ -479,6 +479,9 @@ extern void rtos_8000F764_lm(uint8_t* rdram, recomp_context* ctx);
 extern void rtos_800060BC_lm(uint8_t* rdram, recomp_context* ctx);
 extern void rtos_80006200_lm(uint8_t* rdram, recomp_context* ctx);
 extern void rtos_80006210_lm(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000630C(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000631C(uint8_t* rdram, recomp_context* ctx);
+extern void rtos_8000632C(uint8_t* rdram, recomp_context* ctx);
 
 void rtos_register_all(void) {
     seattle_register_func(0x800040DC, rtos_800040DC);
@@ -957,4 +960,7 @@ void rtos_register_all(void) {
     seattle_register_func(0x800060BC, rtos_800060BC_lm);
     seattle_register_func(0x80006200, rtos_80006200_lm);
     seattle_register_func(0x80006210, rtos_80006210_lm);
+    seattle_register_func(0x8000630C, rtos_8000630C);
+    seattle_register_func(0x8000631C, rtos_8000631C);
+    seattle_register_func(0x8000632C, rtos_8000632C);
 }

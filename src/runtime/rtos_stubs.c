@@ -7,6 +7,21 @@
 #include "recomp.h"
 #include <stdio.h>
 
+/* RTOS vector-stub setters at 0x8000630C/631C/632C: each stores $a0 to a slot
+ * in the 3-entry array at 0x800147B8/BC/C0 then returns. Without these, early
+ * init's LOOKUP_FUNC(0x8000630C..) is a no-op and the corresponding state
+ * fields stay uninitialized. Recovered via 4-instruction disasm:
+ *   lui $at, 0x8001 ; sw $a0, 0x47Bx($at) ; jr $ra ; nop                  */
+RECOMP_FUNC void rtos_8000630C(uint8_t* rdram, recomp_context* ctx) {
+    *(uint32_t*)(rdram + 0x000147B8) = (uint32_t)ctx->r4;
+}
+RECOMP_FUNC void rtos_8000631C(uint8_t* rdram, recomp_context* ctx) {
+    *(uint32_t*)(rdram + 0x000147BC) = (uint32_t)ctx->r4;
+}
+RECOMP_FUNC void rtos_8000632C(uint8_t* rdram, recomp_context* ctx) {
+    *(uint32_t*)(rdram + 0x000147C0) = (uint32_t)ctx->r4;
+}
+
 /* Exception/interrupt handlers - not needed in recomp */
 RECOMP_FUNC void static_0_80005020(uint8_t* rdram, recomp_context* ctx) {
     /* RTOS interrupt enable/disable */
