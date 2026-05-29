@@ -54,3 +54,8 @@ test_recomp.toml
 stderr*.log
 ghidra_export/handwritten_refs.txt
 ghidra_export/runtime_refs.txt
+
+# m2c working artifacts
+m2c_asm/
+m2c_out.c
+m2c_err.log
