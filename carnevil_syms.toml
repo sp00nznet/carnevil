@@ -23,12 +23,12 @@ size = 0xDF504
   size = 0x244
 
   [[section.functions]]
-  name = "func_800C4524"
+  name = "process_dispatch_returned_800C4524"
   vram = 0x800C4524
   size = 0x254
 
   [[section.functions]]
-  name = "func_800C4778"
+  name = "dma_timeout_in_non_debug_mode_this_causes_a_rese_800C4778"
   vram = 0x800C4778
   size = 0x30
 
@@ -38,7 +38,7 @@ size = 0xDF504
   size = 0x8
 
   [[section.functions]]
-  name = "func_800C47B0"
+  name = "this_will_cause_reboot_in_non_debug_mode_800C47B0"
   vram = 0x800C47B0
   size = 0x30
 
@@ -68,7 +68,7 @@ size = 0xDF504
   size = 0x354
 
   [[section.functions]]
-  name = "func_800C50AC"
+  name = "utime_800C50AC"
   vram = 0x800C50AC
   size = 0x69C
 
@@ -78,12 +78,12 @@ size = 0xDF504
   size = 0xE8
 
   [[section.functions]]
-  name = "func_800C5830"
+  name = "starting_game_with_unknown_wave_800C5830"
   vram = 0x800C5830
   size = 0x600
 
   [[section.functions]]
-  name = "func_800C5E30"
+  name = "main_init_sound_800C5E30"
   vram = 0x800C5E30
   size = 0x16C
 
@@ -128,7 +128,7 @@ size = 0xDF504
   size = 0x154
 
   [[section.functions]]
-  name = "func_800C6588"
+  name = "cmos_800C6588"
   vram = 0x800C6588
   size = 0x37C
 
@@ -138,7 +138,7 @@ size = 0xDF504
   size = 0x5C
 
   [[section.functions]]
-  name = "func_800C6960"
+  name = "diags_800C6960"
   vram = 0x800C6960
   size = 0x58
 
@@ -148,7 +148,7 @@ size = 0xDF504
   size = 0x7C
 
   [[section.functions]]
-  name = "func_800C6A64"
+  name = "start_800C6A64"
   vram = 0x800C6A64
   size = 0x44
 
@@ -158,7 +158,7 @@ size = 0xDF504
   size = 0x244
 
   [[section.functions]]
-  name = "func_800C6D08"
+  name = "coin_volume_proc_800C6D08"
   vram = 0x800C6D08
   size = 0x130
 
@@ -193,7 +193,7 @@ size = 0xDF504
   size = 0x300
 
   [[section.functions]]
-  name = "func_800C7658"
+  name = "enabling_free_play_800C7658"
   vram = 0x800C7658
   size = 0xF8
 
@@ -293,7 +293,7 @@ size = 0xDF504
   size = 0x8
 
   [[section.functions]]
-  name = "func_800C840C"
+  name = "xa_ya_za_800C840C"
   vram = 0x800C840C
   size = 0x110
 
@@ -328,7 +328,7 @@ size = 0xDF504
   size = 0x80
 
   [[section.functions]]
-  name = "func_800C8D18"
+  name = "found_sprite_in_back_list_800C8D18"
   vram = 0x800C8D18
   size = 0xD0
 
@@ -413,22 +413,22 @@ size = 0xDF504
   size = 0x28
 
   [[section.functions]]
-  name = "func_800CA278"
+  name = "error_load_camera_file_size_doesn_t_match_800CA278"
   vram = 0x800CA278
   size = 0x204
 
   [[section.functions]]
-  name = "func_800CA47C"
+  name = "wanted_bytes_available_800CA47C"
   vram = 0x800CA47C
   size = 0x2A8
 
   [[section.functions]]
-  name = "func_800CA724"
+  name = "no_more_retries_800CA724"
   vram = 0x800CA724
   size = 0x2E8
 
   [[section.functions]]
-  name = "func_800CAA0C"
+  name = "error_load_path_file_size_doesn_t_match_800CAA0C"
   vram = 0x800CAA0C
   size = 0x204
 
@@ -453,7 +453,7 @@ size = 0xDF504
   size = 0x38
 
   [[section.functions]]
-  name = "func_800CAD28"
+  name = "attractv_800CAD28"
   vram = 0x800CAD28
   size = 0x74
 
@@ -508,7 +508,7 @@ size = 0xDF504
   size = 0x64
 
   [[section.functions]]
-  name = "func_800CB42C"
+  name = "render_handler_cb42c_800CB42C"
   vram = 0x800CB42C
   size = 0x60
 
@@ -528,7 +528,7 @@ size = 0xDF504
   size = 0x60
 
   [[section.functions]]
-  name = "func_800CB5AC"
+  name = "render_handler_cb5ac_800CB5AC"
   vram = 0x800CB5AC
   size = 0x1C0
 
@@ -553,12 +553,12 @@ size = 0xDF504
   size = 0x20
 
   [[section.functions]]
-  name = "func_800CB86C"
+  name = "render_handler_cb86c_800CB86C"
   vram = 0x800CB86C
   size = 0x7E4
 
   [[section.functions]]
-  name = "func_800CC050"
+  name = "attempting_to_get_object_data_with_nonexistant_i_800CC050"
   vram = 0x800CC050
   size = 0x80
 
@@ -573,17 +573,17 @@ size = 0xDF504
   size = 0x54
 
   [[section.functions]]
-  name = "func_800CC1E4"
+  name = "entity_register_800CC1E4"
   vram = 0x800CC1E4
   size = 0x34
 
   [[section.functions]]
-  name = "func_800CC220"
+  name = "entity_alloc_slot_800CC220"
   vram = 0x800CC220
   size = 0x25C
 
   [[section.functions]]
-  name = "func_800CC47C"
+  name = "entity_dispatch_update_800CC47C"
   vram = 0x800CC47C
   size = 0x168
 
@@ -1183,7 +1183,7 @@ size = 0xDF504
   size = 0xCC
 
   [[section.functions]]
-  name = "func_800D49B8"
+  name = "samhack_calib_800D49B8"
   vram = 0x800D49B8
   size = 0x26C
 
@@ -1198,7 +1198,7 @@ size = 0xDF504
   size = 0x340
 
   [[section.functions]]
-  name = "func_800D5484"
+  name = "render_submit_dispatch_800D5484"
   vram = 0x800D5484
   size = 0x25C
 
@@ -1213,7 +1213,7 @@ size = 0xDF504
   size = 0x3C0
 
   [[section.functions]]
-  name = "func_800D5B10"
+  name = "channel_init_800D5B10"
   vram = 0x800D5B10
   size = 0x34
 
@@ -1233,12 +1233,12 @@ size = 0xDF504
   size = 0x34
 
   [[section.functions]]
-  name = "func_800D5D04"
+  name = "scene_graph_render_800D5D04"
   vram = 0x800D5D04
   size = 0x188
 
   [[section.functions]]
-  name = "func_800D5E8C"
+  name = "top_left_800D5E8C"
   vram = 0x800D5E8C
   size = 0x558
 
@@ -1283,7 +1283,7 @@ size = 0xDF504
   size = 0x1A4
 
   [[section.functions]]
-  name = "func_800D6868"
+  name = "error_surface_does_not_exist_800D6868"
   vram = 0x800D6868
   size = 0x140
 
@@ -1308,7 +1308,7 @@ size = 0xDF504
   size = 0x50
 
   [[section.functions]]
-  name = "func_800D6BC0"
+  name = "error_more_lights_in_this_wave_than_max_lights_800D6BC0"
   vram = 0x800D6BC0
   size = 0x284
 
@@ -1323,7 +1323,7 @@ size = 0xDF504
   size = 0x44
 
   [[section.functions]]
-  name = "func_800D6EB0"
+  name = "could_not_malloc_light_800D6EB0"
   vram = 0x800D6EB0
   size = 0x71C
 
@@ -1333,7 +1333,7 @@ size = 0xDF504
   size = 0x34
 
   [[section.functions]]
-  name = "func_800D7600"
+  name = "scene_node_create_800D7600"
   vram = 0x800D7600
   size = 0x124
 
@@ -1413,17 +1413,17 @@ size = 0xDF504
   size = 0x15C
 
   [[section.functions]]
-  name = "func_800D88A4"
+  name = "root_800D88A4"
   vram = 0x800D88A4
   size = 0x8C
 
   [[section.functions]]
-  name = "func_800D8930"
+  name = "smoke_800D8930"
   vram = 0x800D8930
   size = 0x10C
 
   [[section.functions]]
-  name = "func_800D8A3C"
+  name = "spark_800D8A3C"
   vram = 0x800D8A3C
   size = 0x94
 
@@ -1443,7 +1443,7 @@ size = 0xDF504
   size = 0x48
 
   [[section.functions]]
-  name = "func_800D8C08"
+  name = "rick_blood_800D8C08"
   vram = 0x800D8C08
   size = 0x64
 
@@ -1453,7 +1453,7 @@ size = 0xDF504
   size = 0x48
 
   [[section.functions]]
-  name = "func_800D8CBC"
+  name = "btop_blood_800D8CBC"
   vram = 0x800D8CBC
   size = 0x7C
 
@@ -1693,7 +1693,7 @@ size = 0xDF504
   size = 0x70
 
   [[section.functions]]
-  name = "func_800DE770"
+  name = "error_more_normals_than_i_can_handle_800DE770"
   vram = 0x800DE770
   size = 0x14C4
 
@@ -1828,7 +1828,7 @@ size = 0xDF504
   size = 0xD0
 
   [[section.functions]]
-  name = "func_800E3240"
+  name = "end_of_wave_800E3240"
   vram = 0x800E3240
   size = 0x16C
 
@@ -1868,7 +1868,7 @@ size = 0xDF504
   size = 0x44
 
   [[section.functions]]
-  name = "func_800E4258"
+  name = "hits_800E4258"
   vram = 0x800E4258
   size = 0x118
 
@@ -1893,7 +1893,7 @@ size = 0xDF504
   size = 0x2C
 
   [[section.functions]]
-  name = "func_800E4940"
+  name = "ehstd_800E4940"
   vram = 0x800E4940
   size = 0x68
 
@@ -1908,7 +1908,7 @@ size = 0xDF504
   size = 0x11C
 
   [[section.functions]]
-  name = "func_800E4B1C"
+  name = "hstddf_wms_800E4B1C"
   vram = 0x800E4B1C
   size = 0x168
 
@@ -1923,12 +1923,12 @@ size = 0xDF504
   size = 0x108
 
   [[section.functions]]
-  name = "func_800E4E8C"
+  name = "high_scores_800E4E8C"
   vram = 0x800E4E8C
   size = 0x344
 
   [[section.functions]]
-  name = "func_800E51D0"
+  name = "player_2_800E51D0"
   vram = 0x800E51D0
   size = 0x228
 
@@ -1948,12 +1948,12 @@ size = 0xDF504
   size = 0x474
 
   [[section.functions]]
-  name = "func_800E5E78"
+  name = "could_not_open_readfile_in_file_copy_800E5E78"
   vram = 0x800E5E78
   size = 0x150
 
   [[section.functions]]
-  name = "func_800E5FC8"
+  name = "some_file_error_in_create_hstd_tex_800E5FC8"
   vram = 0x800E5FC8
   size = 0x318
 
@@ -1963,7 +1963,7 @@ size = 0xDF504
   size = 0x348
 
   [[section.functions]]
-  name = "func_800E6628"
+  name = "goodbye_800E6628"
   vram = 0x800E6628
   size = 0x6F8
 
@@ -2003,7 +2003,7 @@ size = 0xDF504
   size = 0x44
 
   [[section.functions]]
-  name = "func_800E721C"
+  name = "loadfram_800E721C"
   vram = 0x800E721C
   size = 0x240
 
@@ -2028,12 +2028,12 @@ size = 0xDF504
   size = 0x214
 
   [[section.functions]]
-  name = "func_800E7BD4"
+  name = "grab_raw_800E7BD4"
   vram = 0x800E7BD4
   size = 0x58
 
   [[section.functions]]
-  name = "func_800E7C2C"
+  name = "grab_save_screen_800E7C2C"
   vram = 0x800E7C2C
   size = 0x1AC
 
@@ -2123,7 +2123,7 @@ size = 0xDF504
   size = 0x44
 
   [[section.functions]]
-  name = "func_800EA210"
+  name = "zdis_check_more_to_go_800EA210"
   vram = 0x800EA210
   size = 0xC0
 
@@ -2133,12 +2133,12 @@ size = 0xDF504
   size = 0x74
 
   [[section.functions]]
-  name = "func_800EA354"
+  name = "could_not_find_master_id_in_zdie_list_800EA354"
   vram = 0x800EA354
   size = 0xC0
 
   [[section.functions]]
-  name = "func_800EA414"
+  name = "zdis_check_outdated_bad_id_800EA414"
   vram = 0x800EA414
   size = 0xCC
 
@@ -2393,7 +2393,7 @@ size = 0xDF504
   size = 0x6C
 
   [[section.functions]]
-  name = "func_800EC21C"
+  name = "cannot_malloc_particle_data_for_particle_800EC21C"
   vram = 0x800EC21C
   size = 0x1EC
 
@@ -2578,7 +2578,7 @@ size = 0xDF504
   size = 0xA4
 
   [[section.functions]]
-  name = "func_800EF4E0"
+  name = "bills_800EF4E0"
   vram = 0x800EF4E0
   size = 0x2070
 
@@ -2678,7 +2678,7 @@ size = 0xDF504
   size = 0x28
 
   [[section.functions]]
-  name = "func_800F1C00"
+  name = "normal_800F1C00"
   vram = 0x800F1C00
   size = 0x47C
 
@@ -2708,7 +2708,7 @@ size = 0xDF504
   size = 0xA0
 
   [[section.functions]]
-  name = "func_800F27C4"
+  name = "turmel0322_800F27C4"
   vram = 0x800F27C4
   size = 0x88
 
@@ -2843,7 +2843,7 @@ size = 0xDF504
   size = 0x410
 
   [[section.functions]]
-  name = "func_800F4090"
+  name = "bad_bat_state_800F4090"
   vram = 0x800F4090
   size = 0x13C
 
@@ -2948,17 +2948,17 @@ size = 0xDF504
   size = 0x78
 
   [[section.functions]]
-  name = "func_800F5288"
+  name = "heap_delta_800F5288"
   vram = 0x800F5288
   size = 0x30C
 
   [[section.functions]]
-  name = "func_800F5594"
+  name = "loadwave_800F5594"
   vram = 0x800F5594
   size = 0x2E0
 
   [[section.functions]]
-  name = "func_800F5874"
+  name = "post_load_wave_heap_800F5874"
   vram = 0x800F5874
   size = 0x430
 
@@ -3043,7 +3043,7 @@ size = 0xDF504
   size = 0x20
 
   [[section.functions]]
-  name = "func_800F6A28"
+  name = "btopload_800F6A28"
   vram = 0x800F6A28
   size = 0x40
 
@@ -3713,7 +3713,7 @@ size = 0xDF504
   size = 0x30
 
   [[section.functions]]
-  name = "func_800FF6F0"
+  name = "snow_malloc_failed_800FF6F0"
   vram = 0x800FF6F0
   size = 0xA4
 
@@ -4348,7 +4348,7 @@ size = 0xDF504
   size = 0x3AC
 
   [[section.functions]]
-  name = "func_80107244"
+  name = "heap_80107244"
   vram = 0x80107244
   size = 0x7A4
 
@@ -4768,7 +4768,7 @@ size = 0xDF504
   size = 0xFC
 
   [[section.functions]]
-  name = "func_8010FC88"
+  name = "btbone_8010FC88"
   vram = 0x8010FC88
   size = 0x48
 
@@ -4798,7 +4798,7 @@ size = 0xDF504
   size = 0x14
 
   [[section.functions]]
-  name = "func_8010FE90"
+  name = "zone_parser_8010FE90"
   vram = 0x8010FE90
   size = 0x6E8
 
@@ -4853,7 +4853,7 @@ size = 0xDF504
   size = 0x1C8
 
   [[section.functions]]
-  name = "func_801143CC"
+  name = "geometry_build_801143CC"
   vram = 0x801143CC
   size = 0x1A0
 
@@ -7503,7 +7503,7 @@ size = 0xDF504
   size = 0x28
 
   [[section.functions]]
-  name = "func_80140E28"
+  name = "environment_80140E28"
   vram = 0x80140E28
   size = 0x2E0
 
@@ -7538,7 +7538,7 @@ size = 0xDF504
   size = 0x48
 
   [[section.functions]]
-  name = "func_801412BC"
+  name = "null_801412BC"
   vram = 0x801412BC
   size = 0x948
 
@@ -7698,7 +7698,7 @@ size = 0xDF504
   size = 0x440
 
   [[section.functions]]
-  name = "func_801442B4"
+  name = "bogus_free_list_801442B4"
   vram = 0x801442B4
   size = 0xE4
 
@@ -7748,7 +7748,7 @@ size = 0xDF504
   size = 0x124
 
   [[section.functions]]
-  name = "func_80144A10"
+  name = "frexp_80144A10"
   vram = 0x80144A10
   size = 0xD0
 
@@ -7758,12 +7758,12 @@ size = 0xDF504
   size = 0x1C
 
   [[section.functions]]
-  name = "func_80144B00"
+  name = "domain_error_80144B00"
   vram = 0x80144B00
   size = 0x124
 
   [[section.functions]]
-  name = "func_80144C28"
+  name = "matherr_80144C28"
   vram = 0x80144C28
   size = 0x34
 
@@ -7783,7 +7783,7 @@ size = 0xDF504
   size = 0x1C
 
   [[section.functions]]
-  name = "func_80144CB0"
+  name = "ldexp_80144CB0"
   vram = 0x80144CB0
   size = 0x124
 
@@ -8128,7 +8128,7 @@ size = 0xDF504
   size = 0x1D4
 
   [[section.functions]]
-  name = "func_80148AFC"
+  name = "mode_register_entry_80148AFC"
   vram = 0x80148AFC
   size = 0x25C
 
@@ -8148,7 +8148,7 @@ size = 0xDF504
   size = 0x80
 
   [[section.functions]]
-  name = "func_801491C4"
+  name = "process_name_start_address_801491C4"
   vram = 0x801491C4
   size = 0x78
 
@@ -8478,7 +8478,7 @@ size = 0xDF504
   size = 0x11C
 
   [[section.functions]]
-  name = "func_8014E4E4"
+  name = "attempt_to_delete_non_existant_texture_node_8014E4E4"
   vram = 0x8014E4E4
   size = 0x14C
 
@@ -8628,7 +8628,7 @@ size = 0xDF504
   size = 0x38
 
   [[section.functions]]
-  name = "func_8014FA48"
+  name = "div0_handler_8014FA48"
   vram = 0x8014FA48
   size = 0x1EC
 
@@ -8673,27 +8673,27 @@ size = 0xDF504
   size = 0x178
 
   [[section.functions]]
-  name = "func_801503B8"
+  name = "unimplemented_handler_801503B8"
   vram = 0x801503B8
   size = 0x59C
 
   [[section.functions]]
-  name = "func_80150958"
+  name = "flags_80150958"
   vram = 0x80150958
   size = 0x1AC
 
   [[section.functions]]
-  name = "func_80150B04"
+  name = "sleep_80150B04"
   vram = 0x80150B04
   size = 0x1CC
 
   [[section.functions]]
-  name = "func_80150CD0"
+  name = "there_were_no_processes_found_on_the_free_list_80150CD0"
   vram = 0x80150CD0
   size = 0x128
 
   [[section.functions]]
-  name = "func_80150DF8"
+  name = "count_80150DF8"
   vram = 0x80150DF8
   size = 0x388
 
@@ -8703,7 +8703,7 @@ size = 0xDF504
   size = 0x1C4
 
   [[section.functions]]
-  name = "func_80151344"
+  name = "Command_80151344"
   vram = 0x80151344
   size = 0x1BC
 
@@ -8743,7 +8743,7 @@ size = 0xDF504
   size = 0x448
 
   [[section.functions]]
-  name = "func_80151B74"
+  name = "mode_register_80151B74"
   vram = 0x80151B74
   size = 0x7C
 
@@ -9113,7 +9113,7 @@ size = 0xDF504
   size = 0x9C
 
   [[section.functions]]
-  name = "func_8015C050"
+  name = "sst1InitSli_8015C050"
   vram = 0x8015C050
   size = 0x9A0
 
@@ -9253,7 +9253,7 @@ size = 0xDF504
   size = 0x250
 
   [[section.functions]]
-  name = "func_8015EA04"
+  name = "delay_process_system_by_printing_this_message_8015EA04"
   vram = 0x8015EA04
   size = 0x148
 
@@ -9358,7 +9358,7 @@ size = 0xDF504
   size = 0x30
 
   [[section.functions]]
-  name = "func_8015FBB0"
+  name = "fx_glide_no_splash_8015FBB0"
   vram = 0x8015FBB0
   size = 0xA0
 
@@ -9498,7 +9498,7 @@ size = 0xDF504
   size = 0x54
 
   [[section.functions]]
-  name = "func_80161D44"
+  name = "gr_reg_file_name_80161D44"
   vram = 0x80161D44
   size = 0x64
 
@@ -9683,7 +9683,7 @@ size = 0xDF504
   size = 0x3C
 
   [[section.functions]]
-  name = "func_80165128"
+  name = "free_80165128"
   vram = 0x80165128
   size = 0x474
 
@@ -9833,7 +9833,7 @@ size = 0xDF504
   size = 0x150
 
   [[section.functions]]
-  name = "func_801680B0"
+  name = "expected_and_got_801680B0"
   vram = 0x801680B0
   size = 0x6F0
 
@@ -9873,7 +9873,7 @@ size = 0xDF504
   size = 0x8C
 
   [[section.functions]]
-  name = "func_8016910C"
+  name = "snd_dbg_boot_info_8016910C"
   vram = 0x8016910C
   size = 0x3CC
 
@@ -9903,7 +9903,7 @@ size = 0xDF504
   size = 0xD8
 
   [[section.functions]]
-  name = "func_80169AD0"
+  name = "snd_bank_showlist_80169AD0"
   vram = 0x80169AD0
   size = 0x18C
 
@@ -9938,7 +9938,7 @@ size = 0xDF504
   size = 0xE4
 
   [[section.functions]]
-  name = "func_8016A068"
+  name = "snd_get_debug_8016A068"
   vram = 0x8016A068
   size = 0x104
 
@@ -9988,12 +9988,12 @@ size = 0xDF504
   size = 0xD0
 
   [[section.functions]]
-  name = "func_8016A75C"
+  name = "snd_load_file_8016A75C"
   vram = 0x8016A75C
   size = 0x1DC
 
   [[section.functions]]
-  name = "func_8016A938"
+  name = "comp_bin_8016A938"
   vram = 0x8016A938
   size = 0xC0
 
@@ -10073,7 +10073,7 @@ size = 0xDF504
   size = 0x21C
 
   [[section.functions]]
-  name = "func_8016C240"
+  name = "snd_load_bank_playing_8016C240"
   vram = 0x8016C240
   size = 0x248
 
@@ -10223,7 +10223,7 @@ size = 0xDF504
   size = 0x5C
 
   [[section.functions]]
-  name = "func_8016D538"
+  name = "sound_bank_status_8016D538"
   vram = 0x8016D538
   size = 0x1A8
 
@@ -10249,7 +10249,7 @@ size = 0xDF504
 
 
   [[section.functions]]
-  name = "func_800C47E0"
+  name = "task_body_800C47E0"
   vram = 0x800C47E0
   size = 0x228
 

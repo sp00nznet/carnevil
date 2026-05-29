@@ -38,3 +38,10 @@ stderr*.log
 # Misc local
 build_test.bat
 ghidra_*.log
+
+# Bulky regenerable Ghidra raw exports (keep name_map/report)
+ghidra_export/functions.json
+ghidra_export/symbols.json
+ghidra_export/decompiled.json
+ghidra_export/functions_full.json
+ghidra_export/full_run.log
