@@ -915,6 +915,26 @@ RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
      * worse rendering. Removed; the real game's ch6 event source is
      * something more specific than "post all tids each frame". */
     rtos_sched_run_frame(&g_scheduler, ctx);
+
+    /* Drain the per-frame callback list. The original RTOS scheduler loop
+     * (IDA decomp of sub_80151718) calls sub_80148714 every iteration; our
+     * override previously skipped it. sub_80148714 walks the doubly-linked
+     * callback list at dword_801A25D8 and invokes each entry's +0x1C handler
+     * (skipping entries whose +0x16 flag has bit 0 set). func_800CA148
+     * registers func_800CC728 into this list via static_0_80148138 ->
+     * func_80148140, and func_800CC728 in turn walks the entity list at
+     * 0x801E3880 and ticks each entity's +0x14 handler -- the bridge to
+     * per-frame entity dispatch and rendering.
+     *
+     * NOTE: registration succeeds (func_80148140 populates the list head)
+     * but at the next walker call the head reads 0 -- something between
+     * registration completion and the next scheduler dispatch reverts it.
+     * Diagnosing that is the next blocker for the entity-render path. */
+    {
+        extern RECOMP_FUNC void func_80148714(uint8_t* rdram, recomp_context* ctx);
+        func_80148714(rdram, ctx);
+    }
+
     ctx->r2 = 0;
 }
 

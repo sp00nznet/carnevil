@@ -298,3 +298,4 @@ void rtos_80006220_wrapper(uint8_t* rdram, recomp_context* ctx) {
                 slot, tbl_after, (uint32_t)ctx->r2);
     }
 }
+

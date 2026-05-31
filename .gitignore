@@ -59,3 +59,9 @@ ghidra_export/runtime_refs.txt
 m2c_asm/
 m2c_out.c
 m2c_err.log
+
+# m2c exploratory dumps (keep ghidra_export/entity_m2c.c + cc218_full_m2c.c as RE docs)
+ghidra_export/dispatchers_m2c.c
+ghidra_export/cb_reg.c
+ghidra_export/cb_register_m2c.c
+tools/_*.py
