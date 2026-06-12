@@ -12,6 +12,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
+#include <excpt.h>
+
+/* Diagnostic: which frame-loop step the main thread is currently executing.
+ * Read by event_wait's spin probe to locate where a barrier wait hangs. */
+const char* g_floop_step = "boot";
 
 /* ======================================================================
  * Memory -- 8MB RAM
@@ -1390,6 +1396,7 @@ int main(int argc, char** argv) {
         if (wf == 0) {
             /* First warm-up frame: call full main_loop for init (allocs DMA buffers) */
             ctx.r4 = ctx.r2;
+            g_floop_step = "warmup_C4524";
             func_800C4524(g_rdram, &ctx);
 
             /* The main_loop's render buffer allocation:
@@ -1464,7 +1471,29 @@ int main(int argc, char** argv) {
         extern void func_800C50AC(uint8_t*, recomp_context*);
         fprintf(stderr, "[init] Calling attract mode to populate scene...\n");
         fflush(stderr);
-        func_800C50AC(g_rdram, &ctx);
+        /* func_800C50AC is the attract-mode entry. It registers the per-frame
+         * entity callback (func_800CC728) into the callback list, then enters
+         * its main loop and busy-waits on a subsystem-ready barrier
+         * (event_wait across channels 0..34) that our stubbed RTOS never
+         * satisfies -- so cold on the main thread it never returns and the
+         * frame loop is never reached. Arm yield-escape (event_wait /
+         * func_80151618 longjmp out once the per-call budget is spent) so it
+         * runs one frame's worth of init and returns, with the callback now
+         * registered for the frame loop's walker to drive. */
+        {
+            extern jmp_buf g_yield_escape_buf;
+            extern int g_yield_escape_armed;
+            extern int g_yield_counter;
+            extern const char* g_floop_step;
+            g_yield_counter = 0;
+            g_yield_escape_armed = 1;
+            g_floop_step = "attract_C50AC";
+            if (setjmp(g_yield_escape_buf) == 0) {
+                func_800C50AC(g_rdram, &ctx);
+            }
+            g_yield_escape_armed = 0;
+            g_yield_counter = 0;
+        }
         fprintf(stderr, "[init] Attract mode returned!\n");
         fflush(stderr);
 
@@ -1510,7 +1539,11 @@ int main(int argc, char** argv) {
     uint32_t heap_snapshot_word0 = 0;
     uint32_t heap_snapshot_word1 = 0;
 
-    for (int frame = 0; frame < max_frames; frame++) {
+    int frame_fault_count = 0;          /* consecutive SEH-faulted frames */
+    extern int g_yield_escape_armed;    /* disarmed in the fault handler */
+
+    int frame = 0;
+    for (; frame < max_frames; frame++) {
         /* Simulate VSync interrupt */
         uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
@@ -1649,8 +1682,15 @@ int main(int argc, char** argv) {
          * 3. func_800C4A08() - create tasks
          * 4. func_80151528() - sync
          * 5. func_80151718() - process dispatcher
-         * 6. func_801438D0(0) - cleanup */
-        {
+         * 6. func_801438D0(0) - cleanup
+         *
+         * Guarded with SEH: now that entity dispatch actually fires, the
+         * render path can fault on a bad pointer (the longjmp-escaped attract
+         * init leaves some state partial). Catch the access violation, log
+         * which step faulted, and skip the frame so the loop survives and we
+         * still get a framebuffer dump. Bail out if too many frames fault in
+         * a row (genuinely wedged). */
+        __try {
             extern void func_80151B74(uint8_t*, recomp_context*);
             extern void func_80151528(uint8_t*, recomp_context*);
             extern void func_800C4A08(uint8_t*, recomp_context*);
@@ -1686,11 +1726,38 @@ int main(int argc, char** argv) {
                 g_scheduler.fibers[fi].blocked = 0;
             }
 
-            func_800C4A08(g_rdram, &ctx); /* create tasks */
+            /* func_800C4A08 ("create tasks") also drives attract-init, which
+             * registers the per-frame entity callback (func_800CC728) and then
+             * busy-waits on a subsystem-ready barrier (event_wait across many
+             * channels) that our stubbed RTOS never satisfies. It runs cold on
+             * the main thread, so without yield-escape armed it spins forever
+             * and the frame loop never comes back around -- which is why the
+             * just-registered callback walker never gets a second turn. Arm
+             * yield-escape around it (event_wait/func_80151618 longjmp out once
+             * the budget is exhausted), turning the barrier into one frame of
+             * work so the loop continues and the walker runs on the populated
+             * list. */
+            {
+                extern jmp_buf g_yield_escape_buf;
+                extern int g_yield_escape_armed;
+                extern int g_yield_counter;
+                int yc_save = g_yield_counter;
+                g_yield_counter = 0;
+                g_yield_escape_armed = 1;
+                g_floop_step = "C4A08";
+                if (setjmp(g_yield_escape_buf) == 0) {
+                    func_800C4A08(g_rdram, &ctx); /* create tasks */
+                }
+                g_yield_escape_armed = 0;
+                g_yield_counter = yc_save;
+            }
+            g_floop_step = "sync2";
             func_80151528(g_rdram, &ctx);
+            g_floop_step = "dispatch";
             func_80151718(g_rdram, &ctx); /* process dispatcher */
 
             extern void rtos_run_callbacks(uint8_t* rdram);
+            g_floop_step = "callbacks";
             rtos_run_callbacks(g_rdram);
 
             /* Call the state machine's current mode function.
@@ -1698,9 +1765,24 @@ int main(int argc, char** argv) {
              * which handles actual scene rendering and attract sequence. */
             {
                 extern void func_8014A488(uint8_t*, recomp_context*);
+                g_floop_step = "mode";
                 func_8014A488(g_rdram, &ctx);
             }
         }
+        __except (1 /* EXCEPTION_EXECUTE_HANDLER */) {
+            unsigned long code = (unsigned long)GetExceptionCode();
+            fprintf(stderr, "[FLOOP] frame %d FAULTED (code=0x%08lX) in step='%s' -- skipping frame\n",
+                    frame, code, g_floop_step);
+            fflush(stderr);
+            g_yield_escape_armed = 0; /* ensure escape is disarmed after unwinding */
+            if (++frame_fault_count >= 8) {
+                fprintf(stderr, "[FLOOP] %d consecutive frame faults -- stopping loop\n",
+                        frame_fault_count);
+                break;
+            }
+            continue;
+        }
+        frame_fault_count = 0;
 
         /* func_800C50AC is the attract mode main loop - it never returns.
          * It enters naturally through the game's task/callback system.
@@ -1801,8 +1883,10 @@ int main(int argc, char** argv) {
 
     extern uint32_t voodoo_get_write_count(void);
     extern uint32_t voodoo_get_nonzero_count(void);
-    printf("  Ran %d frames. Voodoo swaps: %d, writes: %u total (%u non-zero)\n",
-           max_frames, g_voodoo.swap_count, voodoo_get_write_count(), voodoo_get_nonzero_count());
+    printf("  Ran %d/%d frames%s. Voodoo swaps: %d, writes: %u total (%u non-zero)\n",
+           frame, max_frames,
+           (frame < max_frames) ? " (stopped early: render-path faults)" : "",
+           g_voodoo.swap_count, voodoo_get_write_count(), voodoo_get_nonzero_count());
 
     /* Dump display list and GP-relative area to check for rendering commands */
     {

@@ -6,6 +6,31 @@
 
 #include "recomp.h"
 #include <stdio.h>
+#include <setjmp.h>
+
+/* Yield-escape (defined in seattle_overrides.c). Callbacks are dispatched on
+ * the main thread (no fiber), so an infinite event_wait/yield barrier inside
+ * one would hang the whole frame loop. Arm escape around each callback and
+ * longjmp out after the threshold -- same treatment func_8014A488 gives mode
+ * functions. event_wait/func_80151618 perform the longjmp when armed. */
+extern jmp_buf g_yield_escape_buf;
+extern int g_yield_escape_armed;
+extern int g_yield_escape_threshold;
+extern int g_yield_counter;
+
+/* Run one recompiled callback with yield-escape armed so a spinning
+ * event_wait/yield barrier inside it returns control after the threshold
+ * instead of hanging the frame. */
+static void run_cb_escapable(recomp_func_t* f, uint8_t* rdram, recomp_context* cb_ctx) {
+    int yc_save = g_yield_counter;
+    g_yield_counter = 0;
+    g_yield_escape_armed = 1;
+    if (setjmp(g_yield_escape_buf) == 0) {
+        f(rdram, cb_ctx);
+    }
+    g_yield_escape_armed = 0;
+    g_yield_counter = yc_save;
+}
 
 /* RTOS vector-stub setters at 0x8000630C/631C/632C: each stores $a0 to a slot
  * in the 3-entry array at 0x800147B8/BC/C0 then returns. Without these, early
@@ -182,7 +207,7 @@ void rtos_run_callbacks(uint8_t* rdram) {
                             fprintf(stderr, "[rtos_cb] slot %d call 0x%08X (run %d)\n",
                                     i, fv, run_count);
                         cb_ctx.r4 = (gpr)i;
-                        f(rdram, &cb_ctx);
+                        run_cb_escapable(f, rdram, &cb_ctx);
                     }
                 }
             }
@@ -197,7 +222,7 @@ void rtos_run_callbacks(uint8_t* rdram) {
             recomp_func_t* f = get_function(fv);
             if (f) {
                 cb_ctx.r4 = (gpr)i;
-                f(rdram, &cb_ctx);
+                run_cb_escapable(f, rdram, &cb_ctx);
             }
         }
     }
@@ -207,7 +232,7 @@ void rtos_run_callbacks(uint8_t* rdram) {
         recomp_func_t* f = get_function(rtos_frame_done_cb);
         if (f) {
             if (run_count <= 3) fprintf(stderr, "[rtos_cb] Calling frame-done 0x%08X\n", rtos_frame_done_cb);
-            f(rdram, &cb_ctx);
+            run_cb_escapable(f, rdram, &cb_ctx);
         }
     }
 }

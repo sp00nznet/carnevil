@@ -914,22 +914,29 @@ RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
      * task-id values per frame to keep task fibers awake) -- net slightly
      * worse rendering. Removed; the real game's ch6 event source is
      * something more specific than "post all tids each frame". */
+    extern const char* g_floop_step;
+    g_floop_step = "dispatch.sched";
     rtos_sched_run_frame(&g_scheduler, ctx);
 
     /* Drain the per-frame callback list. The original RTOS scheduler loop
      * (IDA decomp of sub_80151718) calls sub_80148714 every iteration; our
      * override previously skipped it. sub_80148714 walks the doubly-linked
      * callback list at dword_801A25D8 and invokes each entry's +0x1C handler
-     * (skipping entries whose +0x16 flag has bit 0 set). func_800CA148
-     * registers func_800CC728 into this list via static_0_80148138 ->
-     * func_80148140, and func_800CC728 in turn walks the entity list at
-     * 0x801E3880 and ticks each entity's +0x14 handler -- the bridge to
-     * per-frame entity dispatch and rendering.
+     * (skipping entries whose +0x16 flag has bit 0 set). func_800CA148 (run
+     * during attract init via func_800C50AC) registers func_800CC728 into this
+     * list via static_0_80148138 -> func_80148140, and func_800CC728 in turn
+     * walks the entity list at 0x801E3880 and ticks each entity's +0x14
+     * handler -- the bridge to per-frame entity dispatch and rendering.
      *
-     * NOTE: registration succeeds (func_80148140 populates the list head)
-     * but at the next walker call the head reads 0 -- something between
-     * registration completion and the next scheduler dispatch reverts it.
-     * Diagnosing that is the next blocker for the entity-render path. */
+     * STATUS (2026-06): once func_800C50AC is allowed to return (see the
+     * yield-escape wrap in seattle_runtime.c), registration sticks and this
+     * walker reads a populated head (0x806FAE7C). func_800CC728 then fires and
+     * real geometry flows -- ~20 triangles submitted to the Voodoo per frame
+     * (the first time entity render has ever run). It currently faults
+     * (access violation) deeper in the entity tick after submitting those
+     * triangles, and the triangle vertices decode as (0,0) -- the next two
+     * bugs to chase. The frame loop's SEH guard keeps the run alive. */
+    g_floop_step = "dispatch.walker";
     {
         extern RECOMP_FUNC void func_80148714(uint8_t* rdram, recomp_context* ctx);
         func_80148714(rdram, ctx);
@@ -956,6 +963,13 @@ RECOMP_FUNC void func_801515C8(uint8_t* rdram, recomp_context* ctx) {
  * ====================================================================== */
 
 static uint32_t rtos_event_counter = 0;
+
+/* Yield-escape globals (defined later in this file) -- forward-declared here
+ * so event_wait (func_80145CE4) can participate in the same escape budget. */
+extern int g_yield_counter;
+extern jmp_buf g_yield_escape_buf;
+extern int g_yield_escape_armed;
+extern int g_yield_escape_threshold;
 
 /* Forward declare message queue (defined below) */
 #define RTOS_MAX_CHANNELS 256
@@ -984,6 +998,25 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
     if (rtos_event_counter <= 20 || (channel < 100 && rtos_event_counter <= 200)) {
         fprintf(stderr, "[rtos] event_wait(channel=%d, buf=0x%08X) -> counter=%u\n",
                 channel, buf_addr, rtos_event_counter);
+    }
+
+    /* Yield-escape for main-thread event_wait spins. When a per-frame mode
+     * function (dispatched cold from the C frame loop via func_8014A488, so
+     * current_fiber < 0) busy-waits on event_wait for a subsystem-ready
+     * barrier that our stubbed RTOS never signals, it spins forever: it never
+     * calls func_80151618 (yield), so the yield-escape that normally bounds
+     * mode functions can't fire. Count these main-thread waits against the
+     * same yield budget and longjmp out once we cross the threshold, turning
+     * the infinite barrier wait into "one frame's worth of work" -- exactly
+     * the treatment func_80151618 gives yield-loops. Only applies when armed
+     * (inside a mode dispatch) and off-fiber; fiber-context waits below still
+     * yield to the scheduler normally. */
+    if (g_yield_escape_armed && g_scheduler.current_fiber < 0 && channel < 100) {
+        g_yield_counter++;
+        if (g_yield_counter >= g_yield_escape_threshold) {
+            g_yield_escape_armed = 0;  /* disarm to avoid re-entry */
+            longjmp(g_yield_escape_buf, 2);
+        }
     }
 
     /* For high-numbered channels (rendering sync), return immediately.
