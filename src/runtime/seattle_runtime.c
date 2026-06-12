@@ -1474,6 +1474,21 @@ int main(int argc, char** argv) {
         *(uint32_t*)(g_rdram + 0x001AA660) = 0x08100000;
         *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
 
+        /* Initialise the TMU texture-memory pool bounds in the render-context
+         * struct. The texture allocator (func_801626A8) computes free space as
+         * [+0x11278] (size) - [+0x11274] (used); on real hardware these are set
+         * by the TMU memory-probe at init, which our Voodoo emulation doesn't
+         * perform, so they stay 0 and every texture alloc fails ("Could not
+         * allocate TMU memory"). Seed them: used=0, size=4 MB (the TMU0 RAM).
+         * Both render-context entries (0 and 1) get the same bounds. */
+        for (int e = 0; e < 2; e++) {
+            uint32_t ctxb = 0x001E6A20 + (uint32_t)e * 70316;
+            if (ctxb + 0x11280 < RAM_SIZE) {
+                *(uint32_t*)(g_rdram + ctxb + 0x11274) = 0;          /* used ptr */
+                *(uint32_t*)(g_rdram + ctxb + 0x11278) = 0x00400000; /* 4 MB TMU */
+            }
+        }
+
         extern void func_800C50AC(uint8_t*, recomp_context*);
         extern int g_use_attract_fiber;
         if (g_use_attract_fiber) {
