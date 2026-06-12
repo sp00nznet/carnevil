@@ -16,12 +16,10 @@ stubs = [
     "func_80152AB0",
     "func_80152D74",
     "func_8015303C",
-    "func_801555F0",
     "func_80158FE8",
     "func_80167220",
     "func_80167608",
-    "func_801678C0",
-    "func_80168C8C",
-    "func_80168DD8",
-    "func_80168EDC",
 ]
+# Removed from stubs (now recompilable -- they only contained MIPS CACHE ops,
+# which the recompiler now emits as no-ops): func_801555F0, func_801678C0,
+# func_80168C8C, func_80168DD8, func_80168EDC -- the texture-upload copy loops.
