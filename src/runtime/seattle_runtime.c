@@ -320,6 +320,21 @@ uint32_t seattle_io_read32(uint32_t paddr) {
 }
 
 void seattle_io_write32(uint32_t paddr, uint32_t value) {
+    /* The texture loader hardcodes the Voodoo TMU at BAR 0x08000000 (KSEG1
+     * 0xA8000000): TMU registers (texMode 0x300, tLOD 0x304, texBaseAddr 0x30C,
+     * trexInit ...) at 0x080003xx, and TMU texture memory at 0x08800000+. This
+     * is a different base than the 0x08100000 render BAR, so route these
+     * explicitly to the Voodoo. Without it, texel uploads land at offset
+     * 0x700000 (out-of-range LFB -> dropped) and texMode never takes effect. */
+    if (paddr >= 0x08800000 && paddr < 0x08C00000) {
+        voodoo_write(&g_voodoo, paddr - 0x08000000, value);  /* offset >= 0x800000 -> texmem */
+        return;
+    }
+    if (paddr >= 0x08000300 && paddr < 0x08000400) {
+        voodoo_write(&g_voodoo, paddr - 0x08000000, value);  /* TMU registers */
+        return;
+    }
+
     /* Galileo GT64010 */
     if (paddr >= 0x08000000 && paddr < 0x08100000) {
         uint32_t reg_off = paddr - 0x08000000;
@@ -350,7 +365,11 @@ void seattle_io_write32(uint32_t paddr, uint32_t value) {
                 if (byte_count == 0 && chain > 1) break;
 
                 if (src_phys < 0x00800000 && byte_count > 0 && byte_count < 0x100000) {
-                    uint32_t voff = (dst_pci >= 0x08100000) ? dst_pci - 0x08100000 : dst_pci;
+                    /* Texture-memory DMA dests use the 0x08000000 base
+                     * (0x08800000+); render-register dests use 0x08100000. */
+                    uint32_t voff = (dst_pci >= 0x08800000) ? dst_pci - 0x08000000
+                                  : (dst_pci >= 0x08100000) ? dst_pci - 0x08100000
+                                  : dst_pci;
 
                     if (dma_total <= 10) {
                         fprintf(stderr, "[dma] Ch%d: src=0x%06X dst=0x%08X count=%u voodoo=0x%06X\n",
