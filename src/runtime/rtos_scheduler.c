@@ -45,8 +45,26 @@ static LONG WINAPI crash_veh(EXCEPTION_POINTERS* ep) {
 void install_crash_logger(void) {
     AddVectoredExceptionHandler(1, crash_veh);
 }
+
+/* Print the host return-address chain (resolve via carnevil.map: addr - run
+ * image base = RVA). Used to find which recompiled function drives a loop when
+ * the MIPS return register is unhelpful. */
+void capture_host_stack(const char* tag) {
+    void* bt[16];
+    USHORT n = RtlCaptureStackBackTrace(1, 16, bt, NULL);
+    uintptr_t base = (uintptr_t)GetModuleHandleA(NULL);
+    fprintf(stderr, "[stack:%s] RVAs:", tag);
+    for (USHORT i = 0; i < n; i++) {
+        uintptr_t a = (uintptr_t)bt[i];
+        if (a >= base && a < base + 0x10000000)
+            fprintf(stderr, " %llX", (unsigned long long)(a - base));
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
 #else
 void install_crash_logger(void) {}
+void capture_host_stack(const char* tag) { (void)tag; }
 #endif
 
 /* Forward declaration: fiber entry point */
