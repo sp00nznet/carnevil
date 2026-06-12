@@ -215,12 +215,17 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
          * adjacent register slots and fill the triangle with color1. */
         float ax, ay, bx, by, cx, cy;
         if (reg == VOODOO_FTRIANGLE) {
-            ax = *(float*)&voodoo->regs[(0x180) >> 2];
-            ay = *(float*)&voodoo->regs[(0x184) >> 2];
-            bx = *(float*)&voodoo->regs[(0x1A8) >> 2];  /* SetupBX */
-            by = *(float*)&voodoo->regs[(0x1AC) >> 2];
-            cx = *(float*)&voodoo->regs[(0x1D0) >> 2];  /* SetupCX */
-            cy = *(float*)&voodoo->regs[(0x1D4) >> 2];
+            /* CarnEvil's float triangle setup stores the three IEEE-float
+             * vertices contiguously at 0x88..0x9C (verified by dumping the
+             * register window at FTRIANGLE time): A=(0x88,0x8C), B=(0x90,0x94),
+             * C=(0x98,0x9C). (The 0x180/0x1A8/0x1D0 SetupX/Y slots this used to
+             * read are never written -- hence the old all-zero triangles.) */
+            ax = *(float*)&voodoo->regs[(0x88) >> 2];
+            ay = *(float*)&voodoo->regs[(0x8C) >> 2];
+            bx = *(float*)&voodoo->regs[(0x90) >> 2];
+            by = *(float*)&voodoo->regs[(0x94) >> 2];
+            cx = *(float*)&voodoo->regs[(0x98) >> 2];
+            cy = *(float*)&voodoo->regs[(0x9C) >> 2];
         } else {
             /* Fixed-point 12.4 -> float */
             ax = (int32_t)voodoo->regs[(0x048) >> 2] / 16.0f;
