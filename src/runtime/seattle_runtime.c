@@ -2010,6 +2010,27 @@ int main(int argc, char** argv) {
      * flows through the FTRIANGLE path, so the front buffer already holds the
      * game's rendered frame -- the self-test would just overpaint it.) */
 
+#ifdef PIPELINE_SELFTEST
+    /* Validate the Gouraud + Z pixel pipeline with a synthetic triangle:
+     * iterated colour, blue at the left edge -> red at the right edge. */
+    {
+        extern voodoo_state_t g_voodoo;
+        extern void voodoo_write(voodoo_state_t*, uint32_t, uint32_t);
+        #define W(o,v) voodoo_write(&g_voodoo,(uint32_t)(o),(uint32_t)(v))
+        #define WF(o,fv) do{ float _f=(float)(fv); W((o), *(uint32_t*)&_f);}while(0)
+        W(0x104, 0x00000000);            /* fbzColorPath: rgbselect=0 (iterated) */
+        W(0x110, 0x00000000);            /* fbzMode: depth off */
+        WF(0x88,50); WF(0x8C,50); WF(0x90,250); WF(0x94,50); WF(0x98,50); WF(0x9C,250);
+        WF(0xA0,0);  WF(0xA4,0);  WF(0xA8,255);          /* start RGB at A = blue */
+        WF(0xC0,255.0f/200); WF(0xC4,0); WF(0xC8,-255.0f/200); /* dR/dG/dB per X */
+        WF(0xE0,0); WF(0xE4,0); WF(0xE8,0);              /* per-Y gradients = 0 */
+        W(0x100, 0);                     /* FTRIANGLE */
+        W(0x128, 1);                     /* swap */
+        #undef W
+        #undef WF
+    }
+#endif
+
     /* Dump framebuffer as raw PPM image */
     if (g_voodoo.swap_count > 0 || 1) {
         /* Debug HUD disabled — show actual game rendering */

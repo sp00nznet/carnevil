@@ -100,6 +100,8 @@ uint32_t voodoo_read(voodoo_state_t* voodoo, uint32_t offset) {
 static int vwrite_log = 0;
 static uint32_t vwrite_total = 0;
 static uint32_t vwrite_nonzero = 0;
+uint64_t g_tex_writes = 0;
+uint32_t g_tex_first_off = 0, g_tex_last_off = 0;
 
 uint32_t voodoo_get_write_count(void) { return vwrite_total; }
 uint32_t voodoo_get_nonzero_count(void) { return vwrite_nonzero; }
@@ -167,6 +169,9 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         /* Copy back → front. Front buffer is what gets dumped. */
         memcpy(voodoo->framebuffer, voodoo->backbuffer,
                sizeof(uint16_t) * 640 * 480);
+        /* Reset the depth buffer to "far" for the next frame so the first
+         * fragment at each pixel always passes a less/lessequal test. */
+        for (int i = 0; i < 640 * 480; i++) voodoo->zbuffer[i] = 1e30f;
         if (voodoo->swap_count <= 5 || voodoo->swap_count % 100 == 0) {
             fprintf(stderr, "[voodoo] SwapBuffers #%d\n", voodoo->swap_count);
         }
@@ -236,15 +241,40 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
             cy = (int32_t)voodoo->regs[(0x09C) >> 2] / 16.0f;
         }
 
-        uint32_t color1 = voodoo->regs[VOODOO_COLOR1 >> 2];
-        uint16_t fill = (uint16_t)(
-            ((color1 >> 8) & 0xF800) |
-            ((color1 >> 5) & 0x07E0) |
-            ((color1 >> 3) & 0x001F));
-        /* If color1 is 0 (typical clear color), draw white so we can see
-         * that triangles are arriving. Real implementation will read
-         * vertex colors from SRED/SGREEN/SBLUE. */
-        if (fill == 0) fill = 0xFFFF;
+        /* --- Pixel-pipeline setup ---------------------------------------
+         * Verified CarnEvil register map = standard SST-1 layout + 0x80 (the
+         * float-format bit): vertices 0x88..0x9C, iterator START values at
+         * 0xA0..0xBC (R,G,B,Z,A,S,T,W) and per-X / per-Y GRADIENTS at
+         * 0xC0..0xDC / 0xE0..0xFC. All iterated relative to vertex A. */
+        #define RF(o) (*(float*)&voodoo->regs[(o) >> 2])
+        uint32_t color1   = voodoo->regs[VOODOO_COLOR1 >> 2];
+        uint32_t cpath    = voodoo->regs[VOODOO_FBZCOLORPATH >> 2];
+        uint32_t fbzmode  = voodoo->regs[VOODOO_FBZMODE >> 2];
+        uint32_t texmode  = voodoo->regs[VOODOO_TEXMODE >> 2];   /* 0x300 */
+        int   rgbselect   = cpath & 0x3;            /* 0=iterated 1=texture 2=color1 */
+        int   depth_en    = (fbzmode >> 4) & 1;     /* enable depth buffer */
+        int   depth_func  = (fbzmode >> 5) & 7;     /* depth compare function */
+        int   depth_wmask = (fbzmode >> 10) & 1;    /* depth write mask (1=write) */
+        int   tex_en      = (texmode & 1) && (g_tex_writes > 0);
+
+        float sR=RF(0xA0), sG=RF(0xA4), sB=RF(0xA8), sZ=RF(0xAC);
+        float sS=RF(0xB4), sT=RF(0xB8), sW=RF(0xBC);
+        float dRdX=RF(0xC0), dGdX=RF(0xC4), dBdX=RF(0xC8), dZdX=RF(0xCC);
+        float dSdX=RF(0xD4), dTdX=RF(0xD8), dWdX=RF(0xDC);
+        float dRdY=RF(0xE0), dGdY=RF(0xE4), dBdY=RF(0xE8), dZdY=RF(0xEC);
+        float dSdY=RF(0xF4), dTdY=RF(0xF8), dWdY=RF(0xFC);
+
+        /* color1 components (RGB888) -- the flat-shade source, preserved for
+         * the color1 path and as the texture/iterated fallback. */
+        int c1r=(color1>>16)&0xFF, c1g=(color1>>8)&0xFF, c1b=color1&0xFF;
+        uint16_t c1_565 = (uint16_t)(((color1>>8)&0xF800)|((color1>>5)&0x07E0)|((color1>>3)&0x001F));
+        if (c1_565 == 0) c1_565 = 0xFFFF;   /* same black->white fallback as before */
+
+        /* texture geometry from texMode/LOD (size = 256>>lod, square). */
+        uint32_t tlod = voodoo->regs[VOODOO_TLOD >> 2];
+        int tex_w = 256 >> (tlod & 0xF); if (tex_w < 1) tex_w = 1;
+        int tex_h = tex_w;
+        int tex_fmt = (texmode >> 8) & 0xF;          /* texture format */
 
         /* Triangle bounding box, clipped to 640x480 */
         int xmin = (int)floorf(fminf(ax, fminf(bx, cx)));
@@ -257,8 +287,8 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         if (ymax > 480) ymax = 480;
 
         if (tri_count <= 20 || tri_count % 1000 == 0) {
-            fprintf(stderr, "[voodoo] Triangle #%d A=(%.1f,%.1f) B=(%.1f,%.1f) C=(%.1f,%.1f) bbox=(%d,%d)-(%d,%d) fill=0x%04X\n",
-                    tri_count, ax, ay, bx, by, cx, cy, xmin, ymin, xmax, ymax, fill);
+            fprintf(stderr, "[voodoo] Triangle #%d A=(%.1f,%.1f) B=(%.1f,%.1f) C=(%.1f,%.1f) bbox=(%d,%d)-(%d,%d) rgbsel=%d depth=%d tex=%d c1=0x%04X\n",
+                    tri_count, ax, ay, bx, by, cx, cy, xmin, ymin, xmax, ymax, rgbselect, depth_en, tex_en, c1_565);
         }
 
         /* Edge-function (signed-area) rasterizer. A pixel is inside the
@@ -276,12 +306,74 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                 int inside = (e_abc > 0)
                     ? (w0 >= 0 && w1 >= 0 && w2 >= 0)
                     : (w0 <= 0 && w1 <= 0 && w2 <= 0);
-                if (inside) {
-                    voodoo->backbuffer[y * 640 + x] = fill;
-                    pixels_drawn++;
+                if (!inside) continue;
+
+                int idx = y * 640 + x;
+                float fx = px - ax, fy = py - ay;   /* relative to start vertex A */
+
+                /* --- Depth test (only when the game enables it) --- */
+                float z = 0.0f;
+                if (depth_en) {
+                    z = sZ + dZdX * fx + dZdY * fy;
+                    float zb = voodoo->zbuffer[idx];
+                    int pass;
+                    switch (depth_func) {
+                        case 0: pass = 0; break;            /* never */
+                        case 1: pass = (z < zb); break;     /* less */
+                        case 2: pass = (z == zb); break;    /* equal */
+                        case 3: pass = (z <= zb); break;    /* lessequal */
+                        case 4: pass = (z > zb); break;     /* greater */
+                        case 5: pass = (z != zb); break;    /* notequal */
+                        case 6: pass = (z >= zb); break;    /* greaterequal */
+                        default: pass = 1; break;           /* always */
+                    }
+                    if (!pass) continue;
                 }
+
+                /* --- Colour select --- */
+                int r, g, b;
+                if (rgbselect == 0) {
+                    /* iterated RGB (Gouraud) */
+                    int ir = (int)(sR + dRdX * fx + dRdY * fy);
+                    int ig = (int)(sG + dGdX * fx + dGdY * fy);
+                    int ib = (int)(sB + dBdX * fx + dBdY * fy);
+                    r = ir < 0 ? 0 : ir > 255 ? 255 : ir;
+                    g = ig < 0 ? 0 : ig > 255 ? 255 : ig;
+                    b = ib < 0 ? 0 : ib > 255 ? 255 : ib;
+                } else if (rgbselect == 1 && tex_en) {
+                    /* perspective-correct texture sample */
+                    float w = sW + dWdX * fx + dWdY * fy;
+                    float inv = (w != 0.0f) ? 1.0f / w : 0.0f;
+                    float s = (sS + dSdX * fx + dSdY * fy) * inv;
+                    float t = (sT + dTdX * fx + dTdY * fy) * inv;
+                    int ti = ((int)s) & (tex_w - 1);
+                    int tj = ((int)t) & (tex_h - 1);
+                    uint32_t texel_off = (uint32_t)(tj * tex_w + ti);
+                    if (tex_fmt == 0 /* 8-bit, treat as intensity */) {
+                        int v = voodoo->texmem[texel_off & (sizeof(voodoo->texmem)-1)];
+                        r = g = b = v;
+                    } else {
+                        /* default: 16-bit RGB565 texel */
+                        uint16_t tx = *(uint16_t*)(voodoo->texmem + ((texel_off*2) & (sizeof(voodoo->texmem)-2)));
+                        r = ((tx >> 11) & 0x1F) << 3;
+                        g = ((tx >> 5) & 0x3F) << 2;
+                        b = (tx & 0x1F) << 3;
+                    }
+                } else {
+                    /* color1 (rgbselect==2) or texture-without-texture fallback:
+                     * exactly the previous flat behaviour. */
+                    voodoo->backbuffer[idx] = c1_565;
+                    if (depth_en && depth_wmask) voodoo->zbuffer[idx] = z;
+                    pixels_drawn++;
+                    continue;
+                }
+
+                voodoo->backbuffer[idx] = (uint16_t)(((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | (b >> 3));
+                if (depth_en && depth_wmask) voodoo->zbuffer[idx] = z;
+                pixels_drawn++;
             }
         }
+        #undef RF
         if (tri_count <= 5) {
             fprintf(stderr, "[voodoo] Triangle #%d drew %d pixels\n", tri_count, pixels_drawn);
         }
@@ -349,6 +441,17 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                 voodoo->framebuffer[pixel_index + 1] = (uint16_t)(value >> 16);
             }
         }
+    }
+
+    /* Texture memory writes (TMU upload): store into texmem so the rasterizer
+     * can sample uploaded textures. Each write is one 32-bit word. */
+    if (offset >= VOODOO_TEX_OFFSET) {
+        uint32_t toff = offset - VOODOO_TEX_OFFSET;
+        if (g_tex_writes == 0) g_tex_first_off = toff;
+        g_tex_last_off = toff;
+        g_tex_writes++;
+        if (toff + 4 <= sizeof(voodoo->texmem))
+            *(uint32_t*)(voodoo->texmem + toff) = value;
     }
 }
 

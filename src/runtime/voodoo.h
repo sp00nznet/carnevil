@@ -103,6 +103,8 @@ typedef struct {
     /* Double-buffered framebuffer - 640x480 RGB565 */
     uint16_t framebuffer[640 * 480];   /* front buffer (displayed) */
     uint16_t backbuffer[640 * 480];    /* back buffer (rendered to) */
+    float    zbuffer[640 * 480];       /* depth buffer (matches backbuffer) */
+    uint8_t  texmem[4 * 1024 * 1024];  /* TMU texture memory (uploaded textures) */
     int swap_count;
     int frame_count;
 
