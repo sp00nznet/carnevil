@@ -1292,8 +1292,24 @@ extern int g_yield_escape_threshold;
 
 RECOMP_FUNC void func_80151618(uint8_t* rdram, recomp_context* ctx) {
     static int c = 0; c++;
-    g_yield_counter++;
     *(uint32_t*)(rdram + 0x001E6504) = 486; /* force PIC serial */
+
+    /* Attract-fiber path: func_80151618 is the attract state machine's per-frame
+     * yield. When running inside the attract fiber, suspend it back to the frame
+     * loop here; the C loop advances the frame counters and resumes us next
+     * frame, so the state machine progresses one iteration per frame with
+     * consistent state (instead of being longjmp-escaped mid-traversal). */
+    {
+        extern int attract_fiber_in_context(void);
+        extern int attract_fiber_yield(void);
+        if (attract_fiber_in_context()) {
+            attract_fiber_yield();   /* returns next frame */
+            ctx->r2 = 0;
+            return;
+        }
+    }
+
+    g_yield_counter++;
 
     /* Yield-escape: when armed (we're inside a per-frame mode call), after
      * threshold yields, longjmp out to the dispatcher. This turns infinite
@@ -1782,6 +1798,18 @@ RECOMP_FUNC void func_8014A488(uint8_t* rdram, recomp_context* ctx) {
         if (cp == 0 || cp + 0x30 >= 0x00800000) break;
         uint32_t mfn = *(uint32_t*)(rdram + cp + 0x24);
         uint32_t dat = *(uint32_t*)(rdram + cp + 0x10);
+
+        /* Attract-fiber path owns func_800C50AC; don't also dispatch it here
+         * (that would run the state machine twice per frame and corrupt it). */
+        {
+            extern int g_use_attract_fiber;
+            if (g_use_attract_fiber && mfn == 0x800C50AC) {
+                uint32_t next = *(uint32_t*)(rdram + cp + 0x04);
+                if (next == cur || next == 0) break;
+                cur = next;
+                continue;
+            }
+        }
 
         if (mfn >= 0x80000000 && mfn < 0x80800000) {
             extern void seattle_null_stub(uint8_t*, recomp_context*);

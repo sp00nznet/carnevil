@@ -1471,6 +1471,13 @@ int main(int argc, char** argv) {
         *(uint32_t*)(g_rdram + 0x001E6A20 + 0x11178) = 4;
 
         extern void func_800C50AC(uint8_t*, recomp_context*);
+        extern int g_use_attract_fiber;
+        if (g_use_attract_fiber) {
+            /* Attract-fiber path: don't cold-call here. The attract state
+             * machine runs in its own fiber, resumed once per frame in the
+             * frame loop below, so the scene builds up across frames. */
+            fprintf(stderr, "[init] Attract-fiber mode: deferring func_800C50AC to per-frame resume\n");
+        } else {
         fprintf(stderr, "[init] Calling attract mode to populate scene...\n");
         fflush(stderr);
         /* func_800C50AC is the attract-mode entry. It registers the per-frame
@@ -1498,6 +1505,7 @@ int main(int argc, char** argv) {
         }
         fprintf(stderr, "[init] Attract mode returned!\n");
         fflush(stderr);
+        }
 
         /* Note: tried sweeping func_800E91E8 (per-entity-type dispatcher
          * with hardcoded fn-pointer loads) with ids 0..15 here. Only 2
@@ -1769,6 +1777,18 @@ int main(int argc, char** argv) {
                 extern void func_8014A488(uint8_t*, recomp_context*);
                 g_floop_step = "mode";
                 func_8014A488(g_rdram, &ctx);
+            }
+
+            /* Attract-fiber path: resume the attract state machine for one
+             * frame. func_8014A488 skips func_800C50AC when this is on, so the
+             * fiber is its sole driver. */
+            {
+                extern int g_use_attract_fiber;
+                extern void attract_fiber_resume(uint8_t*);
+                if (g_use_attract_fiber) {
+                    g_floop_step = "attract_fiber";
+                    attract_fiber_resume(g_rdram);
+                }
             }
         }
         __except (1 /* EXCEPTION_EXECUTE_HANDLER */) {

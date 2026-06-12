@@ -31,6 +31,7 @@ configure_file(src/runtime/recomp.h recomp_out/funcs/recomp.h COPYONLY)
 add_executable(carnevil
     src/runtime/seattle_runtime.c
     src/runtime/seattle_overrides.c
+    src/runtime/attract_fiber.c
     src/runtime/voodoo.c
     src/runtime/input.c
     src/runtime/dcs_sound.c
