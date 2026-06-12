@@ -255,7 +255,10 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         int   depth_en    = (fbzmode >> 4) & 1;     /* enable depth buffer */
         int   depth_func  = (fbzmode >> 5) & 7;     /* depth compare function */
         int   depth_wmask = (fbzmode >> 10) & 1;    /* depth write mask (1=write) */
-        int   tex_en      = (texmode & 1) && (g_tex_writes > 0);
+        /* Texturing is selected by fbzColorPath rgbselect==1 (TREX output), not
+         * by a texMode "enable" bit -- sample whenever a texture is uploaded. */
+        int   tex_en      = (g_tex_writes > 0);
+        (void)texmode;
 
         float sR=RF(0xA0), sG=RF(0xA4), sB=RF(0xA8), sZ=RF(0xAC);
         float sS=RF(0xB4), sT=RF(0xB8), sW=RF(0xBC);
