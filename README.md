@@ -29,13 +29,30 @@ CarnEvil was a coin-op rail shooter where you blasted your way through a haunted
 
 Source: [System16 Hardware Page](https://www.system16.com/hardware.php?id=618)
 
-## Current Status: Rasterizer Works, Entity Dispatch Still Dormant
+## Current Status: Entity Render Works -- Real Game Geometry On Screen
 
-The game boots cleanly to 500 frames in ~30 seconds, the full RTOS / state-machine / callback / task plumbing all works correctly, and the **Voodoo triangle rasterizer is implemented and drawing pixels** (verified via a self-test that injects two triangles at the end of the run and dumps the front buffer):
+The game boots and runs **500/500 frames cleanly with zero crashes**, the full
+RTOS / state-machine / callback / task plumbing works, entity dispatch fires
+every frame, and **real CarnEvil attract-mode geometry renders to the
+framebuffer** (~3000 Voodoo swaps, ~26% non-black):
 
-![rasterizer self-test](docs/rasterizer-selftest.png)
+![render milestone](docs/render_milestone.png)
 
-So the rendering chain is now complete end-to-end: triangle command in -> edge-walking rasterization -> backbuffer -> SwapBuffers -> front buffer -> PPM/PNG dump. What's missing is the *game logic side* of the pipeline: the 14 entity-specific draw functions in `0x80100000-0x80140000` (which would call `func_800D7600` to populate the scene graph and then submit triangles to the Voodoo) are never reached from any per-frame path. The entity-dispatch trigger lives somewhere in the game's call graph that we haven't mapped yet. Next phase: MIPS disassembly tooling (Ghidra/IDA) to trace the entity-dispatch chain backwards from one of those functions.
+The entity-dispatch blocker that kept the screen black for many sessions is
+resolved. The chain of fixes: escape the attract-mode init barrier so the frame
+loop runs -> **initialise `ctx->f_odd`** (the recompiler's odd-FPU-register
+pointer was never set, so the first odd-float access in the render handler
+NULL-deref'd -- this was the real crash) -> fix the FTRIANGLE vertex decode (the
+game stores float vertices at regs `0x88-0x9C`, not the `0x180+` slots the
+decoder read). With those, the full pipeline runs end-to-end: RTOS -> attract
+state machine -> entity dispatch -> DMA -> Voodoo -> rasterizer -> framebuffer.
+
+The rasterizer is now a proper **pixel pipeline**: Gouraud vertex-colour
+interpolation (SRED/SGREEN/SBLUE), an 8-function Z-buffer, and perspective-
+correct texture sampling -- each gated on the game's own mode registers. The
+current attract content is flat-shaded UI/text (the game leaves iterated colour,
+depth, and texturing disabled for it); those paths engage for the textured 3D
+scene, which real attract reaches around frame ~3000.
 
 ### What's Working
 
@@ -70,10 +87,10 @@ So the entire **state pipeline** works (config, channel signaling, fastfill, swa
 
 ### What's Next
 
-- [ ] **Identify the entity-dispatch trigger** -- Use MIPS disassembly tooling (Ghidra/IDA) to trace what's *supposed* to invoke the 14 entity-draw functions in the original game's call graph. Pure C-side runtime instrumentation hit its limit (too many indirect dispatches via function pointers).
-- [ ] **Fiber-resume support for split entries** -- `func_800C6D08`/`C78E4`/`E79C0` are mid-function fiber-resume points. We currently call them cold (works because of yield-escape) but proper fiber-resume would let their prefix code run in the right context.
-- [ ] **Full Voodoo triangle setup** -- the rasterizer currently does flat-shaded fill from `color1`. Need vertex color interpolation (`SRED`/`SGREEN`/`SBLUE` gradients), Z buffering, texture mapping, alpha blending.
-- [ ] **Texture Support** -- Load WMS textures and map through TMU registers.
+- [x] **Identify the entity-dispatch trigger** -- DONE. Entity dispatch fires per frame; geometry reaches the Voodoo. (Root cause of the long black-screen was an uninitialised `ctx->f_odd`, not the dispatch path itself.)
+- [x] **Fiber-resume support for split entries** -- DONE (optional path). `attract_fiber.{c,h}` runs the attract state machine `func_800C50AC` as a per-frame-resumed Windows fiber with proper event_wait blocking; gated behind `g_use_attract_fiber` (default off, escape path is the default).
+- [x] **Full Voodoo triangle setup** -- DONE. Gouraud vertex-colour interpolation (`SRED`/`SGREEN`/`SBLUE`), 8-function Z-buffer, perspective-correct texture sampling, all gated on the game's mode registers. Gouraud verified; alpha blending still TODO.
+- [ ] **Texture upload** -- texture *sampling* is implemented (TMU writes captured into texmem), but the game's texture-download path isn't exercised in the 500-frame attract window (no textures uploaded yet). Drive attract to the textured 3D scene (or find the upload path) to light it up.
 - [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL.
 - [ ] **DCS2 Audio** -- ADSP-2115 DSP or direct DCS 3.0 audio bank decoding.
 - [ ] **Input System** -- Mouse/gamepad/Sinden lightgun, networked 2P co-op.
