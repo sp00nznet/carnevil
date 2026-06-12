@@ -851,6 +851,8 @@ int main(int argc, char** argv) {
     printf("CarnEvil Recompiled Runtime v0.1\n");
     printf("  RAM: %d MB\n", RAM_SIZE / 1024 / 1024);
 
+    install_crash_logger();
+
     memset(g_rdram, 0, RAM_SIZE);
     memset(&io, 0, sizeof(io));
     io.io_log_enabled = 0;

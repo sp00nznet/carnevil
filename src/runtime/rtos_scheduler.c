@@ -15,6 +15,40 @@
 
 rtos_scheduler_t g_scheduler;
 
+#ifdef _WIN32
+/* Crash logger: a vectored exception handler that prints the faulting code
+ * and data addresses (and access type) for access violations, then lets the
+ * search continue so the frame loop's __except still recovers. The faulting
+ * data address tells us whether the entity-render fault is an execute-to-
+ * garbage (bad function pointer), a read/write of a wild pointer, etc. */
+static LONG WINAPI crash_veh(EXCEPTION_POINTERS* ep) {
+    DWORD code = ep->ExceptionRecord->ExceptionCode;
+    if (code == EXCEPTION_ACCESS_VIOLATION || code == EXCEPTION_IN_PAGE_ERROR) {
+        ULONG_PTR op   = ep->ExceptionRecord->ExceptionInformation[0]; /* 0=r 1=w 8=exec */
+        ULONG_PTR addr = ep->ExceptionRecord->ExceptionInformation[1]; /* faulting addr */
+        const char* kind = (op == 8) ? "EXECUTE" : (op == 1) ? "WRITE" : "READ";
+        static int n = 0;
+        if (n++ < 2) {
+            /* RVA = code address - run image base (see carnevil.map to resolve
+             * to a function). As of 2026-06 this fires in render_handler_cb86c
+             * (func_800CB86C) -- a NULL sub-pointer deref during entity-render
+             * vertex math, because the attract-init that builds the entity
+             * state is cut short by the yield-escape longjmp. */
+            fprintf(stderr, "[VEH] AccessViolation %s at code=0x%p faulting_addr=0x%016llX\n",
+                    kind, ep->ExceptionRecord->ExceptionAddress, (unsigned long long)addr);
+            fflush(stderr);
+        }
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void install_crash_logger(void) {
+    AddVectoredExceptionHandler(1, crash_veh);
+}
+#else
+void install_crash_logger(void) {}
+#endif
+
 /* Forward declaration: fiber entry point */
 static void CALLBACK fiber_entry(void* param);
 

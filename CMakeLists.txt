@@ -61,8 +61,10 @@ if(MSVC)
     target_compile_options(carnevil_recomp PRIVATE /O2 /W3)
     target_compile_options(carnevil_runtime PRIVATE /O2 /W3)
     target_compile_options(carnevil PRIVATE /O2 /W3)
-    # Prevent linker from stripping unreferenced recompiled functions
-    target_link_options(carnevil PRIVATE /OPT:NOREF /OPT:NOICF)
+    # Prevent linker from stripping unreferenced recompiled functions.
+    # /MAP emits carnevil.map so the crash logger's fault addresses can be
+    # resolved to a function (subtract the run's image base for the RVA).
+    target_link_options(carnevil PRIVATE /OPT:NOREF /OPT:NOICF /MAP)
 else()
     target_compile_options(carnevil_recomp PRIVATE -O2 -Wall)
     target_compile_options(carnevil_runtime PRIVATE -O2 -Wall)

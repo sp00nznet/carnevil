@@ -47,6 +47,10 @@ typedef struct {
 /* Initialize the scheduler */
 void rtos_sched_init(rtos_scheduler_t* sched, uint8_t* rdram);
 
+/* Install a vectored exception handler that logs access-violation fault
+ * addresses (recovery is still handled by the frame loop's __except). */
+void install_crash_logger(void);
+
 /* Create a new fiber for a task */
 int rtos_sched_create_task(rtos_scheduler_t* sched, int task_id, uint32_t callback_vram);
 
