@@ -769,6 +769,7 @@ RECOMP_FUNC void func_801A2A3C(uint8_t* rdram, recomp_context* ctx) {
      * We call func_80145DE0 (msg_send) to do this properly. */
     {
         recomp_context msg_ctx = *ctx;
+        recomp_ctx_init_fodd(&msg_ctx);
         msg_ctx.r4 = 6;              /* channel = 6 */
         msg_ctx.r5 = (gpr)task_id;   /* value = task_id */
         extern RECOMP_FUNC void func_80145DE0(uint8_t*, recomp_context*);

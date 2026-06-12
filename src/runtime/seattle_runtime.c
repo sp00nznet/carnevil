@@ -927,6 +927,7 @@ int main(int argc, char** argv) {
     /* Initialize recomp context */
     recomp_context ctx;
     memset(&ctx, 0, sizeof(ctx));
+    recomp_ctx_init_fodd(&ctx);   /* odd-float-register pointer (else NULL-deref) */
     ctx.mips3_float_mode = 1;
     ctx.r29 = 0x80800000ULL; /* Stack at top of 8MB */
     ctx.r28 = 0x80170000ULL; /* GP (global pointer, typical for MIPS) */
@@ -1242,6 +1243,7 @@ int main(int argc, char** argv) {
                 if (pci_drv) {
                     fprintf(stderr, "[init] Calling Voodoo PCI driver (func_80161140)...\n");
                     recomp_context pc = ctx;
+                    recomp_ctx_init_fodd(&pc);
                     pci_drv(g_rdram, &pc);
                     fprintf(stderr, "[init] PCI driver: r2=0x%08X writes=%u base=0x%08X render=0x%08X\n",
                             (uint32_t)pc.r2, voodoo_get_write_count(),
@@ -1256,6 +1258,7 @@ int main(int argc, char** argv) {
                 recomp_func_t* render_setup = get_function(0x80120020);
                 if (render_setup) {
                     recomp_context rs = ctx;
+                    recomp_ctx_init_fodd(&rs);
                     rs.r2 = 1;  /* v0 = device found flag */
                     rs.r4 = 0x08100000; /* a0 = PCI base (in case it needs it) */
                     rs.r5 = 0x801E52B0; /* a1 = descriptor entry ptr */
@@ -1267,6 +1270,7 @@ int main(int argc, char** argv) {
             }
             fprintf(stderr, "[init] Also calling func_80155888(pci=0x08100000, mode=7, fbi=2, tmu=4)...\n");
                 recomp_context vc = ctx;
+                recomp_ctx_init_fodd(&vc);
                 vc.r4 = 0x08100000;  /* a0 = PCI base */
                 vc.r5 = 7;           /* a1 = display mode (512x384) */
                 vc.r6 = 2;           /* a2 = FBI_MEM (2MB) */

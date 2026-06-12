@@ -57,6 +57,7 @@ void attract_fiber_resume(uint8_t* rdram) {
     if (!s_started) {
         s_started = 1;
         memset(&s_ctx, 0, sizeof(s_ctx));
+        recomp_ctx_init_fodd(&s_ctx);                     /* odd-float-register ptr */
         s_ctx.r29 = (gpr)(int32_t)ATTRACT_MIPS_SP;       /* MIPS stack pointer */
         s_ctx.r28 = (gpr)g_render_buffer_addr;            /* GP / render cursor */
         s_ctx.mips3_float_mode = 1;

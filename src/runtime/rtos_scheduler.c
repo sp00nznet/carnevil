@@ -36,6 +36,20 @@ static LONG WINAPI crash_veh(EXCEPTION_POINTERS* ep) {
              * state is cut short by the yield-escape longjmp. */
             fprintf(stderr, "[VEH] AccessViolation %s at code=0x%p faulting_addr=0x%016llX\n",
                     kind, ep->ExceptionRecord->ExceptionAddress, (unsigned long long)addr);
+            /* Dump the host call chain at the fault (RVAs; resolve via
+             * carnevil.map) so we can see who invoked the faulting handler. */
+            {
+                void* bt[24];
+                USHORT m = RtlCaptureStackBackTrace(0, 24, bt, NULL);
+                uintptr_t base = (uintptr_t)GetModuleHandleA(NULL);
+                fprintf(stderr, "[VEH]  chain RVAs:");
+                for (USHORT i = 0; i < m; i++) {
+                    uintptr_t a = (uintptr_t)bt[i];
+                    if (a >= base && a < base + 0x10000000)
+                        fprintf(stderr, " %llX", (unsigned long long)(a - base));
+                }
+                fprintf(stderr, "\n");
+            }
             fflush(stderr);
         }
     }
@@ -141,6 +155,7 @@ static void CALLBACK fiber_entry(void* param) {
      * Each task gets 4KB, stacks grow downward.
      * Total: 16 tasks * 4KB = 64KB at 0x807F0000-0x807FFFFF */
     uint32_t stack_top = 0x80800000 - (idx * 0x1000); /* 4KB per task */
+    recomp_ctx_init_fodd(&f->ctx_save);   /* odd-float-register pointer (else NULL-deref) */
     f->ctx_save.r29 = (gpr)stack_top;
     f->ctx_save.mips3_float_mode = 1;
 

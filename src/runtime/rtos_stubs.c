@@ -183,6 +183,7 @@ RECOMP_FUNC void rtos_80006210(uint8_t* rdram, recomp_context* ctx) {
 /* Call all registered rendering callbacks. Called from the frame loop. */
 void rtos_run_callbacks(uint8_t* rdram) {
     recomp_context cb_ctx = {0};
+    recomp_ctx_init_fodd(&cb_ctx);   /* odd-float-register pointer (else NULL-deref) */
     /* Valid MIPS stack: callees push s-regs and ra here. sp=0 would route
      * saves/restores through the I/O sink, silently corrupting callee-saved
      * registers across calls (e.g. func_800D513C clobbered $s0 in the

@@ -73,6 +73,18 @@ typedef struct {
     uint8_t mips3_float_mode;
 } recomp_context;
 
+/* Initialise the odd-float-register pointer. In 32-bit FPU mode the recompiled
+ * code reads odd register N via ctx->f_odd[(N-1)*2], which must point at the
+ * high word of f0 so that odd N maps to the high half of its even pair
+ * (f1->f0.u32h, f3->f2.u32h, ...). f_odd is otherwise NULL, so any function
+ * that touches an odd float register (e.g. the vertex math in
+ * render_handler_cb86c) NULL-derefs. MUST be called on every recomp_context
+ * before it is handed to recompiled code -- including copies, which inherit a
+ * pointer into the SOURCE context's floats. */
+static inline void recomp_ctx_init_fodd(recomp_context* c) {
+    c->f_odd = &c->f0.u32h;
+}
+
 /* ======================================================================
  * Integer arithmetic
  * ====================================================================== */
