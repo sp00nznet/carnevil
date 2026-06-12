@@ -1029,6 +1029,31 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
         return;
     }
 
+    /* Attract-fiber blocking semantics. Inside the attract fiber, a wait on an
+     * EMPTY channel means "block until something arrives" -- on real hardware
+     * the task suspends and the RTOS resumes it on a later frame. We model that
+     * by suspending the fiber for one frame (the frame loop resumes it next
+     * frame, having advanced the vblank/tick clock that drives the attract
+     * timers). A wait on a NON-empty channel (e.g. the send-then-wait round
+     * trips in func_800F1550) returns the queued value immediately, no block.
+     * This lets the attract state machine's timer waits advance the clock
+     * instead of spinning forever. */
+    {
+        extern int attract_fiber_in_context(void);
+        extern int attract_fiber_yield(void);
+        if (attract_fiber_in_context() && channel < RTOS_MAX_CHANNELS) {
+            struct rtos_queue_s *q = &rtos_queues[channel];
+            if (q->count == 0) {
+                attract_fiber_yield();          /* block one frame */
+                if (buf_phys < 0x00800000 - 4)
+                    *(uint32_t*)(rdram + buf_phys) = 0;
+                ctx->r2 = 0;
+                return;
+            }
+            /* non-empty: fall through to dequeue below */
+        }
+    }
+
     /* Yield the current fiber to let other tasks run */
     if (g_scheduler.current_fiber >= 0) {
         rtos_sched_yield(&g_scheduler, (int)channel);
