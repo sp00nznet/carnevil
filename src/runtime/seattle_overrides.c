@@ -525,6 +525,11 @@ RECOMP_FUNC void static_0_801451F0(uint8_t* rdram, recomp_context* ctx) {
 
         /* New file: load from disk */
         int handle = rtos_file_open(devname);
+        if (getenv("CARNEVIL_FILEDBG") && (handle <= 0 || !rtos_files[handle-1].data || g_file_dev_count >= 32)) {
+            fprintf(stderr, "[filefail] '%s': handle=%d data=%p dev_count=%d/32 next_phys=0x%X size=%u\n",
+                    devname, handle, handle>0?(void*)rtos_files[handle-1].data:NULL,
+                    g_file_dev_count, g_file_next_data_phys, handle>0?rtos_files[handle-1].size:0);
+        }
         if (handle > 0 && rtos_files[handle - 1].data && g_file_dev_count < 32) {
             uint32_t fsize = rtos_files[handle - 1].size;
             uint32_t data_phys = g_file_next_data_phys;
@@ -1322,6 +1327,28 @@ RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
          * but pause_self will yield again. */
     }
     ctx->r2 = 0;
+}
+
+/* func_80143788: a cooperative yield (-> static_0_800C421C -> the RTOS
+ * scheduler rtos_80009A80). The game's ASYNC file layer calls it from file_copy
+ * (func_800E5E78, "could_not_open_readfile_in_file_copy") to let a file-server
+ * TASK service the read while the caller suspends. In our model file I/O is
+ * serviced synchronously by overrides and that task never runs, so the yield
+ * idles the game scheduler forever (rtos_80008094 scans 170 tasks, none
+ * runnable) -- the attract DEADLOCKS here while loading the 3D-demo assets
+ * (BABY.ZM2, the Big Baby model). Diagnosed via the hang watchdog
+ * (CARNEVIL_WATCHDOG) -> spin in rtos_8000884C <- file_copy <- hstddf_wms.
+ * Fix: mirror the func_80151618 hook -- inside the attract fiber, suspend back
+ * to the frame loop and return; next frame file_copy resumes and reads the
+ * already-loaded data. This unblocked the attract (swap 759 -> 6975) and made
+ * the game bind textures for render (texBaseAddr != 0) for the first time.
+ * Non-fiber callers fall through to the original recompiled body. */
+extern RECOMP_FUNC void func_80143788_original(uint8_t*, recomp_context*);
+RECOMP_FUNC void func_80143788(uint8_t* rdram, recomp_context* ctx) {
+    extern int attract_fiber_in_context(void);
+    extern int attract_fiber_yield(void);
+    if (attract_fiber_in_context()) { attract_fiber_yield(); ctx->r2 = 0; return; }
+    func_80143788_original(rdram, ctx);
 }
 
 /* func_80151618: sync/yield function called in the PIC check infinite loop.

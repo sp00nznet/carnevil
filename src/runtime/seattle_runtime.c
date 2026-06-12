@@ -871,6 +871,7 @@ int main(int argc, char** argv) {
     printf("  RAM: %d MB\n", RAM_SIZE / 1024 / 1024);
 
     install_crash_logger();
+    if (getenv("CARNEVIL_WATCHDOG")) { extern void install_hang_watchdog(void); install_hang_watchdog(); }
 
     memset(g_rdram, 0, RAM_SIZE);
     memset(&io, 0, sizeof(io));
@@ -1594,7 +1595,11 @@ int main(int argc, char** argv) {
     extern int g_yield_escape_armed;    /* disarmed in the fault handler */
 
     int frame = 0;
+    extern void watchdog_heartbeat(void);
     for (; frame < max_frames; frame++) {
+        watchdog_heartbeat();
+        if (getenv("CARNEVIL_FRAME_HB"))
+            fprintf(stderr, "==== FRAME %d (swaps=%d) ====\n", frame, g_voodoo.swap_count);
         /* Simulate VSync interrupt */
         uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);

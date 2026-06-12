@@ -60,6 +60,61 @@ void install_crash_logger(void) {
     AddVectoredExceptionHandler(1, crash_veh);
 }
 
+/* ---- Hang watchdog ------------------------------------------------------
+ * The attract fiber can busy-wait (poll a flag with no event_wait/yield) on
+ * state that another task would set on real hardware -- an infinite loop our
+ * cooperative model never breaks. A normal backtrace can't see it (no fault
+ * fires). This watchdog runs on its own thread: if the frame heartbeat stops
+ * advancing for a few seconds, it suspends the main thread, samples its
+ * instruction pointer + return chain, and resolves them to RVAs (map them in
+ * carnevil.map) so the spinning recompiled function is identifiable. */
+static volatile LONG  g_hb = 0;            /* bumped each frame by the loop */
+static HANDLE         g_main_thread = NULL;
+void watchdog_heartbeat(void) { InterlockedIncrement(&g_hb); }
+
+static DWORD WINAPI watchdog_proc(LPVOID arg) {
+    (void)arg;
+    uintptr_t base = (uintptr_t)GetModuleHandleA(NULL);
+    LONG last = -1; int stuck = 0;
+    for (;;) {
+        Sleep(1000);
+        LONG now = g_hb;
+        if (now == last) {
+            if (++stuck == 4) {  /* ~4s with no frame progress => hung */
+                fprintf(stderr, "[watchdog] no frame progress for ~4s (hb=%ld) -- sampling main thread\n", (long)now);
+                if (g_main_thread) {
+                    SuspendThread(g_main_thread);
+                    CONTEXT c; memset(&c, 0, sizeof(c)); c.ContextFlags = CONTEXT_CONTROL;
+                    if (GetThreadContext(g_main_thread, &c)) {
+                        uintptr_t rip = (uintptr_t)c.Rip;
+                        fprintf(stderr, "[watchdog] spinning RIP RVA = %llX\n",
+                                (rip >= base) ? (unsigned long long)(rip - base) : 0ull);
+                        /* Walk a little of the stack for return-address context. */
+                        uintptr_t rsp = (uintptr_t)c.Rsp;
+                        fprintf(stderr, "[watchdog] stack return RVAs:");
+                        for (int i = 0; i < 4096 && rsp; i += 8, rsp += 8) {
+                            uintptr_t v = *(uintptr_t*)rsp;
+                            if (v >= base && v < base + 0x10000000)
+                                fprintf(stderr, " %llX", (unsigned long long)(v - base));
+                        }
+                        fprintf(stderr, "\n");
+                    }
+                    ResumeThread(g_main_thread);
+                }
+                fflush(stderr);
+                _exit(7);   /* bail so the run terminates with the diagnosis */
+            }
+        } else { last = now; stuck = 0; }
+    }
+}
+
+void install_hang_watchdog(void) {
+    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
+                    GetCurrentProcess(), &g_main_thread,
+                    THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, FALSE, 0);
+    CreateThread(NULL, 0, watchdog_proc, NULL, 0, NULL);
+}
+
 /* Print the host return-address chain (resolve via carnevil.map: addr - run
  * image base = RVA). Used to find which recompiled function drives a loop when
  * the MIPS return register is unhelpful. */
@@ -79,6 +134,8 @@ void capture_host_stack(const char* tag) {
 #else
 void install_crash_logger(void) {}
 void capture_host_stack(const char* tag) { (void)tag; }
+void watchdog_heartbeat(void) {}
+void install_hang_watchdog(void) {}
 #endif
 
 /* Forward declaration: fiber entry point */

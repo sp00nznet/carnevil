@@ -14,7 +14,7 @@
 /* Default OFF: the build keeps the proven escape-based path until this is
  * validated. Flip to 1 (here or at runtime before the frame loop) to drive
  * func_800C50AC through the fiber instead. */
-int g_use_attract_fiber = 0;
+int g_use_attract_fiber = 1;
 
 #ifdef _WIN32
 

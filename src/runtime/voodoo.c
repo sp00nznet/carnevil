@@ -101,6 +101,7 @@ static int vwrite_log = 0;
 static uint32_t vwrite_total = 0;
 static uint32_t vwrite_nonzero = 0;
 uint64_t g_tex_writes = 0;
+int g_texbound_this_frame = 0;
 uint32_t g_tex_first_off = 0, g_tex_last_off = 0;
 
 uint32_t voodoo_get_write_count(void) { return vwrite_total; }
@@ -136,6 +137,13 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                 voodoo->framebuffer[pixel_index + 1] = (uint16_t)(value >> 16);
         }
         return;
+    }
+
+    if (reg == VOODOO_TEXBASE && value != 0) {
+        extern int g_texbound_this_frame; g_texbound_this_frame = 1;
+        static int tb=0;
+        if (tb++ < 8) fprintf(stderr, "[TEXBIND] texBaseAddr = 0x%08X (g_tex=%llu swap=%d)\n",
+                              value, (unsigned long long)g_tex_writes, voodoo->swap_count);
     }
 
     /* Log unique non-zero register writes */
@@ -196,6 +204,26 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         /* Copy back → front. Front buffer is what gets dumped. */
         memcpy(voodoo->framebuffer, voodoo->backbuffer,
                sizeof(uint16_t) * 640 * 480);
+        /* TEXDBG: dump a snapshot whenever a texture was bound this frame so
+         * the (rare, transient) textured attract frames can be inspected. */
+        if (getenv("CARNEVIL_DUMP_FRAMES")) {
+            extern int g_texbound_this_frame;
+            static int dumped = 0;
+            if (g_texbound_this_frame && dumped < 6) {
+                char nm[64]; snprintf(nm, sizeof(nm), "texframe_%d.ppm", voodoo->swap_count);
+                FILE* tf = fopen(nm, "wb");
+                if (tf) {
+                    fprintf(tf, "P6\n640 480\n255\n");
+                    for (int i = 0; i < 640*480; i++) {
+                        uint16_t p = voodoo->framebuffer[i];
+                        fputc((p>>11)<<3, tf); fputc(((p>>5)&0x3F)<<2, tf); fputc((p&0x1F)<<3, tf);
+                    }
+                    fclose(tf); dumped++;
+                    fprintf(stderr, "[texframe] dumped %s\n", nm);
+                }
+            }
+            g_texbound_this_frame = 0;
+        }
         /* Reset the depth buffer to "far" for the next frame so the first
          * fragment at each pixel always passes a less/lessequal test. */
         for (int i = 0; i < 640 * 480; i++) voodoo->zbuffer[i] = 1e30f;
