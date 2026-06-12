@@ -111,6 +111,33 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
     vwrite_total++;
     if (value != 0) vwrite_nonzero++;
 
+    /* Memory-mapped regions (TMU texture memory at 0x800000+, LFB framebuffer
+     * at 0x400000-0x800000) are NOT registers. They must be handled before the
+     * register switch and return early: otherwise reg=offset&0x3FF aliases real
+     * command/vertex registers -- a texel whose offset&0x3FF==0x100 would fire
+     * an FTRIANGLE render mid-upload, and every texel/pixel write clobbers
+     * regs[offset&0x3FF] (this is exactly what was trashing texMode/texBase/S-T
+     * to garbage between texture load and render). */
+    if (offset >= VOODOO_TEX_OFFSET) {
+        uint32_t toff = offset - VOODOO_TEX_OFFSET;
+        if (g_tex_writes == 0) g_tex_first_off = toff;
+        g_tex_last_off = toff;
+        g_tex_writes++;
+        if (toff + 4 <= sizeof(voodoo->texmem))
+            *(uint32_t*)(voodoo->texmem + toff) = value;
+        return;
+    }
+    if (offset >= VOODOO_LFB_OFFSET) {
+        uint32_t fb_offset = offset - VOODOO_LFB_OFFSET;
+        uint32_t pixel_index = fb_offset / 2;   /* 32-bit write = two RGB565 px */
+        if (pixel_index < 640 * 480) {
+            voodoo->framebuffer[pixel_index] = (uint16_t)value;
+            if (pixel_index + 1 < 640 * 480)
+                voodoo->framebuffer[pixel_index + 1] = (uint16_t)(value >> 16);
+        }
+        return;
+    }
+
     /* Log unique non-zero register writes */
     if (value != 0 && vwrite_log < 50) {
         static uint32_t seen_regs[64] = {0};
@@ -255,13 +282,18 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         int   depth_en    = (fbzmode >> 4) & 1;     /* enable depth buffer */
         int   depth_func  = (fbzmode >> 5) & 7;     /* depth compare function */
         int   depth_wmask = (fbzmode >> 10) & 1;    /* depth write mask (1=write) */
-        /* Sample only when texturing is actually configured: a valid texMode
-         * (low bit set) AND a texture uploaded. Sampling every rgbselect==1
-         * triangle unconditionally pulls in garbage (the texMode/S-T state is
-         * often stale/degenerate for non-textured geometry, and the texmem
-         * swizzle isn't modelled yet), which corrupts the frame. Keep the gate
-         * until the texture sampler is correct. */
-        int   tex_en      = (texmode & 1) && (g_tex_writes > 0);
+        /* Texturing is selected by fbzColorPath rgbselect==1; whether a texture
+         * is actually *bound* is indicated by a non-zero texBaseAddr pointing at
+         * uploaded data. Gate on that: it's the semantically-correct condition
+         * (texMode bit 0 is perspective-enable, not texture-enable) and it keeps
+         * non-textured geometry on the flat color1 path. In the current attract
+         * state the game never binds a texture for rendering (texBase stays 0 --
+         * verified by instrumenting reg 0x30C across 3000 frames), so this draws
+         * the same clean UI; it lights up once the attract submits real textured
+         * geometry. The uploaded font itself is verified correct (8-bit intensity,
+         * 256-wide, glyphs recoverable from texmem -- see project memory). */
+        uint32_t texbase  = voodoo->regs[VOODOO_TEXBASE >> 2];
+        int   tex_en      = (g_tex_writes > 0) && (texbase != 0);
 
         float sR=RF(0xA0), sG=RF(0xA4), sB=RF(0xA8), sZ=RF(0xAC);
         float sS=RF(0xB4), sT=RF(0xB8), sW=RF(0xBC);
@@ -347,20 +379,31 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                     g = ig < 0 ? 0 : ig > 255 ? 255 : ig;
                     b = ib < 0 ? 0 : ib > 255 ? 255 : ib;
                 } else if (rgbselect == 1 && tex_en) {
-                    /* perspective-correct texture sample */
+                    /* perspective-correct texture sample. S/T are S*W,T*W; W is
+                     * 1/w iterated, so s=S/W,t=T/W gives texel coordinates. */
                     float w = sW + dWdX * fx + dWdY * fy;
                     float inv = (w != 0.0f) ? 1.0f / w : 0.0f;
                     float s = (sS + dSdX * fx + dSdY * fy) * inv;
                     float t = (sT + dTdX * fx + dTdY * fy) * inv;
                     int ti = ((int)s) & (tex_w - 1);
                     int tj = ((int)t) & (tex_h - 1);
-                    uint32_t texel_off = (uint32_t)(tj * tex_w + ti);
-                    if (tex_fmt == 0 /* 8-bit, treat as intensity */) {
-                        int v = voodoo->texmem[texel_off & (sizeof(voodoo->texmem)-1)];
-                        r = g = b = v;
+                    uint32_t texel = (uint32_t)(tj * tex_w + ti);
+                    /* texBaseAddr is the texture's byte offset within TMU memory
+                     * (the allocator hands the upload a base; the render binds it
+                     * via reg 0x30C). Fonts upload as 8-bit intensity, 256-wide. */
+                    uint32_t base = texbase & (sizeof(voodoo->texmem) - 1);
+                    if (tex_fmt < 8 /* 8-bit-per-texel formats: intensity/palette */) {
+                        uint32_t a = (base + texel) & (sizeof(voodoo->texmem) - 1);
+                        int v = voodoo->texmem[a];
+                        /* Intensity textures (fonts) modulate the iterated/color1
+                         * tint, so a white glyph takes the UI element's colour. */
+                        r = (v * c1r) / 255;
+                        g = (v * c1g) / 255;
+                        b = (v * c1b) / 255;
                     } else {
-                        /* default: 16-bit RGB565 texel */
-                        uint16_t tx = *(uint16_t*)(voodoo->texmem + ((texel_off*2) & (sizeof(voodoo->texmem)-2)));
+                        /* 16-bit-per-texel formats: sample as RGB565. */
+                        uint32_t a = (base + texel * 2) & (sizeof(voodoo->texmem) - 2);
+                        uint16_t tx = *(uint16_t*)(voodoo->texmem + a);
                         r = ((tx >> 11) & 0x1F) << 3;
                         g = ((tx >> 5) & 0x3F) << 2;
                         b = (tx & 0x1F) << 3;
@@ -434,30 +477,6 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
             }
         }
         break;
-    }
-
-    /* Handle LFB writes (framebuffer access) */
-    if (offset >= VOODOO_LFB_OFFSET && offset < VOODOO_TEX_OFFSET) {
-        uint32_t fb_offset = offset - VOODOO_LFB_OFFSET;
-        /* Each LFB write covers 2 pixels (32 bits = two 16-bit RGB565 pixels) */
-        uint32_t pixel_index = fb_offset / 2;
-        if (pixel_index < 640 * 480) {
-            voodoo->framebuffer[pixel_index] = (uint16_t)value;
-            if (pixel_index + 1 < 640 * 480) {
-                voodoo->framebuffer[pixel_index + 1] = (uint16_t)(value >> 16);
-            }
-        }
-    }
-
-    /* Texture memory writes (TMU upload): store into texmem so the rasterizer
-     * can sample uploaded textures. Each write is one 32-bit word. */
-    if (offset >= VOODOO_TEX_OFFSET) {
-        uint32_t toff = offset - VOODOO_TEX_OFFSET;
-        if (g_tex_writes == 0) g_tex_first_off = toff;
-        g_tex_last_off = toff;
-        g_tex_writes++;
-        if (toff + 4 <= sizeof(voodoo->texmem))
-            *(uint32_t*)(voodoo->texmem + toff) = value;
     }
 }
 

@@ -1578,7 +1578,10 @@ int main(int argc, char** argv) {
                 head, (free_sz & ~1u) / 1024);
     }
 
-    int max_frames = 500; /* Real CarnEvil shows 3D demo around frame 3000, but our run doesn't progress past initial attract state -- no point running longer */
+    int max_frames = 500; /* Real CarnEvil shows the 3D demo ~frame 3000, but our
+        run is stuck in the initial attract state -- verified texBase/texMode are
+        never set during render even at 3000 frames, so textured geometry is never
+        submitted. No point running longer until the attract state machine advances. */
 
     /* Heap management: save heap state AFTER first frame's permanent allocs.
      * Frame 0 does the 1.75MB render buffer alloc.
@@ -2089,6 +2092,14 @@ int main(int argc, char** argv) {
             }
             fclose(fb);
             printf("  Framebuffer dumped to framebuffer.ppm (%dx%d)\n", w, h);
+        }
+        /* Optional: dump raw TMU texture memory (set CARNEVIL_DUMP_TEXMEM) so the
+         * uploaded font/textures can be decoded offline. The font verifies as
+         * 8-bit intensity, 256-wide (glyphs readable; decode reg 0x10000+). */
+        if (getenv("CARNEVIL_DUMP_TEXMEM")) {
+            FILE* tm = fopen("texmem.bin", "wb");
+            if (tm) { fwrite(g_voodoo.texmem, 1, sizeof(g_voodoo.texmem), tm); fclose(tm);
+                      printf("  texmem dumped to texmem.bin (%zu bytes)\n", sizeof(g_voodoo.texmem)); }
         }
     }
 
