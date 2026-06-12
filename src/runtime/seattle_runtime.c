@@ -2006,36 +2006,9 @@ int main(int argc, char** argv) {
         fprintf(stderr, "[debug] Possible command lists found: %d\n", cmd_lists_found);
     }
 
-    /* Self-test: inject two triangles into the rasterizer at the very end so
-     * we can visually verify the Voodoo triangle path end-to-end (rasterizer
-     * → backbuffer → SwapBuffers → PPM dump). Each triangle gets a distinct
-     * color1 setting. Remove this block once real geometry flows. */
-    {
-        extern voodoo_state_t g_voodoo;
-        extern void voodoo_write(voodoo_state_t*, uint32_t, uint32_t);
-        /* Vertices (IEEE float) for triangle 1 — red */
-        float verts1[6] = { 100.0f, 100.0f, 250.0f, 80.0f, 175.0f, 250.0f };
-        voodoo_write(&g_voodoo, VOODOO_COLOR1, 0x00FF0000);  /* red in 8888 */
-        voodoo_write(&g_voodoo, 0x180, *(uint32_t*)&verts1[0]);
-        voodoo_write(&g_voodoo, 0x184, *(uint32_t*)&verts1[1]);
-        voodoo_write(&g_voodoo, 0x1A8, *(uint32_t*)&verts1[2]);
-        voodoo_write(&g_voodoo, 0x1AC, *(uint32_t*)&verts1[3]);
-        voodoo_write(&g_voodoo, 0x1D0, *(uint32_t*)&verts1[4]);
-        voodoo_write(&g_voodoo, 0x1D4, *(uint32_t*)&verts1[5]);
-        voodoo_write(&g_voodoo, VOODOO_FTRIANGLE, 0);
-        /* Triangle 2 — green */
-        float verts2[6] = { 300.0f, 150.0f, 450.0f, 130.0f, 380.0f, 300.0f };
-        voodoo_write(&g_voodoo, VOODOO_COLOR1, 0x0000FF00);
-        voodoo_write(&g_voodoo, 0x180, *(uint32_t*)&verts2[0]);
-        voodoo_write(&g_voodoo, 0x184, *(uint32_t*)&verts2[1]);
-        voodoo_write(&g_voodoo, 0x1A8, *(uint32_t*)&verts2[2]);
-        voodoo_write(&g_voodoo, 0x1AC, *(uint32_t*)&verts2[3]);
-        voodoo_write(&g_voodoo, 0x1D0, *(uint32_t*)&verts2[4]);
-        voodoo_write(&g_voodoo, 0x1D4, *(uint32_t*)&verts2[5]);
-        voodoo_write(&g_voodoo, VOODOO_FTRIANGLE, 0);
-        /* Swap so the front buffer (what gets dumped) has the result */
-        voodoo_write(&g_voodoo, VOODOO_SWAPBUFCMD, 1);
-    }
+    /* (Removed the two-triangle rasterizer self-test: real game geometry now
+     * flows through the FTRIANGLE path, so the front buffer already holds the
+     * game's rendered frame -- the self-test would just overpaint it.) */
 
     /* Dump framebuffer as raw PPM image */
     if (g_voodoo.swap_count > 0 || 1) {
