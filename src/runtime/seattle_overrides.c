@@ -160,6 +160,26 @@ static int rtos_file_open(const char* name) {
                 uint8_t* buf = (uint8_t*)malloc((size_t)sz);
                 if (buf) {
                     fread(buf, 1, (size_t)sz, f);
+                    /* WMS texture files carry a 512-byte boot-thumbnail header
+                     * (RGB preview) before the real payload -- the version word
+                     * 0x8005 lives at +0x200. The game's file layer skips it; our
+                     * extraction keeps it, so strip it here. After stripping, the
+                     * stat size and the data both reflect the payload, so the
+                     * texture loader's version + size + CRC checks all line up.
+                     * (.EXE files get their 0x208 header stripped at extraction;
+                     * .WMS were left intact.) */
+                    {
+                        size_t nl = strlen(name);
+                        int is_wms = (nl >= 4 &&
+                            (name[nl-4]=='.') &&
+                            (name[nl-3]=='W'||name[nl-3]=='w') &&
+                            (name[nl-2]=='M'||name[nl-2]=='m') &&
+                            (name[nl-1]=='S'||name[nl-1]=='s'));
+                        if (is_wms && sz > 0x200) {
+                            memmove(buf, buf + 0x200, (size_t)sz - 0x200);
+                            sz -= 0x200;
+                        }
+                    }
                     rtos_files[slot].data = buf;
                     rtos_files[slot].size = (uint32_t)sz;
                     rtos_files[slot].owns_data = 1;
