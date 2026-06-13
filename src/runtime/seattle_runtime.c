@@ -1619,6 +1619,15 @@ int main(int argc, char** argv) {
         watchdog_heartbeat();
         if (getenv("CARNEVIL_FRAME_HB"))
             fprintf(stderr, "==== FRAME %d (swaps=%d) ====\n", frame, g_voodoo.swap_count);
+        /* EXPERIMENT: the attract never reaches the scene-display state that calls
+         * func_800CAE2C (which runs the scene funcs func_800CAFD0/CAF24/CB19C/CB31C
+         * -> register render handlers -> spawn demo entities). Force it once after
+         * assets load to test whether spawning the demo entities renders geometry. */
+        if (getenv("CARNEVIL_FORCESCENE") && frame == 40) {
+            extern void func_800CAE2C(uint8_t*, recomp_context*);
+            fprintf(stderr, "[forcescene] triggering attract scene funcs\n");
+            func_800CAE2C(g_rdram, &ctx);
+        }
         if (getenv("CARNEVIL_STATEPROBE") && (frame == 30 || frame == 100 || frame == 400)) {
             /* dword_801DFE70: 0=normal attract (sub_800E4C84), 1/2=diagnostic/error
              * screen (sub_800E4B1C). dword_801DFE4C: secondary mode. */
