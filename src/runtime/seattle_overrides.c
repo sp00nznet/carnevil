@@ -1044,6 +1044,10 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
                 ? (nv[off] | (nv[off+1]<<8) | (nv[off+2]<<16) | ((uint32_t)nv[off+3]<<24)) : 0;
             if (bufp + 4 <= 0x00800000) *(uint32_t*)(rdram + bufp) = val;
             ctx->r2 = 0;   /* audit valid */
+            if (getenv("CARNEVIL_AUDITDBG")) {
+                static int n=0;
+                if (n++ < 60) fprintf(stderr, "[auditrd] idx=%d val=%u\n", ch, val);
+            }
             return;
         }
     }
@@ -1172,6 +1176,27 @@ RECOMP_FUNC void func_80145DE0(uint8_t* rdram, recomp_context* ctx) {
                 channel, (uint32_t)ctx->r5, msg_send_count);
     }
     uint32_t value = (uint32_t)ctx->r5;
+
+    /* func_80145DE0 is the NVRAM AUDIT/message WRITE (paired with func_80145CE4
+     * read). sub_800C47E0 (the render task) reads its task-id from "channel" 6
+     * and writes render params to 133-162; create_task posts the task-id to 6.
+     * For the audit-read (func_80145CE4) to observe these writes, back them with
+     * the same io.cmos store the read uses (idx -> io.cmos[dword_801DDD90+32*idx]).
+     * The render shortcut (0x85-0xA2 -> voodoo) below still runs. Gated by
+     * CARNEVIL_AUDIT alongside the read side. */
+    if (getenv("CARNEVIL_AUDIT")) {
+        extern uint8_t* seattle_nvram_ptr(void); extern uint32_t seattle_nvram_size(void);
+        uint32_t naud = *(uint32_t*)(rdram + 0x23662C);          /* audits=182 */
+        if (channel >= 0 && (uint32_t)channel < naud) {
+            uint32_t abase = *(uint32_t*)(rdram + 0x1DDD90);     /* audit base */
+            uint8_t* nv = seattle_nvram_ptr(); uint32_t nvsz = seattle_nvram_size();
+            uint32_t off = (abase + 32u * (uint32_t)channel) & (nvsz - 1);
+            if (off + 4 <= nvsz) {
+                nv[off] = (uint8_t)value; nv[off+1] = (uint8_t)(value>>8);
+                nv[off+2] = (uint8_t)(value>>16); nv[off+3] = (uint8_t)(value>>24);
+            }
+        }
+    }
 
     if (channel >= 0 && channel < RTOS_MAX_CHANNELS) {
         struct rtos_queue_s *q = &rtos_queues[channel];

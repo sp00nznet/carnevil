@@ -2108,6 +2108,20 @@ int main(int argc, char** argv) {
             fclose(fb);
             printf("  Framebuffer dumped to framebuffer.ppm (%dx%d)\n", w, h);
         }
+        /* Also dump the BACK buffer -- when the present/swap stalls (e.g. normal
+         * attract only swaps once) the latest rendering accumulates here. */
+        if (getenv("CARNEVIL_DUMP_BACK")) {
+            FILE* bb = fopen("backbuffer.ppm", "wb");
+            if (bb) {
+                fprintf(bb, "P6\n640 480\n255\n");
+                for (int i = 0; i < 640*480; i++) {
+                    uint16_t p = g_voodoo.backbuffer[i];
+                    fputc((p>>11)<<3, bb); fputc(((p>>5)&0x3F)<<2, bb); fputc((p&0x1F)<<3, bb);
+                }
+                fclose(bb);
+                printf("  Back buffer dumped to backbuffer.ppm\n");
+            }
+        }
         /* Optional: dump raw TMU texture memory (set CARNEVIL_DUMP_TEXMEM) so the
          * uploaded font/textures can be decoded offline. The font verifies as
          * 8-bit intensity, 256-wide (glyphs readable; decode reg 0x10000+). */
