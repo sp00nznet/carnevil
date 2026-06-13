@@ -1019,6 +1019,34 @@ static struct rtos_queue_s {
 static int event_heap_checked = 0;
 
 RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
+    /* sub_80145CE4 is NOT event_wait -- it's the NVRAM AUDIT READ (paired with
+     * sub_80145DE0 audit-write): reads audit a1 from io.cmos[dword_801DDD90 +
+     * 32*a1] via a device-3 seek+read and validates a checksum, returning 0 on
+     * success / -6 bad-checksum / -7 out-of-range. The subsystem-readiness check
+     * sub_800F16D0 passes only when these reads return 0. Our legacy "event_wait"
+     * interpretation returns channel-queue values (e.g. channel-6's task-ID
+     * flood) -> non-zero -> the check fails -> the game stays in diagnostic mode.
+     * Read the real audit from the loaded NVRAM and report success. Gated by
+     * CARNEVIL_AUDIT while we confirm it doesn't disturb the attract fiber's
+     * per-frame advance (which should fall to the func_80151618 yield instead). */
+    {
+        extern uint8_t* seattle_nvram_ptr(void);
+        extern uint32_t seattle_nvram_size(void);
+        if (getenv("CARNEVIL_AUDIT")) {
+            int ch = (int)ctx->r4;
+            uint32_t bufp = (uint32_t)ctx->r5 & 0x1FFFFFFF;
+            uint32_t naud = *(uint32_t*)(rdram + 0x23662C);   /* dword_8023662C audits=182 */
+            if (ch < 0 || (uint32_t)ch >= naud) { ctx->r2 = (gpr)(int32_t)-7; return; }
+            uint32_t abase = *(uint32_t*)(rdram + 0x1DDD90);  /* dword_801DDD90 audit base */
+            uint8_t* nv = seattle_nvram_ptr(); uint32_t nvsz = seattle_nvram_size();
+            uint32_t off = (abase + 32u * (uint32_t)ch) & (nvsz - 1);
+            uint32_t val = (off + 4 <= nvsz)
+                ? (nv[off] | (nv[off+1]<<8) | (nv[off+2]<<16) | ((uint32_t)nv[off+3]<<24)) : 0;
+            if (bufp + 4 <= 0x00800000) *(uint32_t*)(rdram + bufp) = val;
+            ctx->r2 = 0;   /* audit valid */
+            return;
+        }
+    }
     if (event_heap_checked < 3) {
         event_heap_checked++;
         override_check_heap(rdram, event_heap_checked == 1 ? "first event_wait (task callback)" : "event_wait");

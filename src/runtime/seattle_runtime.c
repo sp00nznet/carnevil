@@ -1584,10 +1584,7 @@ int main(int argc, char** argv) {
                 head, (free_sz & ~1u) / 1024);
     }
 
-    int max_frames = 500; /* Real CarnEvil shows the 3D demo ~frame 3000, but our
-        run is stuck in the initial attract state -- verified texBase/texMode are
-        never set during render even at 3000 frames, so textured geometry is never
-        submitted. No point running longer until the attract state machine advances. */
+    int max_frames = getenv("CARNEVIL_MAXFRAMES") ? atoi(getenv("CARNEVIL_MAXFRAMES")) : 500;
 
     /* Heap management: save heap state AFTER first frame's permanent allocs.
      * Frame 0 does the 1.75MB render buffer alloc.
