@@ -8,6 +8,7 @@
 #include "rtos_scheduler.h"
 #include "voodoo.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <setjmp.h>
 
 extern uint8_t* seattle_rdram;
@@ -1327,6 +1328,36 @@ RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
          * but pause_self will yield again. */
     }
     ctx->r2 = 0;
+}
+
+/* func_800F16D0(count, channel_list): subsystem-readiness check. For each
+ * channel it event_waits (sub_80145CE4); if a channel still has a pending event
+ * after an ack (msg_send 0), it returns 0 = "subsystem NOT ready". The attract
+ * state machine (func_800C50AC) ANDs these via sub_800F181C; if any fails it sets
+ * dword_801DFE70=2 and shows the DIAGNOSTIC/error screen (sub_800E4B1C) instead of
+ * the normal attract (sub_800E4C84). In our RTOS event model these channels carry
+ * stale/garbage queued values, so the check fails and the game is stuck on the
+ * diagnostic screen (the flat colored blocks). Inside the attract fiber, report
+ * "all ready" (1) so the game boots into the normal attract path. Non-fiber
+ * callers fall through to the original. EXPERIMENT to validate the diagnosis. */
+extern RECOMP_FUNC void func_800F16D0_original(uint8_t*, recomp_context*);
+RECOMP_FUNC void func_800F16D0(uint8_t* rdram, recomp_context* ctx) {
+    extern int attract_fiber_in_context(void);
+    if (getenv("CARNEVIL_FORCE_NORMAL") && attract_fiber_in_context()) { ctx->r2 = 1; return; }
+    func_800F16D0_original(rdram, ctx);
+}
+
+/* func_800F1BA8 (check_adjustments): validates operator adjustments against
+ * their min/max (sub_80150098). Returns non-zero if any is out of range. Our
+ * emulated CMOS/NVRAM has invalid adjustment values, so it fails -> at
+ * func_800C50AC LABEL_19, dword_801DFE70=2 -> diagnostic/error screen. Force 0
+ * (adjustments OK) in the attract fiber so the game boots normal attract.
+ * EXPERIMENT (with func_800F16D0) to validate the diagnostic-mode diagnosis. */
+extern RECOMP_FUNC void func_800F1BA8_original(uint8_t*, recomp_context*);
+RECOMP_FUNC void func_800F1BA8(uint8_t* rdram, recomp_context* ctx) {
+    extern int attract_fiber_in_context(void);
+    if (getenv("CARNEVIL_FORCE_NORMAL") && attract_fiber_in_context()) { ctx->r2 = 0; return; }
+    func_800F1BA8_original(rdram, ctx);
 }
 
 /* func_80143788: a cooperative yield (-> static_0_800C421C -> the RTOS

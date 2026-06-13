@@ -1600,6 +1600,14 @@ int main(int argc, char** argv) {
         watchdog_heartbeat();
         if (getenv("CARNEVIL_FRAME_HB"))
             fprintf(stderr, "==== FRAME %d (swaps=%d) ====\n", frame, g_voodoo.swap_count);
+        if (getenv("CARNEVIL_STATEPROBE") && (frame == 30 || frame == 100 || frame == 400)) {
+            /* dword_801DFE70: 0=normal attract (sub_800E4C84), 1/2=diagnostic/error
+             * screen (sub_800E4B1C). dword_801DFE4C: secondary mode. */
+            fprintf(stderr, "[stateprobe] frame=%d 801DFE70=%u 801DFE4C=%u 80236744=%u\n",
+                    frame, *(uint32_t*)(g_rdram + 0x001DFE70),
+                    *(uint32_t*)(g_rdram + 0x001DFE4C),
+                    *(uint32_t*)(g_rdram + 0x00236744));
+        }
         /* Simulate VSync interrupt */
         uint32_t* vblank = (uint32_t*)(g_rdram + 0x001A35CC);
         uint32_t* tick   = (uint32_t*)(g_rdram + 0x001A35C8);
