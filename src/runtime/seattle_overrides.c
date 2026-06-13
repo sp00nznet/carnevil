@@ -675,8 +675,15 @@ RECOMP_FUNC void static_0_800C4154(uint8_t* rdram, recomp_context* ctx) {
             }
             case 0x740B: if (resp) *resp = 486; break; /* PIC serial number (486=39") */
             case 0x6300: if (resp) *resp = 0x0000; break; /* PIC init */
-            case 0x6301: if (resp) *resp = 0x0000; break; /* PIC challenge */
-            case 0x6302: if (resp) *resp = 0x0000; break; /* PIC verify */
+            /* For device 3 (NVRAM/CMOS) these are the CMOS-header queries the
+             * layout init (sub_8014586C) issues: 0x6301 = CMOS region base, 0x6302
+             * = CMOS size. Returning 0 (the old PIC-challenge default) left
+             * csize=0 -> bound dword_801E65C0=0 -> every adjustment read skipped
+             * -> diagnostic mode. Return base=0, size=8000 (the layout the game
+             * itself writes: "cmos size 8000"). For other devices keep the old
+             * PIC-challenge/verify behaviour. */
+            case 0x6301: if (resp) *resp = (dev_id == 3) ? 0u : 0x0000; break;
+            case 0x6302: if (resp) *resp = (dev_id == 3) ? 8000u : 0x0000; break;
             default: if (resp) *resp = 0x0000; break;
         }
     } else if ((cmd & 0xFF00) == 0x6600) {
@@ -1347,6 +1354,26 @@ RECOMP_FUNC void func_800F16D0(uint8_t* rdram, recomp_context* ctx) {
     func_800F16D0_original(rdram, ctx);
 }
 
+/* func_80146168 (read adjustment value from NVRAM device 3): instrumented to
+ * diagnose why adjustment validation fails. Logs channel, return code (0=checksum
+ * OK, -8=checksum fail, -9=range), the value read, and the shadow base/count. */
+extern RECOMP_FUNC void func_80146168_original(uint8_t*, recomp_context*);
+RECOMP_FUNC void func_80146168(uint8_t* rdram, recomp_context* ctx) {
+    int a1 = (int)ctx->r4;
+    uint32_t bufptr = (uint32_t)ctx->r5;
+    func_80146168_original(rdram, ctx);
+    if (getenv("CARNEVIL_ADJDBG")) {
+        static int n=0;
+        if (n++ < 40) {
+            uint32_t bp = bufptr & 0x1FFFFFFF;
+            uint32_t val = (bp+4 <= 0x800000) ? *(uint32_t*)(rdram+bp) : 0;
+            fprintf(stderr, "[adjread] ch=%d ret=%d val=0x%X shadowbase=0x%X count=%u\n",
+                    a1, (int)(int32_t)ctx->r2, val,
+                    *(uint32_t*)(rdram+0x1DFED8), *(uint32_t*)(rdram+0x236630));
+        }
+    }
+}
+
 /* func_800F1BA8 (check_adjustments): validates operator adjustments against
  * their min/max (sub_80150098). Returns non-zero if any is out of range. Our
  * emulated CMOS/NVRAM has invalid adjustment values, so it fails -> at
@@ -1514,13 +1541,26 @@ RECOMP_FUNC void func_80161140(uint8_t* rdram, recomp_context* ctx) {
                 *(uint32_t*)(rdram + 0x0022A454));
 }
 
-/* Override func_800F25E0 (CMOS validation) to return success.
- * The original returns error code -3 because our CMOS data doesn't
- * match the expected checksum format. Returning 0 = valid. */
+/* Override func_800F25E0 (CMOS init/validation).
+ * The original RUNS THE REAL CMOS LAYOUT INIT (-> sub_8014586C), which copies the
+ * layout block and sets the adjustment COUNT dword_80236630=100 plus the NVRAM
+ * base/bound globals (dword_801DFED8, dword_801E65C0) that every adjustment
+ * read/write depends on. The previous override skipped all of this and just
+ * returned 0 -- so the count stayed 0, every sub_80146168 returned -9 (out of
+ * bounds), all adjustments read as "invalid", and the game booted into DIAGNOSTIC
+ * mode (dword_801DFE70 != 0) instead of normal attract. Now: run the real init
+ * for its side effects, then ignore its -3 return (our NVRAM doesn't fully
+ * validate) and report success so the cmos-err path isn't taken. */
+extern RECOMP_FUNC void func_800F25E0_original(uint8_t*, recomp_context*);
 RECOMP_FUNC void func_800F25E0(uint8_t* rdram, recomp_context* ctx) {
-    static int c = 0; c++;
-    if (c <= 3) fprintf(stderr, "[cmos] Bypassing CMOS validation (returning 0=OK)\n");
-    ctx->r2 = 0; /* success - CMOS is valid */
+    func_800F25E0_original(rdram, ctx);
+    if (getenv("CARNEVIL_ADJDBG")) {
+        static int c = 0;
+        if (c++ < 3) fprintf(stderr, "[cmos] real CMOS init ran (ret=%d), forcing OK. count=%u csize=%u base=0x%X bound=0x%X\n",
+                        (int)(int32_t)ctx->r2, *(uint32_t*)(rdram+0x236630), *(uint32_t*)(rdram+0x236628),
+                        *(uint32_t*)(rdram+0x1DFED8), *(uint32_t*)(rdram+0x1E65C0));
+    }
+    ctx->r2 = 0; /* ignore -3; the layout globals (count/base) are set above */
 }
 
 /* ======================================================================
