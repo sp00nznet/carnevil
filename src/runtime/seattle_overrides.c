@@ -1206,6 +1206,42 @@ RECOMP_FUNC void func_80145F98(uint8_t* rdram, recomp_context* ctx) {
     ctx->r2 = 0;
 }
 
+/* func_800CC1E4(id, handler, a3, a4): registers an entity render handler at
+ * entry+0x10 in the table 0x801E3880 (via the inserter). The registered +0x10
+ * handler (e.g. the demo render funcs func_800CB5AC/CB42C, which submit triangles
+ * via func_80167848) is normally never invoked: func_800CC47C only jalrs +0x20
+ * (which the inserter clears to 0), and the entity is cleared shortly after. So
+ * invoke the +0x10 handler HERE, right after registration while the entity still
+ * exists -- the long-missing entity render dispatch. Gated CARNEVIL_INVOKE10; a
+ * re-entrancy guard stops the handler's own registrations from recursing. */
+extern RECOMP_FUNC void func_800CC1E4_original(uint8_t*, recomp_context*);
+static int g_in_invoke10 = 0;
+RECOMP_FUNC void func_800CC1E4(uint8_t* rdram, recomp_context* ctx) {
+    uint32_t handler = (uint32_t)ctx->r5;   /* a2 = handler, saved before the call */
+    func_800CC1E4_original(rdram, ctx);
+    if (getenv("CARNEVIL_INVOKE10") && !g_in_invoke10 && handler >= 0x80000000) {
+        for (int i = 0; i < 128; i++) {
+            uint32_t e = 0x001E3880 + i*0x28;
+            if (*(uint16_t*)(rdram + e) != 0xFFFF &&
+                *(uint32_t*)(rdram + e + 0x10) == handler) {
+                extern recomp_func_t* get_function(int32_t);
+                recomp_func_t* h = get_function((int32_t)handler);
+                if (h) {
+                    static int lg = 0;
+                    if (lg++ < 12) fprintf(stderr, "[invoke10] render handler 0x%08X (entity idx%d)\n", handler, i);
+                    g_in_invoke10 = 1;
+                    recomp_context c2 = *ctx;
+                    recomp_ctx_init_fodd(&c2);
+                    c2.r4 = (gpr)(int32_t)(0x80000000u | e);   /* a0 = entity slot */
+                    h(rdram, &c2);
+                    g_in_invoke10 = 0;
+                }
+                break;
+            }
+        }
+    }
+}
+
 static int msg_send_count = 0;
 static int msg_recv_count = 0;
 
