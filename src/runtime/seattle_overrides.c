@@ -1856,6 +1856,32 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             }
         }
 
+        /* EXPERIMENT (CARNEVIL_INVOKE10): right after the scene funcs register the
+         * render handlers at entry+0x10 (and before the scaffolding below clears
+         * them), invoke each populated entity's +0x10 handler -- the long-missing
+         * spawn/render dispatch -- and force the gate >=2 so the per-frame
+         * func_800CC47C dispatch will run. See if triangles flow. */
+        if (getenv("CARNEVIL_INVOKE10")) {
+            extern recomp_func_t* get_function(int32_t);
+            *(uint16_t*)(rdram + 0x00212250) = 2;   /* gate -> dispatch enabled */
+            int inv = 0;
+            for (int i = 0; i < 128; i++) {
+                uint32_t e = 0x001E3880 + i*0x28;
+                uint16_t id = *(uint16_t*)(rdram + e);
+                uint32_t h10 = *(uint32_t*)(rdram + e + 0x10);
+                if (id != 0xFFFF && h10 >= 0x80000000) {
+                    recomp_func_t* h = get_function((int32_t)h10);
+                    if (h) {
+                        fprintf(stderr, "[invoke10] idx%d invoking +0x10=0x%08X\n", i, h10);
+                        ctx->r4 = (gpr)(int32_t)(0x80000000u | e);   /* entity slot vaddr */
+                        h(rdram, ctx);
+                        inv++;
+                    }
+                }
+            }
+            fprintf(stderr, "[invoke10] invoked %d render handlers\n", inv);
+        }
+
         /* After scene functions set up zone config, try calling the zone builder.
          * func_8010FE90 processes zone data from the config at 0x001DFEB8.
          * It should parse zone files and create scene objects. */
