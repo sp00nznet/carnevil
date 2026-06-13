@@ -1351,7 +1351,19 @@ extern RECOMP_FUNC void func_800F16D0_original(uint8_t*, recomp_context*);
 RECOMP_FUNC void func_800F16D0(uint8_t* rdram, recomp_context* ctx) {
     extern int attract_fiber_in_context(void);
     if (getenv("CARNEVIL_FORCE_NORMAL") && attract_fiber_in_context()) { ctx->r2 = 1; return; }
+    uint32_t cnt = (uint32_t)ctx->r4;
+    uint32_t listp = (uint32_t)ctx->r5 & 0x1FFFFFFF;
     func_800F16D0_original(rdram, ctx);
+    if (getenv("CARNEVIL_EVTDBG")) {
+        static int n=0;
+        if (n++ < 12) {
+            /* dump the channel ids this check covers + pass/fail */
+            char chs[160]=""; int p=0;
+            for (uint32_t i=0;i<cnt && i<16 && listp+i*4+4<=0x800000;i++)
+                p+=snprintf(chs+p,sizeof(chs)-p,"%u,", *(uint32_t*)(rdram+listp+i*4));
+            fprintf(stderr, "[evtchk] count=%u ret=%d channels=[%s]\n", cnt, (int)(int32_t)ctx->r2, chs);
+        }
+    }
 }
 
 /* func_80146168 (read adjustment value from NVRAM device 3).
