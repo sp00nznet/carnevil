@@ -82,6 +82,11 @@ static struct {
     int io_log_enabled;
 } io;
 
+/* Expose the NVRAM/CMOS buffer (and its size) so the adjustment-read override can
+ * fetch operator-adjustment values directly from it. */
+uint8_t* seattle_nvram_ptr(void)  { return io.cmos; }
+uint32_t seattle_nvram_size(void) { return (uint32_t)sizeof(io.cmos); }
+
 /* I/O region names for debug logging */
 static const char* io_region_name(uint32_t paddr) {
     if (paddr >= 0x08000000 && paddr < 0x08100000) return "GALILEO";

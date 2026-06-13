@@ -1354,23 +1354,38 @@ RECOMP_FUNC void func_800F16D0(uint8_t* rdram, recomp_context* ctx) {
     func_800F16D0_original(rdram, ctx);
 }
 
-/* func_80146168 (read adjustment value from NVRAM device 3): instrumented to
- * diagnose why adjustment validation fails. Logs channel, return code (0=checksum
- * OK, -8=checksum fail, -9=range), the value read, and the shadow base/count. */
-extern RECOMP_FUNC void func_80146168_original(uint8_t*, recomp_context*);
+/* func_80146168 (read adjustment value from NVRAM device 3).
+ * The original reads via the device-3 path (seek 0x6300 + sub_80144EF8) and
+ * validates a CRC of a RAM shadow at dword_801DFED8 -- but in our build the
+ * shadow base is a low NVRAM offset (0x16C0, since the CMOS region base is 0),
+ * not a valid RAM address, so the device read never positions correctly and the
+ * checksum can't match: every read fails -> all adjustments "invalid" -> the
+ * game boots into DIAGNOSTIC mode. The real per-channel values DO live in the
+ * loaded MAME NVRAM at io.cmos[base + 16*ch] (verified: sensible in-range
+ * values). Read them directly and report success (checksum OK). This makes the
+ * operator adjustments validate -> dword_801DFE70 stays 0 -> normal attract. */
+extern uint8_t* seattle_nvram_ptr(void);
+extern uint32_t seattle_nvram_size(void);
 RECOMP_FUNC void func_80146168(uint8_t* rdram, recomp_context* ctx) {
-    int a1 = (int)ctx->r4;
-    uint32_t bufptr = (uint32_t)ctx->r5;
-    func_80146168_original(rdram, ctx);
+    int ch = (int)ctx->r4;
+    uint32_t buf_phys = (uint32_t)ctx->r5 & 0x1FFFFFFF;
+    uint32_t count = *(uint32_t*)(rdram + 0x236630);   /* dword_80236630 */
+    if (ch < 0 || (uint32_t)ch >= count) { ctx->r2 = (gpr)(int32_t)-9; return; }
+    uint32_t base = *(uint32_t*)(rdram + 0x1DFED8);     /* dword_801DFED8 (0x16C0) */
+    uint8_t* nv = seattle_nvram_ptr();
+    uint32_t nvsz = seattle_nvram_size();
+    uint32_t off = (base + 16u * (uint32_t)ch) & (nvsz - 1);
+    uint32_t val = 0;
+    if (off + 4 <= nvsz)
+        val = nv[off] | (nv[off+1] << 8) | (nv[off+2] << 16) | ((uint32_t)nv[off+3] << 24);
+    if (buf_phys + 4 <= 0x00800000)
+        *(uint32_t*)(rdram + buf_phys) = val;
+    ctx->r2 = 0;   /* success: value valid (skip the broken shadow checksum) */
     if (getenv("CARNEVIL_ADJDBG")) {
         static int n=0;
-        if (n++ < 40) {
-            uint32_t bp = bufptr & 0x1FFFFFFF;
-            uint32_t val = (bp+4 <= 0x800000) ? *(uint32_t*)(rdram+bp) : 0;
-            fprintf(stderr, "[adjread] ch=%d ret=%d val=0x%X shadowbase=0x%X count=%u\n",
-                    a1, (int)(int32_t)ctx->r2, val,
-                    *(uint32_t*)(rdram+0x1DFED8), *(uint32_t*)(rdram+0x236630));
-        }
+        if (n++ < 40)
+            fprintf(stderr, "[adjread] ch=%d val=%u (nvoff=0x%X) count=%u base=0x%X\n",
+                    ch, val, off, count, base);
     }
 }
 
