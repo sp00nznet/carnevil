@@ -971,6 +971,21 @@ RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
      * triangles, and the triangle vertices decode as (0,0) -- the next two
      * bugs to chase. The frame loop's SEH guard keeps the run alive. */
     g_floop_step = "dispatch.walker";
+    if (getenv("CARNEVIL_ENTDBG")) {
+        static int n=0;
+        if (n++ < 8) {
+            uint32_t cbhead = *(uint32_t*)(rdram + 0x001A25D8);  /* callback list head */
+            int ents = 0;
+            for (int i = 0; i < 128; i++) {                       /* entity table 0x801E3880 stride 0x28 */
+                uint32_t e = 0x001E3880 + i*0x28;
+                uint16_t id = *(uint16_t*)(rdram + e);
+                uint32_t h10 = *(uint32_t*)(rdram + e + 0x10);    /* +0x10 handler */
+                uint32_t h14 = *(uint32_t*)(rdram + e + 0x14);
+                if (id != 0xFFFF && (h10 || h14)) ents++;
+            }
+            fprintf(stderr, "[entdbg] cb_head=0x%08X populated_entities=%d\n", cbhead, ents);
+        }
+    }
     {
         extern RECOMP_FUNC void func_80148714(uint8_t* rdram, recomp_context* ctx);
         func_80148714(rdram, ctx);
