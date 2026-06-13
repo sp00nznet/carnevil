@@ -1044,9 +1044,9 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
                 ? (nv[off] | (nv[off+1]<<8) | (nv[off+2]<<16) | ((uint32_t)nv[off+3]<<24)) : 0;
             if (bufp + 4 <= 0x00800000) *(uint32_t*)(rdram + bufp) = val;
             ctx->r2 = 0;   /* audit valid */
-            if (getenv("CARNEVIL_AUDITDBG")) {
-                static int n=0;
-                if (n++ < 60) fprintf(stderr, "[auditrd] idx=%d val=%u\n", ch, val);
+            if (getenv("CARNEVIL_AUDITDBG") && ch == 6) {
+                static int n=0;   /* sub_800C47E0's dispatch read (slot index) */
+                if (n++ < 40) fprintf(stderr, "[dispatch6] slot=%u (renders if <10)\n", val);
             }
             return;
         }
@@ -1160,6 +1160,10 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
 RECOMP_FUNC void func_80145F98(uint8_t* rdram, recomp_context* ctx) {
     /* Signal event -- wake any fiber waiting on this channel */
     uint32_t channel = (uint32_t)ctx->r4;
+    if (getenv("CARNEVIL_AUDITDBG") && channel == 6) {
+        static int n=0;  /* sub_800C47E0 (render task) reached here after its slot read */
+        if (n++ < 20) fprintf(stderr, "[rendertask] sub_800C47E0 ran (signal ch6)\n");
+    }
     rtos_sched_wake(&g_scheduler, (int)channel);
     ctx->r2 = 0;
 }
@@ -1195,6 +1199,10 @@ RECOMP_FUNC void func_80145DE0(uint8_t* rdram, recomp_context* ctx) {
                 nv[off] = (uint8_t)value; nv[off+1] = (uint8_t)(value>>8);
                 nv[off+2] = (uint8_t)(value>>16); nv[off+3] = (uint8_t)(value>>24);
             }
+        }
+        if (getenv("CARNEVIL_AUDITDBG") && channel >= 133 && channel <= 162) {
+            static int n=0;  /* sub_800C47E0's render-param writes */
+            if (n++ < 40) fprintf(stderr, "[renderparam] idx=%d val=0x%08X\n", channel, value);
         }
     }
 
