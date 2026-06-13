@@ -1627,6 +1627,21 @@ int main(int argc, char** argv) {
             extern void func_800CAE2C(uint8_t*, recomp_context*);
             fprintf(stderr, "[forcescene] triggering attract scene funcs\n");
             func_800CAE2C(g_rdram, &ctx);
+            /* Dump the entity table IMMEDIATELY (before any destroy can run) to see
+             * whether the render handlers (+0x10) were stored. */
+            int ents = 0;
+            for (int i = 0; i < 128; i++) {
+                uint32_t e = 0x001E3880 + i*0x28;
+                uint16_t id = *(uint16_t*)(g_rdram + e);
+                uint32_t h10 = *(uint32_t*)(g_rdram + e + 0x10);
+                uint32_t h20 = *(uint32_t*)(g_rdram + e + 0x20);
+                if (id != 0xFFFF && (h10 || h20)) {
+                    ents++;
+                    if (ents <= 10)
+                        fprintf(stderr, "[forcescene] idx%d id=0x%04X +10=0x%08X +20=0x%08X\n", i, id, h10, h20);
+                }
+            }
+            fprintf(stderr, "[forcescene] entities right after scene funcs = %d\n", ents);
         }
         if (getenv("CARNEVIL_STATEPROBE") && (frame == 30 || frame == 100 || frame == 400)) {
             /* dword_801DFE70: 0=normal attract (sub_800E4C84), 1/2=diagnostic/error

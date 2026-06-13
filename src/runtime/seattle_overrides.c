@@ -972,20 +972,29 @@ RECOMP_FUNC void func_80151718(uint8_t* rdram, recomp_context* ctx) {
      * bugs to chase. The frame loop's SEH guard keeps the run alive. */
     g_floop_step = "dispatch.walker";
     if (getenv("CARNEVIL_ENTDBG")) {
-        static int n=0; static uint32_t last_head=0xDEAD;
-        uint32_t cbhead = *(uint32_t*)(rdram + 0x001A25D8);  /* callback list head */
-        n++;
-        if (cbhead != last_head || n % 100 == 0) {
-            last_head = cbhead;
+        static int n=0; static int dumped=0; n++;
+        /* Detailed one-shot dump of the entity table after the scene funcs run
+         * (CARNEVIL_FORCESCENE fires at frame 40): show every non-empty entry's
+         * id + handler(+0x10) + tick(+0x14) + process(+0x20) so we can see whether
+         * the render handlers were stored and survive. */
+        if (!dumped && n >= 45) {
+            dumped = 1;
             int ents = 0;
-            for (int i = 0; i < 128; i++) {                       /* entity table 0x801E3880 stride 0x28 */
+            for (int i = 0; i < 128; i++) {
                 uint32_t e = 0x001E3880 + i*0x28;
                 uint16_t id = *(uint16_t*)(rdram + e);
-                uint32_t h10 = *(uint32_t*)(rdram + e + 0x10);    /* +0x10 handler */
+                uint32_t h10 = *(uint32_t*)(rdram + e + 0x10);
                 uint32_t h14 = *(uint32_t*)(rdram + e + 0x14);
-                if (id != 0xFFFF && (h10 || h14)) ents++;
+                uint32_t h20 = *(uint32_t*)(rdram + e + 0x20);
+                if (id != 0xFFFF && (h10 || h14 || h20)) {
+                    ents++;
+                    if (ents <= 16)
+                        fprintf(stderr, "[entdump] idx%d id=0x%04X +10=0x%08X +14=0x%08X +20=0x%08X\n",
+                                i, id, h10, h14, h20);
+                }
             }
-            fprintf(stderr, "[entdbg] frame~%d cb_head=0x%08X populated_entities=%d\n", n, cbhead, ents);
+            fprintf(stderr, "[entdump] total populated=%d, cb_head=0x%08X\n",
+                    ents, *(uint32_t*)(rdram + 0x001A25D8));
         }
     }
     {
