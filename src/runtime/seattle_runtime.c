@@ -1623,9 +1623,9 @@ int main(int argc, char** argv) {
          * func_800CAE2C (which runs the scene funcs func_800CAFD0/CAF24/CB19C/CB31C
          * -> register render handlers -> spawn demo entities). Force it once after
          * assets load to test whether spawning the demo entities renders geometry. */
-        if (getenv("CARNEVIL_FORCESCENE") && frame == 40) {
+        if (getenv("CARNEVIL_FORCESCENE") && (frame == 40 || (getenv("CARNEVIL_PERFRAME") && frame > 40))) {
             extern void func_800CAE2C(uint8_t*, recomp_context*);
-            fprintf(stderr, "[forcescene] triggering attract scene funcs\n");
+            if (frame == 40) fprintf(stderr, "[forcescene] triggering attract scene funcs\n");
             func_800CAE2C(g_rdram, &ctx);
             /* Dump the entity table IMMEDIATELY (before any destroy can run) to see
              * whether the render handlers (+0x10) were stored. */

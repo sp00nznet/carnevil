@@ -1845,7 +1845,10 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
      * These are func_800CAFD0, func_800CAF24, func_800CB19C, func_800CB31C
      * which load zones, create scene objects, and set up animations.
      * Each function: yield, setup zone, init scene, create objects. */
-    if (call_count == 1) {
+    /* Normally the scene setup runs once; CARNEVIL_PERFRAME re-runs the scene
+     * funcs every call so the register->render(+0x10)->clear cycle repeats each
+     * frame (the demo's per-frame render lifecycle). */
+    if (call_count == 1 || getenv("CARNEVIL_PERFRAME")) {
         extern recomp_func_t* get_function(int32_t);
 
         /* Pre-set bit 0x4 at 0x001DDDE0 ("DCS ready" flag).
