@@ -12,6 +12,13 @@
 #include "rtos_scheduler.h"
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
+
+/* Per-fiber exit jump target. func_800C47E0 (and other one-shot tasks) end with
+ * exit_task (func_80144EB8) followed by a while(1); to re-run the task body each
+ * frame the exit must unwind back to fiber_entry's loop instead of returning into
+ * that infinite loop. exit_task longjmps to g_task_exit_jmp[current_fiber]. */
+jmp_buf g_task_exit_jmp[RTOS_MAX_FIBERS];
 
 rtos_scheduler_t g_scheduler;
 
@@ -246,7 +253,17 @@ static void CALLBACK fiber_entry(void* param) {
         f->ctx_save.r29 = (gpr)(stack_top - 0x200);
         f->ctx_save.mips3_float_mode = 1;
 
-        callback(sched->rdram, &f->ctx_save);
+        if (getenv("CARNEVIL_AUDITDBG")) {
+            static int n=0;
+            if (n++ < 30) fprintf(stderr, "[fiberrun] idx=%d id=%d cb=0x%08X\n",
+                                   idx, f->id, f->callback_vram);
+        }
+        /* Run the task body. One-shot tasks (e.g. func_800C47E0) exit via
+         * func_80144EB8 -> longjmp(g_task_exit_jmp[idx]) which lands right here,
+         * skipping their trailing while(1). A normal return lands here too. */
+        if (setjmp(g_task_exit_jmp[idx]) == 0) {
+            callback(sched->rdram, &f->ctx_save);
+        }
 
         /* Block until next frame */
         f->blocked = 1;

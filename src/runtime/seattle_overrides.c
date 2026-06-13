@@ -1035,6 +1035,18 @@ RECOMP_FUNC void func_80145CE4(uint8_t* rdram, recomp_context* ctx) {
         if (getenv("CARNEVIL_AUDIT")) {
             int ch = (int)ctx->r4;
             uint32_t bufp = (uint32_t)ctx->r5 & 0x1FFFFFFF;
+            /* Channel 6 inside a task fiber is the render-task dispatch slot:
+             * sub_800C47E0 reads it to decide which slot (0-9) to render. On
+             * hardware the dispatcher posts each task's id before waking it; we
+             * model that by returning THIS fiber's id, so every render task gets
+             * its own slot instead of all reading the last create_task post. */
+            if (ch == 6 && g_scheduler.current_fiber >= 0 &&
+                g_scheduler.current_fiber < g_scheduler.fiber_count) {
+                uint32_t slot = (uint32_t)g_scheduler.fibers[g_scheduler.current_fiber].id;
+                if (bufp + 4 <= 0x00800000) *(uint32_t*)(rdram + bufp) = slot;
+                ctx->r2 = 0;
+                return;
+            }
             uint32_t naud = *(uint32_t*)(rdram + 0x23662C);   /* dword_8023662C audits=182 */
             if (ch < 0 || (uint32_t)ch >= naud) { ctx->r2 = (gpr)(int32_t)-7; return; }
             uint32_t abase = *(uint32_t*)(rdram + 0x1DDD90);  /* dword_801DDD90 audit base */
@@ -1386,14 +1398,16 @@ RECOMP_FUNC void func_80145020(uint8_t* rdram, recomp_context* ctx) {
 /* func_80144EB8: exit/terminate task -- never returns on real RTOS.
  * Mark the fiber as blocked (done for this frame) and yield. */
 RECOMP_FUNC void func_80144EB8(uint8_t* rdram, recomp_context* ctx) {
+    (void)rdram;
     int idx = g_scheduler.current_fiber;
     if (idx >= 0 && idx < g_scheduler.fiber_count) {
-        /* Mark done for this frame, yield to scheduler */
+        /* exit_task: the task body is done for this frame. The recompiled task
+         * (e.g. func_800C47E0) has a while(1); after this call, so we must NOT
+         * return into it. Unwind to fiber_entry's per-frame loop via longjmp;
+         * fiber_entry then blocks the fiber and re-runs the body next frame. */
+        extern jmp_buf g_task_exit_jmp[];
         g_scheduler.fibers[idx].blocked = 1;
-        rtos_sched_yield(&g_scheduler, -1);
-        /* When we resume next frame, we'll re-enter the callback from
-         * after func_80144EB8. The infinite loop (pause_self) follows,
-         * but pause_self will yield again. */
+        longjmp(g_task_exit_jmp[idx], 1);   /* does not return */
     }
     ctx->r2 = 0;
 }

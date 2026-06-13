@@ -992,6 +992,23 @@ int main(int argc, char** argv) {
     /* Register all recompiled game functions */
     #include "func_registration.inc"
 
+    /* func_registration.inc remaps 0x800C47E0 (the render task) to func_80151618
+     * (a plain yield) to dodge its trailing while(1) hang -- but that means the
+     * render task never runs. In normal-attract mode (CARNEVIL_AUDIT) we DO want
+     * it: register the real func_800C47E0 so the per-frame render task executes
+     * (the func_80144EB8 longjmp + fiber_entry setjmp handle the while(1)). In
+     * diagnostic mode the render task would just swap-spam and clear the screen,
+     * so leave the yield remap there. */
+    if (getenv("CARNEVIL_AUDIT")) {
+        extern void func_800C47E0(uint8_t*, recomp_context*);
+        for (int i = 0; i < g_func_count; i++) {
+            if (g_func_table[i].vram == 0x800C47E0) {
+                g_func_table[i].func = func_800C47E0;   /* overwrite the yield remap */
+                break;
+            }
+        }
+    }
+
     /* Register recompiled RTOS functions */
     {
         extern void rtos_register_all(void);
