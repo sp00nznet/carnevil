@@ -8,6 +8,7 @@
 
 #include "voodoo.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
@@ -208,9 +209,12 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
          * the (rare, transient) textured attract frames can be inspected. */
         if (getenv("CARNEVIL_DUMP_FRAMES")) {
             extern int g_texbound_this_frame;
-            static int dumped = 0;
-            if (g_texbound_this_frame && dumped < 6) {
-                char nm[64]; snprintf(nm, sizeof(nm), "texframe_%d.ppm", voodoo->swap_count);
+            /* Dump on texture-bind frames AND periodically, to trace the attract
+             * sequence and catch transient textured frames. */
+            int periodic = (voodoo->swap_count % 500 == 0);
+            if (g_texbound_this_frame || periodic) {
+                char nm[64]; snprintf(nm, sizeof(nm), "seq_%05d%s.ppm", voodoo->swap_count,
+                                      g_texbound_this_frame ? "_TEX" : "");
                 FILE* tf = fopen(nm, "wb");
                 if (tf) {
                     fprintf(tf, "P6\n640 480\n255\n");
@@ -218,8 +222,8 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                         uint16_t p = voodoo->framebuffer[i];
                         fputc((p>>11)<<3, tf); fputc(((p>>5)&0x3F)<<2, tf); fputc((p&0x1F)<<3, tf);
                     }
-                    fclose(tf); dumped++;
-                    fprintf(stderr, "[texframe] dumped %s\n", nm);
+                    fclose(tf);
+                    fprintf(stderr, "[seqframe] dumped %s\n", nm);
                 }
             }
             g_texbound_this_frame = 0;
@@ -351,6 +355,24 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         if (ymin < 0) ymin = 0;
         if (xmax > 640) xmax = 640;
         if (ymax > 480) ymax = 480;
+
+        /* TEXDBG: profile textured triangles -- how many select texture, how many
+         * actually bind one, and the S/T range they sample (degenerate S/T ->
+         * flat-looking output). Gated by CARNEVIL_TEXPROF. */
+        if (getenv("CARNEVIL_TEXPROF") && rgbselect == 1) {
+            static long n_sel=0, n_bound=0; n_sel++;
+            if (tex_en) {
+                n_bound++;
+                float srange = fabsf(dSdX*(xmax-xmin)) + fabsf(dSdY*(ymax-ymin));
+                float trange = fabsf(dTdX*(xmax-xmin)) + fabsf(dTdY*(ymax-ymin));
+                static int lg=0;
+                if (lg++ < 14)
+                    fprintf(stderr, "[texprof] swap=%d texBase=0x%X fmt=%d tex_w=%d sW=%.3f S_range=%.2f T_range=%.2f c1=0x%06X\n",
+                            voodoo->swap_count, texbase, tex_fmt, tex_w, sW, srange, trange, color1 & 0xFFFFFF);
+            }
+            if ((n_sel % 20000)==0)
+                fprintf(stderr, "[texprof] cumulative: rgbsel==1 tris=%ld, of which texBase-bound=%ld\n", n_sel, n_bound);
+        }
 
         if (tri_count <= 20 || tri_count % 1000 == 0) {
             fprintf(stderr, "[voodoo] Triangle #%d A=(%.1f,%.1f) B=(%.1f,%.1f) C=(%.1f,%.1f) bbox=(%d,%d)-(%d,%d) rgbsel=%d depth=%d tex=%d c1=0x%04X\n",
