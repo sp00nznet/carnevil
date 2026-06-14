@@ -1845,10 +1845,13 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
      * These are func_800CAFD0, func_800CAF24, func_800CB19C, func_800CB31C
      * which load zones, create scene objects, and set up animations.
      * Each function: yield, setup zone, init scene, create objects. */
-    /* Normally the scene setup runs once; CARNEVIL_PERFRAME re-runs the scene
-     * funcs every call so the register->render(+0x10)->clear cycle repeats each
-     * frame (the demo's per-frame render lifecycle). */
-    if (call_count == 1 || getenv("CARNEVIL_PERFRAME")) {
+    /* Scene SETUP runs exactly once. (It was previously re-run every frame under
+     * CARNEVIL_PERFRAME, but the setup funcs re-initialise the zone-config pointer
+     * back to the stream start (0x80112DA4) -- so re-running them each frame reset
+     * the zone parser to command 0 every frame, wedging it on the first "wait 428"
+     * and starving the scene graph. Per-frame work now happens only in the zone-
+     * processing block below; PERFRAME just keeps func_800CAE2C being called.) */
+    if (call_count == 1) {
         extern recomp_func_t* get_function(int32_t);
 
         /* Pre-set bit 0x4 at 0x001DDDE0 ("DCS ready" flag).
@@ -1975,7 +1978,7 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
      * Try jumping the config pointer past the trouble zone. */
     static int zone_done = 0;
     static int zone_skip_until = 0;
-    if (call_count > 1 && call_count < 40 && !zone_done && call_count >= zone_skip_until) {
+    if (call_count > 1 && !zone_done && call_count >= zone_skip_until) {
         extern recomp_func_t* get_function(int32_t);
         static int zone_cmd_count = 0;
         extern int g_yield_counter;  /* declared below in func_80151618 */
@@ -2023,7 +2026,18 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             ctx->r2 = 0;
             ctx->r4 = 0;
             g_zone_processing_active = 1;
+            /* func_8010FE90 gates ALL zone-command parsing behind
+             * (dword_802122E0 & 0x10000) == 0 (loc_8010FEB4: lui $v1,1; and;
+             * bnez -> exit). Bit 0x10000 is the DCS2 "ready" flag we keep set so
+             * the sound manager stops retrying bank loads -- but with it set the
+             * zone processor bails immediately (ret=0, config pointer never
+             * advances, scene graph stays empty -> no demo, frozen frame).
+             * Clear it just for this synchronous call, then restore, so zone
+             * parsing runs without disturbing the DCS state seen elsewhere. */
+            uint32_t dcs_save = *(uint32_t*)(rdram + 0x002122E0);
+            *(uint32_t*)(rdram + 0x002122E0) = dcs_save & ~0x10000u;
             process_zone(rdram, ctx);
+            *(uint32_t*)(rdram + 0x002122E0) = dcs_save;
             g_zone_processing_active = 0;
             int ret = (int)(int32_t)ctx->r2;
 
