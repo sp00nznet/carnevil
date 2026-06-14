@@ -2072,6 +2072,117 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
     }
 
     zone_done_skip: ;
+    /* CARNEVIL_TRI3D: validation hook for the 3D triangle path. Drives the
+     * depth-tested 3D emitter sub_800D2654 directly with three hand-built
+     * 9-float vertices {screenX,screenY,W,S,T,Z,R,G,B}. Emitted here so it
+     * rides the same DMA/flush context as the INVOKE10 2D triangles. S/T point
+     * at a bright font texel so the triangle is visible whether the current
+     * render state is textured (rgbselect=1) or Gouraud (rgbselect=0). */
+    if (getenv("CARNEVIL_TRI3D")) {
+        extern recomp_func_t* get_function(int32_t);
+        recomp_func_t* emit = get_function(0x800D2654);
+        if (emit) {
+            static const float vtx[3][9] = {
+                {200.f,150.f, 1.f, 188.f,205.f, 0.5f, 255.f, 32.f, 32.f},
+                {440.f,150.f, 1.f, 188.f,205.f, 0.5f,  32.f,255.f, 32.f},
+                {320.f,360.f, 1.f, 188.f,205.f, 0.5f,  32.f, 32.f,255.f},
+            };
+            uint32_t base = 0x007CE000;
+            for (int i=0;i<3;i++) for(int j=0;j<9;j++)
+                *(float*)(rdram + base + i*0x24 + j*4) = vtx[i][j];
+            ctx->r4 = (gpr)(int32_t)(0x80000000u | (base + 0*0x24));
+            ctx->r5 = (gpr)(int32_t)(0x80000000u | (base + 1*0x24));
+            ctx->r6 = (gpr)(int32_t)(0x80000000u | (base + 2*0x24));
+            emit(rdram, ctx);
+            static int once=0; if(!once){once=1; fprintf(stderr,"[tri3d] emitted test triangle via sub_800D2654\n");}
+        }
+    }
+    /* CARNEVIL_MESH3D: WORK IN PROGRESS -- render the BABY model mesh with a
+     * hand-rolled ortho projection (bypassing the game camera/T&L), driving the
+     * 3D emitter sub_800D2654 per face. We read BABY.ZM ourselves. The file
+     * regions are: verts (942 x 12B float xyz, [-0.6,1.4], offset 0), normals
+     * (946 x 12B float, [-1,1], offset 11304), faces (1706 x 40B, offset 22656).
+     * BLOCKER: our extracted BABY.ZM's face records do NOT match the game
+     * loader's expected layout (u32 surfaceId + u16 vertex indices @+4/+6/+8 +
+     * S/T floats @+16) -- only ~46/1706 faces have in-range indices, and the
+     * game loader rejects the file on CRC. So our extracted .ZM is a different
+     * format/revision than the runtime expects (a data-extraction issue). The
+     * scaffold below (load -> ortho-transform -> per-face sub_800D2654) is
+     * correct and reusable once a matching .ZM is available; today it only
+     * draws the handful of faces whose indices happen to be valid. */
+    if (getenv("CARNEVIL_MESH3D")) {
+        extern recomp_func_t* get_function(int32_t);
+        static int ready = 0;
+        static float scale=1.f, cx=320.f, cy=240.f;
+        const int vcount=942, fcount=1706, ccount=946;
+        const uint32_t modbase = 0x00600000;            /* raw .ZM in RDRAM */
+        const uint32_t vp = modbase;
+        const uint32_t cp = modbase + (uint32_t)vcount*12;
+        const uint32_t fp = modbase + (uint32_t)vcount*12 + (uint32_t)ccount*12;
+        const uint32_t xf = 0x007B0000;                 /* transformed verts */
+        if (!ready) {
+            FILE* zf = fopen("extracted/files/BABY.ZM", "rb");
+            if (zf) {
+                size_t need = (size_t)vcount*12 + (size_t)ccount*12 + (size_t)fcount*40;
+                size_t n = fread(rdram + modbase, 1, need, zf);
+                fclose(zf);
+                /* Filter outliers: ~29 verts are padding/garbage (|coord| huge);
+                 * including them collapses the auto-fit scale to ~0. */
+                float mnx=1e9f,mxx=-1e9f,mny=1e9f,mxy=-1e9f,mnz=1e9f,mxz=-1e9f;
+                for (int i=0;i<vcount;i++){
+                    float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4), z=*(float*)(rdram+vp+i*12+8);
+                    if (!(x>-1e4f&&x<1e4f) || !(y>-1e4f&&y<1e4f) || !(z>-1e4f&&z<1e4f)) continue;
+                    if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y; if(z<mnz)mnz=z; if(z>mxz)mxz=z;
+                }
+                float w=mxx-mnx, h=mxy-mny, ext=(w>h?w:h); if(ext<1e-3f)ext=1.f;
+                scale = 280.f/ext;
+                cx = 320.f - 0.5f*(mnx+mxx)*scale;
+                cy = 240.f + 0.5f*(mny+mxy)*scale;   /* +: flip Y for screen */
+                fprintf(stderr,"[mesh3d] read %zu/%zu bytes; range x[%.1f,%.1f] y[%.1f,%.1f] z[%.1f,%.1f] scale=%.3f\n",
+                        n,need,mnx,mxx,mny,mxy,mnz,mxz,scale);
+                ready = 1;
+            } else { fprintf(stderr,"[mesh3d] fopen BABY.ZM failed\n"); ready = -1; }
+        }
+        if (ready == 1) {
+            for (int i=0;i<vcount;i++){
+                float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4);
+                *(float*)(rdram+xf+i*12+0) = cx + x*scale;
+                *(float*)(rdram+xf+i*12+4) = cy - y*scale;
+                *(float*)(rdram+xf+i*12+8) = 1.0f;       /* W (ortho) */
+            }
+            /* Drive the 3D emitter sub_800D2654 per face directly (bypassing the
+             * mesh walker's surface/texture lookup, which bails when BABY's
+             * textures aren't loaded). Constant bright texel => solid silhouette.
+             * Vertex layout = {x, y, W, S*W, T*W, Z, R, G, B}. */
+            recomp_func_t* emit = get_function(0x800D2654);
+            if (emit) {
+                gpr r4=ctx->r4,r5=ctx->r5,r6=ctx->r6;
+                const uint32_t tb = 0x007C0000;          /* 3-vertex scratch */
+                int drawn=0;
+                for (int fi=0; fi<fcount; fi++){
+                    uint32_t fa = fp + (uint32_t)fi*40;
+                    uint16_t id[3] = { *(uint16_t*)(rdram+fa+4),
+                                       *(uint16_t*)(rdram+fa+6),
+                                       *(uint16_t*)(rdram+fa+8) };
+                    if (id[0]>=vcount||id[1]>=vcount||id[2]>=vcount) continue;
+                    for (int k=0;k<3;k++){
+                        uint32_t vv = xf + (uint32_t)id[k]*12;
+                        float X=*(float*)(rdram+vv+0), Y=*(float*)(rdram+vv+4), W=*(float*)(rdram+vv+8);
+                        float* o = (float*)(rdram + tb + (uint32_t)k*36);
+                        o[0]=X; o[1]=Y; o[2]=W; o[3]=188.f*W; o[4]=205.f*W; o[5]=0.5f;
+                        o[6]=200.f; o[7]=200.f; o[8]=200.f;
+                    }
+                    ctx->r4=(gpr)(int32_t)(0x80000000u|(tb+0*36));
+                    ctx->r5=(gpr)(int32_t)(0x80000000u|(tb+1*36));
+                    ctx->r6=(gpr)(int32_t)(0x80000000u|(tb+2*36));
+                    emit(rdram, ctx);
+                    drawn++;
+                }
+                ctx->r4=r4; ctx->r5=r5; ctx->r6=r6;
+                static int once=0; if(!once){once=1; fprintf(stderr,"[mesh3d] emitted %d face-triangles via sub_800D2654\n",drawn);}
+            }
+        }
+    }
     /* Camera update: call func_800CADD4 */
     {
         extern recomp_func_t* get_function(int32_t);
