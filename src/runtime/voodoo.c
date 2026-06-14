@@ -113,6 +113,16 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
     vwrite_total++;
     if (value != 0) vwrite_nonzero++;
 
+    /* REGLOG: dump the triangle-setup register writes (0x80..0x100) so we can see
+     * which regs the glyph render actually sets (vertices, S/T, gradients) and
+     * whether S/T (0xB4-0xFC) reaches voodoo. Gated CARNEVIL_REGLOG. */
+    if (getenv("CARNEVIL_REGLOG") && offset < 0x400000 && value != 0 &&
+        ((reg >= 0x88 && reg <= 0x9C) || (reg >= 0xA0 && reg <= 0xFC) || reg == 0x100)) {
+        static int rl = 0;   /* vertices 0x88-0x9C, iterated/S-T 0xA0-0xFC, FTRIANGLE 0x100 */
+        if (rl++ < 60)
+            fprintf(stderr, "[reglog] reg=0x%03X val=0x%08X (%.3f)\n", reg, value, *(float*)&value);
+    }
+
     /* Memory-mapped regions (TMU texture memory at 0x800000+, LFB framebuffer
      * at 0x400000-0x800000) are NOT registers. They must be handled before the
      * register switch and return early: otherwise reg=offset&0x3FF aliases real
@@ -325,14 +335,31 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
          * geometry. The uploaded font itself is verified correct (8-bit intensity,
          * 256-wide, glyphs recoverable from texmem -- see project memory). */
         uint32_t texbase  = voodoo->regs[VOODOO_TEXBASE >> 2];
-        int   tex_en      = (g_tex_writes > 0) && (texbase != 0);
 
-        float sR=RF(0xA0), sG=RF(0xA4), sB=RF(0xA8), sZ=RF(0xAC);
-        float sS=RF(0xB4), sT=RF(0xB8), sW=RF(0xBC);
-        float dRdX=RF(0xC0), dGdX=RF(0xC4), dBdX=RF(0xC8), dZdX=RF(0xCC);
-        float dSdX=RF(0xD4), dTdX=RF(0xD8), dWdX=RF(0xDC);
-        float dRdY=RF(0xE0), dGdY=RF(0xE4), dBdY=RF(0xE8), dZdY=RF(0xEC);
-        float dSdY=RF(0xF4), dTdY=RF(0xF8), dWdY=RF(0xFC);
+        /* Iterated-parameter registers use the GROUPED SST-1 layout (verified by
+         * decompiling the triangle-setup primitive sub_800D1408): each of R,G,B,A,
+         * Z,S,T,W is 3 consecutive floats (start, dX-gradient, dY-gradient) from
+         * 0xA0: R@0xA0 G@0xAC B@0xB8 A@0xC4 Z@0xD0 S@0xDC T@0xE8 W@0xF4. (The old
+         * interleaved mapping put S/T at 0xB4/0xB8, which the game never writes --
+         * so textured triangles like the font glyphs had zero S/T and rendered
+         * flat.) */
+        float sR=RF(0xA0), dRdX=RF(0xA4), dRdY=RF(0xA8);
+        float sG=RF(0xAC), dGdX=RF(0xB0), dGdY=RF(0xB4);
+        float sB=RF(0xB8), dBdX=RF(0xBC), dBdY=RF(0xC0);
+        float sZ=RF(0xD0), dZdX=RF(0xD4), dZdY=RF(0xD8);
+        float sS=RF(0xDC), dSdX=RF(0xE0), dSdY=RF(0xE4);
+        float sT=RF(0xE8), dTdX=RF(0xEC), dTdY=RF(0xF0);
+        float sW=RF(0xF4), dWdX=RF(0xF8), dWdY=RF(0xFC);
+
+        /* Texture-enable: sample when a texture is uploaded AND this triangle has
+         * real texture coordinates (non-trivial S/T gradients). The font glyphs
+         * set up real S/T (startS/T + ~1 texel/pixel gradients) but DON'T set
+         * texBaseAddr (it stays 0), and the font lives at texmem offset 0 region,
+         * so base 0 is correct -- the old texBase!=0 gate wrongly blocked them.
+         * Flat/color1 triangles have ~0 S/T gradients, so they stay on the flat
+         * path. */
+        float st_grad = fabsf(dSdX) + fabsf(dSdY) + fabsf(dTdX) + fabsf(dTdY);
+        int   tex_en  = (g_tex_writes > 0) && (st_grad > 0.02f);
 
         /* color1 components (RGB888) -- the flat-shade source, preserved for
          * the color1 path and as the texture/iterated fallback. */
@@ -359,6 +386,14 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
         /* TEXDBG: profile textured triangles -- how many select texture, how many
          * actually bind one, and the S/T range they sample (degenerate S/T ->
          * flat-looking output). Gated by CARNEVIL_TEXPROF. */
+        if (getenv("CARNEVIL_TEXDUMP") && tex_en) {
+            static int dumped=0;
+            if (!dumped) { dumped=1;
+                FILE *tf=fopen("texmem.bin","wb");
+                if (tf){ fwrite(voodoo->texmem,1,sizeof(voodoo->texmem),tf); fclose(tf);
+                    fprintf(stderr,"[texdump] wrote texmem.bin (%zu bytes)\n", sizeof(voodoo->texmem)); }
+            }
+        }
         if (getenv("CARNEVIL_TEXPROF") && rgbselect == 1) {
             static long n_sel=0, n_bound=0; n_sel++;
             if (tex_en) {
@@ -434,7 +469,20 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                     float w = sW + dWdX * fx + dWdY * fy;
                     float inv = (w != 0.0f) ? 1.0f / w : 0.0f;
                     float s = (sS + dSdX * fx + dSdY * fy) * inv;
-                    float t = (sT + dTdX * fx + dTdY * fy) * inv;
+                    /* The font texture stores each glyph top-at-low-T, but the
+                     * triangle setup iterates T with dTdY<0 (screen-top => high T),
+                     * which samples each glyph bottom-up. Reflect fy about the
+                     * triangle's own vertical extent so screen-top maps to the
+                     * glyph top -- an in-place per-glyph vertical un-flip. */
+                    static int flip = -1;
+                    if (flip < 0) flip = getenv("CARNEVIL_NOFLIPT") ? 0 : 1;
+                    float fyt = fy;
+                    if (flip) {
+                        float tri_ylo = fminf(ay, fminf(by, cy));
+                        float tri_yhi = fmaxf(ay, fmaxf(by, cy));
+                        fyt = (tri_ylo + tri_yhi - py) - ay;
+                    }
+                    float t = (sT + dTdX * fx + dTdY * fyt) * inv;
                     int ti = ((int)s) & (tex_w - 1);
                     int tj = ((int)t) & (tex_h - 1);
                     uint32_t texel = (uint32_t)(tj * tex_w + ti);
@@ -442,11 +490,22 @@ void voodoo_write(voodoo_state_t* voodoo, uint32_t offset, uint32_t value) {
                      * (the allocator hands the upload a base; the render binds it
                      * via reg 0x30C). Fonts upload as 8-bit intensity, 256-wide. */
                     uint32_t base = texbase & (sizeof(voodoo->texmem) - 1);
-                    if (tex_fmt < 8 /* 8-bit-per-texel formats: intensity/palette */) {
+                    if (tex_fmt == 13 || tex_fmt == 14) {
+                        /* AI88 / AP88: 16-bit-per-texel, 256 texels wide => a 512
+                         * BYTE-wide row (this is why a flat 1-byte decode of texmem
+                         * only reads cleanly at width 512). The CarnEvil font lives
+                         * here: the intensity byte is the glyph, the other byte is
+                         * alpha/palette. Address at the 2-byte stride and modulate
+                         * the iterated/color1 tint by intensity so a white glyph
+                         * takes the UI element's colour. */
+                        uint32_t a = (base + texel * 2) & (sizeof(voodoo->texmem) - 2);
+                        int v = voodoo->texmem[a];           /* low byte = intensity */
+                        r = (v * c1r) / 255;
+                        g = (v * c1g) / 255;
+                        b = (v * c1b) / 255;
+                    } else if (tex_fmt < 8 /* 8-bit-per-texel intensity/palette */) {
                         uint32_t a = (base + texel) & (sizeof(voodoo->texmem) - 1);
                         int v = voodoo->texmem[a];
-                        /* Intensity textures (fonts) modulate the iterated/color1
-                         * tint, so a white glyph takes the UI element's colour. */
                         r = (v * c1r) / 255;
                         g = (v * c1g) / 255;
                         b = (v * c1b) / 255;
