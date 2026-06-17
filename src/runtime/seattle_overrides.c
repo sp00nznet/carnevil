@@ -2150,27 +2150,27 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                 *(float*)(rdram+xf+i*12+4) = cy - y*scale;
                 *(float*)(rdram+xf+i*12+8) = 1.0f;       /* W (ortho) */
             }
-            /* Drive the 3D emitter sub_800D2654 per face directly (bypassing the
-             * mesh walker's surface/texture lookup, which bails when BABY's
-             * textures aren't loaded). Constant bright texel => solid silhouette.
-             * Vertex layout = {x, y, W, S*W, T*W, Z, R, G, B}. */
+            /* Render the 942 decoded vertex POSITIONS as a POINT CLOUD: a small
+             * splat triangle per vertex. The disk .ZM face records carry per-
+             * vertex S/T but no vertex indices (values can't index 942 verts and
+             * no u16-index records exist in the file), so the surface can't be
+             * reconstructed -- but the vertex positions ARE valid model geometry,
+             * so the cloud shows the BABY's shape. Vertex layout for sub_800D2654
+             * = {x, y, W, S*W, T*W, Z, R, G, B}; S/T at a bright font texel. */
             recomp_func_t* emit = get_function(0x800D2654);
             if (emit) {
                 gpr r4=ctx->r4,r5=ctx->r5,r6=ctx->r6;
                 const uint32_t tb = 0x007C0000;          /* 3-vertex scratch */
                 int drawn=0;
-                for (int fi=0; fi<fcount; fi++){
-                    uint32_t fa = fp + (uint32_t)fi*40;
-                    uint16_t id[3] = { *(uint16_t*)(rdram+fa+4),
-                                       *(uint16_t*)(rdram+fa+6),
-                                       *(uint16_t*)(rdram+fa+8) };
-                    if (id[0]>=vcount||id[1]>=vcount||id[2]>=vcount) continue;
+                for (int i=0;i<vcount;i++){
+                    float X=*(float*)(rdram+xf+i*12+0), Y=*(float*)(rdram+xf+i*12+4);
+                    if (!(X>=0.f&&X<640.f) || !(Y>=0.f&&Y<480.f)) continue;  /* skip garbage/offscreen */
+                    float pts[3][2] = {{X-1.5f,Y-1.5f},{X+1.5f,Y-1.5f},{X,Y+1.8f}};
                     for (int k=0;k<3;k++){
-                        uint32_t vv = xf + (uint32_t)id[k]*12;
-                        float X=*(float*)(rdram+vv+0), Y=*(float*)(rdram+vv+4), W=*(float*)(rdram+vv+8);
                         float* o = (float*)(rdram + tb + (uint32_t)k*36);
-                        o[0]=X; o[1]=Y; o[2]=W; o[3]=188.f*W; o[4]=205.f*W; o[5]=0.5f;
-                        o[6]=200.f; o[7]=200.f; o[8]=200.f;
+                        o[0]=pts[k][0]; o[1]=pts[k][1]; o[2]=1.0f;
+                        o[3]=188.f; o[4]=205.f; o[5]=0.5f;
+                        o[6]=220.f; o[7]=220.f; o[8]=220.f;
                     }
                     ctx->r4=(gpr)(int32_t)(0x80000000u|(tb+0*36));
                     ctx->r5=(gpr)(int32_t)(0x80000000u|(tb+1*36));
@@ -2179,7 +2179,7 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                     drawn++;
                 }
                 ctx->r4=r4; ctx->r5=r5; ctx->r6=r6;
-                static int once=0; if(!once){once=1; fprintf(stderr,"[mesh3d] emitted %d face-triangles via sub_800D2654\n",drawn);}
+                static int once=0; if(!once){once=1; fprintf(stderr,"[mesh3d] point cloud: %d vertex splats\n",drawn);}
             }
         }
     }
