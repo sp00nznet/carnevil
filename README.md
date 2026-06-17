@@ -29,68 +29,72 @@ CarnEvil was a coin-op rail shooter where you blasted your way through a haunted
 
 Source: [System16 Hardware Page](https://www.system16.com/hardware.php?id=618)
 
-## Current Status: Entity Render Works -- Real Game Geometry On Screen
+## Current Status: Readable Text On Screen + 3D Pipeline Validated
 
-The game boots and runs **500/500 frames cleanly with zero crashes**, the full
-RTOS / state-machine / callback / task plumbing works, entity dispatch fires
-every frame, and **real CarnEvil attract-mode geometry renders to the
-framebuffer** (~3000 Voodoo swaps, ~26% non-black):
+The game boots and runs cleanly with zero crashes, the full RTOS / state-machine
+/ callback / task plumbing works, and the renderer now puts **legible text on
+screen** -- the system-info screen draws **"CARNEVIL V1.0.1"**, "SERIAL NUMBER",
+"MANUFACTURE DATE", and the green DCS2/GUN/COINAGE/CMOS labels:
 
-![render milestone](docs/render_milestone.png)
+![font binding](docs/font_binding_systeminfo.png)
 
-The entity-dispatch blocker that kept the screen black for many sessions is
-resolved. The chain of fixes: escape the attract-mode init barrier so the frame
-loop runs -> **initialise `ctx->f_odd`** (the recompiler's odd-FPU-register
-pointer was never set, so the first odd-float access in the render handler
-NULL-deref'd -- this was the real crash) -> fix the FTRIANGLE vertex decode (the
-game stores float vertices at regs `0x88-0x9C`, not the `0x180+` slots the
-decoder read). With those, the full pipeline runs end-to-end: RTOS -> attract
-state machine -> entity dispatch -> DMA -> Voodoo -> rasterizer -> framebuffer.
+Since the entity-render breakthrough, four more layers came online: **font/texture
+binding** (text is readable), the **per-frame zone parser** (was wedged on
+command 0), and a **validated 3D triangle pipeline** (depth + perspective). The
+software Voodoo now correctly samples the AI88 font, runs perspective-correct
+texturing with a Z-buffer, and emits depth-tested 3D triangles end-to-end.
 
-The rasterizer is now a proper **pixel pipeline**: Gouraud vertex-colour
-interpolation (SRED/SGREEN/SBLUE), an 8-function Z-buffer, and perspective-
-correct texture sampling -- each gated on the game's own mode registers. The
-current attract content is flat-shaded UI/text (the game leaves iterated colour,
-depth, and texturing disabled for it); those paths engage for the textured 3D
-scene, which real attract reaches around frame ~3000.
+The one thing still missing is a **solid 3D model** on screen -- and that turned
+out to be an *asset* problem, not an engine one (see "The Model Wall" below).
 
 ### What's Working
 
 - **2,500+ recompiled MIPS functions** (2,196 game + 304 RTOS + manual overrides) running as native x64
 - **Full RTOS emulation** -- 27 vector table trampolines, device callbacks (VEC[60]/[64]), 15+ fiber task scheduler (Windows fibers) with channel-6 event dispatch, frame-done + per-slot callbacks
-- **Complete boot sequence**: RTOS banner -> env config -> diagnostics -> CMOS -> DCS2 handshake -> free play -> attract mode
-- **State-machine dispatcher** walks the full doubly-linked mode-entry list (5 registered modes, all dispatched per frame; previously only the first was called)
-- **Callback infrastructure** -- slot 1-4 callbacks all fire per frame after late-enable; VEC[64] vblank callbacks active; frame-done callback active
-- **Attract mode lifecycle** completes cleanly: `func_800C50AC` init -> camera update (`func_800CAE2C`) -> scene funcs (`func_800CAFD0`/`AF24`/`CB19C`/`CB31C`) all return with sensible yield counts
-- **Yield-escape via setjmp/longjmp** -- mode functions with infinite yield-loops (fiber-resume mid-entries like `func_800C6D08`, `func_800C78E4`, `func_800E79C0`) now return cleanly after a threshold of yields
-- **DCS-ready event simulation** -- `0x001DDDE0 |= 0x4` set conditionally during yield-escape (not preemptively), letting attract scene funcs progress past their wait-loops without breaking new poll loops elsewhere
-- **Callback stack fix** -- `rtos_run_callbacks` now sets up a valid 4 KB stack at `0x807EF000`; previously `cb_ctx.r29 = 0` corrupted callee-saved registers across calls (silently dropped stack saves landed in the I/O sink)
-- **Zone file I/O**: vec[18] copies BABY.ZM (90 KB), baby.za (246 KB) into heap buffers; zone command parser advances ~38 commands during attract
-- **Voodoo double-buffered emulation**: LFB writes to back buffer, FastFill, SwapBuffers copy, ~423K register writes total per run
-- **LFB/Register separation**: physical `0x00800000+` = framebuffer pixels, `0x08100000+` = Voodoo registers
-- **Widget board registers**: return proper 512x384 video config with render-enable bits
-- **Device I/O**: DCS2 (`0x69XX`), IOASIC (`0x74XX`), PIC commands with proper handshake responses
-- **Heap management** with per-frame snapshot/restore
-- **PCI configuration space bridge**, CMOS/NVRAM, DMA buffer allocation
+- **Complete boot sequence**: RTOS banner -> env config -> diagnostics -> CMOS -> DCS2 handshake -> free play -> **normal attract mode** (NVRAM audit subsystem made read/write-consistent so the readiness check passes)
+- **On-screen text rendering** -- the UI/glyph path renders legibly. The font is **AI88** (texMode fmt 13: 16-bit/texel, 256 texels = 512-byte rows); four fixes got glyphs from flat boxes to text: grouped iterated-register layout (S@`0xDC`/T@`0xE8`/W@`0xF4`), tex-enable gated on S/T gradients (not texBase), 2-byte AI88 stride, and a per-glyph vertical T un-flip.
+- **Validated 3D triangle path** -- `sub_800D2654` (the depth-tested + textured + Gouraud emitter, vertex layout `{x,y,W,S,T,Z,R,G,B}`) renders a correctly-positioned depth+perspective triangle, confirming the Voodoo handles real 3D geometry, not just 2D overlays.
+- **Per-frame zone parser** -- the attract zone-command parser (`func_8010FE90`) advances through its command stream each frame and loads intro assets (was a total no-op: it bailed on the DCS-ready gate `dword_802122E0 & 0x10000`, and the per-frame scene re-run kept resetting the config pointer to command 0).
+- **Proper pixel pipeline** -- Gouraud vertex-colour interpolation, 8-function Z-buffer, perspective-correct texture sampling, all gated on the game's own mode registers
+- **Entity dispatch** fires every frame; the long black-screen blocker (an uninitialised `ctx->f_odd`) is resolved
+- **Yield-escape via setjmp/longjmp**, **DCS-ready event simulation**, **callback stack fix** (valid 4 KB stack at `0x807EF000`)
+- **Voodoo double-buffered emulation**: LFB writes, FastFill, SwapBuffers, AI88/RGB565 texture sampling from TMU memory
+- **Device I/O**: DCS2 (`0x69XX`), IOASIC (`0x74XX`), PIC handshake; CMOS/NVRAM; PCI config bridge; heap snapshot/restore
 
-### Known Gaps (Why It's Still Black)
+### The Model Wall (why there's no solid 3D model yet)
 
-| Layer | State |
-|-------|-------|
-| Scene graph `0x0017B71C` | **Empty** (`sg_head=0`) |
-| `func_800D7600` (scene-node create) | **0 invocations / 500 frames** |
-| 14 entity-draw functions in `0x80100000+` | **0 invocations / 500 frames** |
-| `func_80167848` (DMA triangle submit) | 14 calls during PCI init, 0 per frame |
-| Per-frame Voodoo writes | All state writes (`fbzMode`, `fastfillCMD`, `swapbufferCMD`); no `triangleCMD` |
+The 3D *render pipeline* is proven, but a real model still won't draw -- because
+this disk's **model assets don't match the executable**. Fully mapped this
+session:
 
-So the entire **state pipeline** works (config, channel signaling, fastfill, swap), but **no geometry pipeline runs** because no scene nodes ever get created.
+- The pipeline is loader `sub_800CA724` (.ZM) -> drawer `sub_800DFF38` (T&L
+  `sub_800CEFBC` + mesh walk `sub_800E1EF0`) -> emitter `sub_800D2654`.
+- The on-disk `BABY.ZM` decodes as **942 vertex positions + 946 normals + 1706
+  face records** -- but the face records carry per-vertex S/T and **no vertex
+  indices** (an exhaustive scan finds zero index records anywhere in the file),
+  so the surface topology is unrecoverable. The companion `baby.za` is **animation**
+  (15 frames x 685 records), not topology.
+- **Every model file's CRC mismatches** the value baked into `GAME.EXE`
+  (BABY.ZM wants `0x6F51D615`, has `0xA84325BF`; baby.za wants `0xA05090DA`, has
+  `0x80FF99D0`; PUKE.ZM mismatches too). The CRC algorithm is verified correct
+  (reproduces the CRC-32/MPEG-2 reference); no byte-order / init / length-append
+  variant matches -- so the **data** differs, even though `GAME.bin` is
+  byte-exact from this same image (`== diskGAME.EXE[0x208:]`).
+
+Conclusion: the CHD's model asset set is a **different build** than `GAME.EXE`
+expects (stale baked CRCs / different revision). We *can* decode and render the
+real vertex positions as a point cloud through the validated 3D path
+(`docs/baby_zm_decoded_pointcloud.png`), but a solid model needs CRC/format-
+matching assets from a different dump.
 
 ### What's Next
 
-- [x] **Identify the entity-dispatch trigger** -- DONE. Entity dispatch fires per frame; geometry reaches the Voodoo. (Root cause of the long black-screen was an uninitialised `ctx->f_odd`, not the dispatch path itself.)
-- [x] **Fiber-resume support for split entries** -- DONE (optional path). `attract_fiber.{c,h}` runs the attract state machine `func_800C50AC` as a per-frame-resumed Windows fiber with proper event_wait blocking; gated behind `g_use_attract_fiber` (default off, escape path is the default).
-- [x] **Full Voodoo triangle setup** -- DONE. Gouraud vertex-colour interpolation (`SRED`/`SGREEN`/`SBLUE`), 8-function Z-buffer, perspective-correct texture sampling, all gated on the game's mode registers. Gouraud verified; alpha blending still TODO.
-- [ ] **Texture upload** -- texture *sampling* is implemented (TMU writes captured into texmem), but the game's texture-download path isn't exercised in the 500-frame attract window (no textures uploaded yet). Drive attract to the textured 3D scene (or find the upload path) to light it up.
+- [x] **Entity dispatch + first geometry** -- DONE (root cause: uninitialised `ctx->f_odd`).
+- [x] **Full Voodoo triangle setup** -- DONE. Gouraud, Z-buffer, perspective texturing.
+- [x] **Texture/font binding** -- DONE. AI88 font renders legible on-screen text.
+- [x] **Per-frame attract progression** -- DONE (partial). Zone parser advances each frame; intro assets load.
+- [x] **3D model render pipeline** -- DONE (validated via a hand-fed triangle + decoded vertex cloud); blocked only on matching assets.
+- [ ] **Solid 3D model on screen** -- blocked on asset sourcing: find a CarnEvil dump whose `.ZM`/`.za` files CRC-match this `GAME.EXE`.
 - [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL.
 - [ ] **DCS2 Audio** -- ADSP-2115 DSP or direct DCS 3.0 audio bank decoding.
 - [ ] **Input System** -- Mouse/gamepad/Sinden lightgun, networked 2P co-op.
@@ -99,13 +103,14 @@ So the entire **state pipeline** works (config, channel signaling, fastfill, swa
 
 | Commit | What it unlocked |
 |--------|------------------|
-| `71fd80e` | sp-corruption fix -- `rtos_run_callbacks` no longer drops callee-saved register saves |
-| `9aa787a` | Removed placeholder test-fixture scene nodes that were masking the real state |
-| `8e92d20` | State-machine dispatcher walks the full 5-mode list (was only calling 1) |
-| `fe44da0` | Re-recompiled 3 missing split-entry mode functions (added to `carnevil_syms.toml`) |
-| `e1dbb9e` | Yield-escape via `setjmp`/`longjmp` -- fiber-resume mid-entries now run without spinning |
-| `74b0759` | Proper DCS-ready event simulation -- attract scene funcs complete cleanly |
-| `4eef3f3` | Implemented edge-function triangle rasterizer + vertex-register storage fix -- pixels now actually render when triangles arrive |
+| `19a3505` | **Readable text** -- bind the AI88 font texture (fixed register layout, AI88 2-byte stride, per-glyph T un-flip) |
+| `fc08f35` | **Per-frame zone parser** -- unblock zone-config parsing (DCS gate + decouple setup from per-frame re-run) |
+| `875311d` | **3D pipeline validated** -- depth-tested + perspective triangle via `sub_800D2654`; model-render scaffold |
+| `b83c9a8` | **Model decode** -- decode disk `BABY.ZM`, render its vertex positions as a point cloud (surface blocked on assets) |
+| `a6dbba0` | Entity geometry renders for the first time (invoke entry `+0x10`) |
+| `073df58` | Initialise `ctx->f_odd` -- fixes the render-path crash (clean frames) |
+| `ca672d0` | NVRAM audit-read identified -> game reaches **normal** attract mode |
+| `22fb9bd` | Fix `voodoo_write` clobbering registers / firing commands on memory writes |
 
 ## Architecture
 
