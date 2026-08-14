@@ -2097,37 +2097,45 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             static int once=0; if(!once){once=1; fprintf(stderr,"[tri3d] emitted test triangle via sub_800D2654\n");}
         }
     }
-    /* CARNEVIL_MESH3D: WORK IN PROGRESS -- render the BABY model mesh with a
-     * hand-rolled ortho projection (bypassing the game camera/T&L), driving the
-     * 3D emitter sub_800D2654 per face. We read BABY.ZM ourselves. The file
-     * regions are: verts (942 x 12B float xyz, [-0.6,1.4], offset 0), normals
-     * (946 x 12B float, [-1,1], offset 11304), faces (1706 x 40B, offset 22656).
-     * BLOCKER: our extracted BABY.ZM's face records do NOT match the game
-     * loader's expected layout (u32 surfaceId + u16 vertex indices @+4/+6/+8 +
-     * S/T floats @+16) -- only ~46/1706 faces have in-range indices, and the
-     * game loader rejects the file on CRC. So our extracted .ZM is a different
-     * format/revision than the runtime expects (a data-extraction issue). The
-     * scaffold below (load -> ortho-transform -> per-face sub_800D2654) is
-     * correct and reusable once a matching .ZM is available; today it only
-     * draws the handful of faces whose indices happen to be valid. */
+    /* CARNEVIL_MESH3D: render the BABY model mesh with a hand-rolled ortho
+     * projection (bypassing the game camera/T&L), driving the 3D emitter
+     * sub_800D2654 per face. We read BABY.ZM ourselves.
+     *
+     * .ZM layout (verified against the recompiled mesh walker func_800E1EF0,
+     * which strides r18 by 0x28 and reads six halfwords at +4..+0xF):
+     *   0x000  512B thumbnail header  -- same preview header .EXE files carry
+     *   0x200  942 verts   x 12B float xyz
+     *   0x2C48 946 normals x 12B float xyz
+     *   0x5A80 1693 faces  x 40B: u32 surfaceId, u16 vert idx @+4/+6/+8,
+     *                             u16 normal idx @+0xA/+0xC/+0xE,
+     *                             6x float S/T @+0x10
+     * 512 + 942*12 + 946*12 + 1693*40 = 90888, 8B slack in a 90896B file.
+     *
+     * The earlier "assets are a different build" conclusion was wrong: the
+     * layout was simply being read from offset 0 instead of 0x200, which put
+     * every index 512B out of phase (46/1706 in-range). Read at the right
+     * offset, 1693/1693 faces and 942/942 verts validate, from the .ZM we
+     * already had. BABY.ZM is byte-identical on both the v1.0.1 and v1.0.3
+     * disks, which is what ruled out the wrong-revision theory. */
     if (getenv("CARNEVIL_MESH3D")) {
         extern recomp_func_t* get_function(int32_t);
         static int ready = 0;
         static float scale=1.f, cx=320.f, cy=240.f;
-        const int vcount=942, fcount=1706, ccount=946;
+        const int vcount=942, fcount=1693, ccount=946;
+        const uint32_t zmhdr = 512;                     /* thumbnail header */
         const uint32_t modbase = 0x00600000;            /* raw .ZM in RDRAM */
-        const uint32_t vp = modbase;
-        const uint32_t cp = modbase + (uint32_t)vcount*12;
-        const uint32_t fp = modbase + (uint32_t)vcount*12 + (uint32_t)ccount*12;
+        const uint32_t vp = modbase + zmhdr;
+        const uint32_t cp = vp + (uint32_t)vcount*12;
+        const uint32_t fp = cp + (uint32_t)ccount*12;
         const uint32_t xf = 0x007B0000;                 /* transformed verts */
         if (!ready) {
             FILE* zf = fopen("extracted/files/BABY.ZM", "rb");
             if (zf) {
-                size_t need = (size_t)vcount*12 + (size_t)ccount*12 + (size_t)fcount*40;
+                size_t need = zmhdr + (size_t)vcount*12 + (size_t)ccount*12 + (size_t)fcount*40;
                 size_t n = fread(rdram + modbase, 1, need, zf);
                 fclose(zf);
-                /* Filter outliers: ~29 verts are padding/garbage (|coord| huge);
-                 * including them collapses the auto-fit scale to ~0. */
+                /* ponytail: all 942 verts are finite once the header offset is
+                 * right; this stays as a cheap guard against a bad .ZM. */
                 float mnx=1e9f,mxx=-1e9f,mny=1e9f,mxy=-1e9f,mnz=1e9f,mxz=-1e9f;
                 for (int i=0;i<vcount;i++){
                     float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4), z=*(float*)(rdram+vp+i*12+8);
@@ -2144,33 +2152,58 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
             } else { fprintf(stderr,"[mesh3d] fopen BABY.ZM failed\n"); ready = -1; }
         }
         if (ready == 1) {
+            /* xf stride is 16B: screen x, screen y, W, Z (depth 0.1..0.9). */
+            float mnz=1e9f, mxz=-1e9f;
             for (int i=0;i<vcount;i++){
-                float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4);
-                *(float*)(rdram+xf+i*12+0) = cx + x*scale;
-                *(float*)(rdram+xf+i*12+4) = cy - y*scale;
-                *(float*)(rdram+xf+i*12+8) = 1.0f;       /* W (ortho) */
+                float z=*(float*)(rdram+vp+i*12+8);
+                if (z<mnz) mnz=z; if (z>mxz) mxz=z;
             }
-            /* Render the 942 decoded vertex POSITIONS as a POINT CLOUD: a small
-             * splat triangle per vertex. The disk .ZM face records carry per-
-             * vertex S/T but no vertex indices (values can't index 942 verts and
-             * no u16-index records exist in the file), so the surface can't be
-             * reconstructed -- but the vertex positions ARE valid model geometry,
-             * so the cloud shows the BABY's shape. Vertex layout for sub_800D2654
-             * = {x, y, W, S*W, T*W, Z, R, G, B}; S/T at a bright font texel. */
+            float zr = (mxz-mnz); if (zr<1e-4f) zr=1.f;
+            for (int i=0;i<vcount;i++){
+                float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4),
+                      z=*(float*)(rdram+vp+i*12+8);
+                *(float*)(rdram+xf+i*16+0) = cx + x*scale;
+                *(float*)(rdram+xf+i*16+4) = cy - y*scale;
+                *(float*)(rdram+xf+i*16+8) = 1.0f;                    /* W (ortho) */
+                *(float*)(rdram+xf+i*16+12) = 0.1f + 0.8f*(mxz-z)/zr; /* Z, nearer = smaller */
+            }
+            /* Emit the real surface: one triangle per face record, indices from
+             * +4/+6/+8, normals from +0xA/+0xC/+0xE (Lambert against a fixed
+             * light for a readable shade). S/T is pinned to the same bright font
+             * texel the validated tri3d path uses, so this stays visible whether
+             * the current render state is textured or Gouraud.
+             * Vertex layout for sub_800D2654 = {x, y, W, S*W, T*W, Z, R, G, B}. */
             recomp_func_t* emit = get_function(0x800D2654);
             if (emit) {
                 gpr r4=ctx->r4,r5=ctx->r5,r6=ctx->r6;
                 const uint32_t tb = 0x007C0000;          /* 3-vertex scratch */
-                int drawn=0;
-                for (int i=0;i<vcount;i++){
-                    float X=*(float*)(rdram+xf+i*12+0), Y=*(float*)(rdram+xf+i*12+4);
-                    if (!(X>=0.f&&X<640.f) || !(Y>=0.f&&Y<480.f)) continue;  /* skip garbage/offscreen */
-                    float pts[3][2] = {{X-1.5f,Y-1.5f},{X+1.5f,Y-1.5f},{X,Y+1.8f}};
+                int drawn=0, skipped=0;
+                for (int f=0;f<fcount;f++){
+                    const uint32_t fr = fp + (uint32_t)f*40;
+                    uint16_t vi[3], ni[3];
+                    for (int k=0;k<3;k++){
+                        vi[k] = *(uint16_t*)(rdram + fr + 4 + k*2);
+                        ni[k] = *(uint16_t*)(rdram + fr + 0xA + k*2);
+                    }
+                    if (vi[0]>=vcount||vi[1]>=vcount||vi[2]>=vcount) { skipped++; continue; }
+                    int off=0;
+                    for (int k=0;k<3;k++){
+                        float X=*(float*)(rdram+xf+vi[k]*16+0), Y=*(float*)(rdram+xf+vi[k]*16+4);
+                        if (!(X>=-2048.f&&X<2048.f) || !(Y>=-2048.f&&Y<2048.f)) off=1;
+                    }
+                    if (off) { skipped++; continue; }
                     for (int k=0;k<3;k++){
                         float* o = (float*)(rdram + tb + (uint32_t)k*36);
-                        o[0]=pts[k][0]; o[1]=pts[k][1]; o[2]=1.0f;
-                        o[3]=188.f; o[4]=205.f; o[5]=0.5f;
-                        o[6]=220.f; o[7]=220.f; o[8]=220.f;
+                        o[0]=*(float*)(rdram+xf+vi[k]*16+0);
+                        o[1]=*(float*)(rdram+xf+vi[k]*16+4);
+                        o[2]=1.0f;
+                        o[3]=188.f; o[4]=205.f;                        /* S,T (W=1) */
+                        o[5]=*(float*)(rdram+xf+vi[k]*16+12);          /* Z */
+                        /* Lambert: light from (0,0,1), normal z drives shade. */
+                        float nz = (ni[k]<ccount) ? *(float*)(rdram+cp+ni[k]*12+8) : 1.f;
+                        float l = 0.30f + 0.70f*(nz<0.f?-nz:nz);
+                        if (l>1.f) l=1.f;
+                        o[6]=235.f*l; o[7]=225.f*l; o[8]=215.f*l;
                     }
                     ctx->r4=(gpr)(int32_t)(0x80000000u|(tb+0*36));
                     ctx->r5=(gpr)(int32_t)(0x80000000u|(tb+1*36));
@@ -2179,7 +2212,8 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                     drawn++;
                 }
                 ctx->r4=r4; ctx->r5=r5; ctx->r6=r6;
-                static int once=0; if(!once){once=1; fprintf(stderr,"[mesh3d] point cloud: %d vertex splats\n",drawn);}
+                static int once=0; if(!once){once=1;
+                    fprintf(stderr,"[mesh3d] surface: %d tris drawn, %d skipped\n",drawn,skipped);}
             }
         }
     }

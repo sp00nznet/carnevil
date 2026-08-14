@@ -29,7 +29,7 @@ CarnEvil was a coin-op rail shooter where you blasted your way through a haunted
 
 Source: [System16 Hardware Page](https://www.system16.com/hardware.php?id=618)
 
-## Current Status: Readable Text On Screen + 3D Pipeline Validated
+## Current Status: Solid 3D Model On Screen
 
 The game boots and runs cleanly with zero crashes, the full RTOS / state-machine
 / callback / task plumbing works, and the renderer now puts **legible text on
@@ -44,8 +44,18 @@ command 0), and a **validated 3D triangle pipeline** (depth + perspective). The
 software Voodoo now correctly samples the AI88 font, runs perspective-correct
 texturing with a Z-buffer, and emits depth-tested 3D triangles end-to-end.
 
-The one thing still missing is a **solid 3D model** on screen -- and that turned
-out to be an *asset* problem, not an engine one (see "The Model Wall" below).
+And the last missing piece -- a **solid 3D model** -- now draws. It was long
+blamed on mismatched assets, but the assets were never the problem: `.ZM` files
+carry a 512-byte thumbnail header the decoder wasn't skipping, which put every
+vertex index 512 bytes out of phase. With the right offset the BABY mesh decodes
+completely (1693/1693 faces) and renders as a shaded, depth-tested solid through
+the game's own emitter `sub_800D2654`:
+
+![solid mesh](docs/baby_zm_solid_mesh.png)
+
+(The model lies on its side because `CARNEVIL_MESH3D` drives a hand-rolled ortho
+projection rather than the game camera/T&L -- orientation comes with the real
+camera path.) See "The Model Wall -- SOLVED" below.
 
 ### What's Working
 
@@ -61,31 +71,59 @@ out to be an *asset* problem, not an engine one (see "The Model Wall" below).
 - **Voodoo double-buffered emulation**: LFB writes, FastFill, SwapBuffers, AI88/RGB565 texture sampling from TMU memory
 - **Device I/O**: DCS2 (`0x69XX`), IOASIC (`0x74XX`), PIC handshake; CMOS/NVRAM; PCI config bridge; heap snapshot/restore
 
-### The Model Wall (why there's no solid 3D model yet)
+### The Model Wall -- SOLVED (it was a 512-byte header, not bad assets)
 
-The 3D *render pipeline* is proven, but a real model still won't draw -- because
-this disk's **model assets don't match the executable**. Fully mapped this
-session:
+The earlier conclusion on this page -- that the disk's model assets were a
+different build than `GAME.EXE` -- was **wrong**. The assets were fine all
+along; the layout was being read from the wrong offset.
 
 - The pipeline is loader `sub_800CA724` (.ZM) -> drawer `sub_800DFF38` (T&L
   `sub_800CEFBC` + mesh walk `sub_800E1EF0`) -> emitter `sub_800D2654`.
-- The on-disk `BABY.ZM` decodes as **942 vertex positions + 946 normals + 1706
-  face records** -- but the face records carry per-vertex S/T and **no vertex
-  indices** (an exhaustive scan finds zero index records anywhere in the file),
-  so the surface topology is unrecoverable. The companion `baby.za` is **animation**
-  (15 frames x 685 records), not topology.
-- **Every model file's CRC mismatches** the value baked into `GAME.EXE`
-  (BABY.ZM wants `0x6F51D615`, has `0xA84325BF`; baby.za wants `0xA05090DA`, has
-  `0x80FF99D0`; PUKE.ZM mismatches too). The CRC algorithm is verified correct
-  (reproduces the CRC-32/MPEG-2 reference); no byte-order / init / length-append
-  variant matches -- so the **data** differs, even though `GAME.bin` is
-  byte-exact from this same image (`== diskGAME.EXE[0x208:]`).
+- **`.ZM` files carry the same 512-byte thumbnail header that `.EXE` files do**
+  (`seattle_fs.py` already documents it for `.EXE`: `0x000-0x1FF` preview). The
+  model decoder was reading verts from offset 0, which put every subsequent
+  index 512 bytes out of phase -- producing the "only 46/1706 faces have
+  in-range indices, so there must be no topology" reading.
+- Read at the right offset, the record layout is exactly what was expected, and
+  it validates completely:
 
-Conclusion: the CHD's model asset set is a **different build** than `GAME.EXE`
-expects (stale baked CRCs / different revision). We *can* decode and render the
-real vertex positions as a point cloud through the validated 3D path
-(`docs/baby_zm_decoded_pointcloud.png`), but a solid model needs CRC/format-
-matching assets from a different dump.
+  | Region | Offset | Contents |
+  |--------|--------|----------|
+  | header | `0x000` | 512B thumbnail |
+  | verts | `0x200` | 942 x 12B float xyz |
+  | normals | `0x2C48` | 946 x 12B float xyz |
+  | faces | `0x5A80` | 1693 x 40B |
+
+  Face record: `u32 surfaceId`, vertex indices `u16 @ +4/+6/+8`, **normal
+  indices `u16 @ +0xA/+0xC/+0xE`**, six `float` S/T `@ +0x10`. Confirmed against
+  the recompiled mesh walker `func_800E1EF0`, which strides `r18` by `0x28` and
+  reads exactly those six halfwords.
+  `512 + 942*12 + 946*12 + 1693*40 = 90888` -- 8 bytes slack in a 90896B file.
+- Face count is **1693, not 1706**; the old figure came from fitting the layout
+  with no header.
+- **46/1706 -> 1693/1693 faces valid, 942/942 verts finite**, from the `.ZM`
+  already in `extracted/files/`. Checked by `tools/test_zm_layout.py`.
+
+What ruled out the wrong-revision theory: MAME ships two CarnEvil disks --
+`carnevi1.chd` (v1.0.1, 3.2 GB) and `carnevil.chd` (v1.0.3, 4.3 GB). Extracting
+both shows `BABY.ZM`, `BABY.ZM2`, `BABY.ZA` and `PUKE.ZM` are **byte-identical
+across the two revisions**, while `GAME.bin` differs (914,692 vs 917,540 bytes).
+Two independently-dumped revisions shipping identical assets is not a stale
+asset set.
+
+**Still open:** the CRC mismatch is unexplained. The expected values
+(`0x6F51D615`, `0xA05090DA`) do not appear as literal constants in *either*
+`GAME.bin`, so the earlier "value baked into `GAME.EXE`" framing is
+unsubstantiated -- the expected checksum more likely comes from the filesystem's
+own LFN32 directory entries (which `seattle_fs.py` documents as carrying a
+checksum). This no longer blocks rendering.
+
+**Not a general size bug:** a blanket "+512 bytes per file" rule is *wrong*.
+Across all 1,361 files, block-allocation gaps give 40 discriminating cases;
+`size*4` fits all 40 and `size*4+512` fits none. Nine `.ZM` files (JEST, SMIL,
+MIKE, DINO, BAT, MONK, HLTH) cannot hold +512 without overflowing into the next
+file. `seattle_fs.py` needs no patch -- but the BABY counts above are
+BABY-specific, and other models need their counts solved individually.
 
 ### What's Next
 
@@ -94,7 +132,9 @@ matching assets from a different dump.
 - [x] **Texture/font binding** -- DONE. AI88 font renders legible on-screen text.
 - [x] **Per-frame attract progression** -- DONE (partial). Zone parser advances each frame; intro assets load.
 - [x] **3D model render pipeline** -- DONE (validated via a hand-fed triangle + decoded vertex cloud); blocked only on matching assets.
-- [ ] **Solid 3D model on screen** -- blocked on asset sourcing: find a CarnEvil dump whose `.ZM`/`.za` files CRC-match this `GAME.EXE`.
+- [x] **Solid 3D model on screen** -- DONE. Root cause was a 512-byte `.ZM` thumbnail header, not mismatched assets. 1693/1693 faces valid; `CARNEVIL_MESH3D` emits one shaded triangle per face (`1693 tris drawn, 0 skipped`) through `sub_800D2654`.
+- [ ] **Model orientation / real camera** -- `CARNEVIL_MESH3D` still uses a hand-rolled ortho projection; wire the mesh through the game's own T&L (`sub_800CEFBC`) + camera so models land upright and animated.
+- [ ] **Per-surface texture binding** -- faces carry a `surfaceId` at `+0` and S/T at `+0x10`; S/T currently pinned to a font texel, so the mesh renders untextured.
 - [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL.
 - [ ] **DCS2 Audio** -- ADSP-2115 DSP or direct DCS 3.0 audio bank decoding.
 - [ ] **Input System** -- Mouse/gamepad/Sinden lightgun, networked 2P co-op.
@@ -103,6 +143,7 @@ matching assets from a different dump.
 
 | Commit | What it unlocked |
 |--------|------------------|
+| _(pending)_ | **Solid 3D model** -- `.ZM` has a 512B thumbnail header; skipping it takes faces from 46/1706 to 1693/1693 and draws the BABY mesh as shaded solid geometry. Assets were never mismatched. |
 | `19a3505` | **Readable text** -- bind the AI88 font texture (fixed register layout, AI88 2-byte stride, per-glyph T un-flip) |
 | `fc08f35` | **Per-frame zone parser** -- unblock zone-config parsing (DCS gate + decouple setup from per-frame re-run) |
 | `875311d` | **3D pipeline validated** -- depth-tested + perspective triangle via `sub_800D2654`; model-render scaffold |
