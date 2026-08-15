@@ -236,8 +236,16 @@ def extract_files(img_path, output_dir):
             print(f"{'=' * 70}")
 
             for entry in exe_entries:
+                # As above, `size` excludes the 512-byte thumbnail, so reading
+                # only `size` bytes drops the last 512 bytes of the image. The
+                # EXE offsets below are measured from the block start and so
+                # already step over the thumbnail (load address at 0x204 ==
+                # content+4, code at 0x208 == content+8); only the length was
+                # wrong. Those 512 bytes are initialised rodata/data past
+                # .text, referenced ~110 times by lw/sw, so dropping them left
+                # those variables reading zero.
                 f.seek(entry['disk_offset'])
-                exe_data = f.read(entry['size'])
+                exe_data = f.read(THUMB_SIZE + entry['size'])
 
                 if len(exe_data) > EXE_HEADER_SIZE:
                     load_addr = struct.unpack_from('<I', exe_data, EXE_LOADADDR_OFFSET)[0]
@@ -291,7 +299,7 @@ def extract_files(img_path, output_dir):
             for entry in exe_entries:
                 f.seek(entry['disk_offset'] + EXE_LOADADDR_OFFSET)
                 load_addr = struct.unpack('<I', f.read(4))[0]
-                mips_size = entry['size'] - EXE_HEADER_SIZE
+                mips_size = THUMB_SIZE + entry['size'] - EXE_HEADER_SIZE
                 lst.write(f"\n{entry['name']} MIPS Binary:\n")
                 lst.write(f"  Load address: {load_addr:#010x}\n")
                 lst.write(f"  Code size:    {mips_size:,} bytes\n")
