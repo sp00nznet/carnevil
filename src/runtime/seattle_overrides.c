@@ -2120,7 +2120,8 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
     if (getenv("CARNEVIL_MESH3D")) {
         extern recomp_func_t* get_function(int32_t);
         static int ready = 0;
-        static float scale=1.f, cx=320.f, cy=240.f;
+        static float scale=1.f, cx=0.f, cy=0.f;
+        static float dmin=0.f, drange=1.f;
         const int vcount=942, fcount=1693, ccount=946;
         const uint32_t zmhdr = 512;                     /* thumbnail header */
         const uint32_t modbase = 0x00600000;            /* raw .ZM in RDRAM */
@@ -2128,6 +2129,36 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
         const uint32_t cp = vp + (uint32_t)vcount*12;
         const uint32_t fp = cp + (uint32_t)ccount*12;
         const uint32_t xf = 0x007B0000;                 /* transformed verts */
+        const float scrw = g_voodoo.width  > 0 ? (float)g_voodoo.width  : 512.f;
+        const float scrh = g_voodoo.height > 0 ? (float)g_voodoo.height : 384.f;
+        /* Model-axis -> screen-axis mapping. CARNEVIL_MESH3D_VIEW takes three
+         * letters (x/y/z; uppercase = negated) naming which model axis drives
+         * screen-X, screen-Y and depth. Default "zyx": .ZM authors Y up with X
+         * as the facing axis, so looking down X is the front view -- the old
+         * hardcoded (x,y) was the *profile*, which is why the baby read as
+         * "lying on its side". Front vs back is a coin flip on a near-symmetric
+         * head (winding splits 876/793, mean normal x ~ 0), so if it faces away,
+         * use CARNEVIL_MESH3D_VIEW=Zyx to mirror.
+         * ponytail: an ortho knob, not a camera. The real fix is the game's own
+         * T&L (sub_800CEFBC) + camera, which also brings animation and texture. */
+        static int vax[3] = {2,1,0}, vsg[3] = {1,1,1};
+        static int view_parsed = 0;
+        if (!view_parsed) {
+            view_parsed = 1;
+            const char* vs = getenv("CARNEVIL_MESH3D_VIEW");
+            if (vs && vs[0] && vs[1] && vs[2]) {
+                for (int k=0;k<3;k++){
+                    char c = vs[k];
+                    vsg[k] = (c>='A' && c<='Z') ? -1 : 1;
+                    if (c>='A' && c<='Z') c = (char)(c + 32);
+                    vax[k] = (c=='x') ? 0 : (c=='y') ? 1 : 2;
+                }
+                fprintf(stderr,"[mesh3d] view=%s -> axes %d%d%d signs %d%d%d\n",
+                        vs, vax[0],vax[1],vax[2], vsg[0],vsg[1],vsg[2]);
+            }
+        }
+        /* mapped component k (0=screen X, 1=screen Y, 2=depth) of vertex i */
+        #define ZMC(_i,_k) (vsg[_k] * *(float*)(rdram + vp + (uint32_t)(_i)*12 + vax[_k]*4))
         if (!ready) {
             FILE* zf = fopen("extracted/files/BABY.ZM", "rb");
             if (zf) {
@@ -2136,36 +2167,34 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                 fclose(zf);
                 /* ponytail: all 942 verts are finite once the header offset is
                  * right; this stays as a cheap guard against a bad .ZM. */
-                float mnx=1e9f,mxx=-1e9f,mny=1e9f,mxy=-1e9f,mnz=1e9f,mxz=-1e9f;
+                float mnu=1e9f,mxu=-1e9f,mnv=1e9f,mxv=-1e9f,mnd=1e9f,mxd=-1e9f;
                 for (int i=0;i<vcount;i++){
-                    float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4), z=*(float*)(rdram+vp+i*12+8);
-                    if (!(x>-1e4f&&x<1e4f) || !(y>-1e4f&&y<1e4f) || !(z>-1e4f&&z<1e4f)) continue;
-                    if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y; if(z<mnz)mnz=z; if(z>mxz)mxz=z;
+                    float u=ZMC(i,0), v=ZMC(i,1), dd=ZMC(i,2);
+                    if (!(u>-1e4f&&u<1e4f) || !(v>-1e4f&&v<1e4f) || !(dd>-1e4f&&dd<1e4f)) continue;
+                    if(u<mnu)mnu=u; if(u>mxu)mxu=u; if(v<mnv)mnv=v; if(v>mxv)mxv=v;
+                    if(dd<mnd)mnd=dd; if(dd>mxd)mxd=dd;
                 }
-                float w=mxx-mnx, h=mxy-mny, ext=(w>h?w:h); if(ext<1e-3f)ext=1.f;
-                scale = 280.f/ext;
-                cx = 320.f - 0.5f*(mnx+mxx)*scale;
-                cy = 240.f + 0.5f*(mny+mxy)*scale;   /* +: flip Y for screen */
-                fprintf(stderr,"[mesh3d] read %zu/%zu bytes; range x[%.1f,%.1f] y[%.1f,%.1f] z[%.1f,%.1f] scale=%.3f\n",
-                        n,need,mnx,mxx,mny,mxy,mnz,mxz,scale);
+                float w=mxu-mnu, h=mxv-mnv, ext=(w>h?w:h); if(ext<1e-3f)ext=1.f;
+                /* Fit to the real framebuffer (512x384), not a 640x480 guess --
+                 * centring on 320,240 is what pushed the model right and low. */
+                scale = (scrh - 48.f)/ext;
+                cx = scrw*0.5f - 0.5f*(mnu+mxu)*scale;
+                cy = scrh*0.5f + 0.5f*(mnv+mxv)*scale;   /* +: flip Y for screen */
+                dmin = mnd; drange = (mxd-mnd) < 1e-4f ? 1.f : (mxd-mnd);
+                fprintf(stderr,"[mesh3d] read %zu/%zu bytes; screen %.0fx%.0f; "
+                        "u[%.1f,%.1f] v[%.1f,%.1f] depth[%.1f,%.1f] scale=%.3f\n",
+                        n,need,scrw,scrh,mnu,mxu,mnv,mxv,mnd,mxd,scale);
                 ready = 1;
             } else { fprintf(stderr,"[mesh3d] fopen BABY.ZM failed\n"); ready = -1; }
         }
         if (ready == 1) {
             /* xf stride is 16B: screen x, screen y, W, Z (depth 0.1..0.9). */
-            float mnz=1e9f, mxz=-1e9f;
             for (int i=0;i<vcount;i++){
-                float z=*(float*)(rdram+vp+i*12+8);
-                if (z<mnz) mnz=z; if (z>mxz) mxz=z;
-            }
-            float zr = (mxz-mnz); if (zr<1e-4f) zr=1.f;
-            for (int i=0;i<vcount;i++){
-                float x=*(float*)(rdram+vp+i*12+0), y=*(float*)(rdram+vp+i*12+4),
-                      z=*(float*)(rdram+vp+i*12+8);
-                *(float*)(rdram+xf+i*16+0) = cx + x*scale;
-                *(float*)(rdram+xf+i*16+4) = cy - y*scale;
+                *(float*)(rdram+xf+i*16+0) = cx + ZMC(i,0)*scale;
+                *(float*)(rdram+xf+i*16+4) = cy - ZMC(i,1)*scale;
                 *(float*)(rdram+xf+i*16+8) = 1.0f;                    /* W (ortho) */
-                *(float*)(rdram+xf+i*16+12) = 0.1f + 0.8f*(mxz-z)/zr; /* Z, nearer = smaller */
+                /* nearer = smaller Z */
+                *(float*)(rdram+xf+i*16+12) = 0.1f + 0.8f*(1.f - (ZMC(i,2)-dmin)/drange);
             }
             /* Emit the real surface: one triangle per face record, indices from
              * +4/+6/+8, normals from +0xA/+0xC/+0xE (Lambert against a fixed
@@ -2199,8 +2228,10 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                         o[2]=1.0f;
                         o[3]=188.f; o[4]=205.f;                        /* S,T (W=1) */
                         o[5]=*(float*)(rdram+xf+vi[k]*16+12);          /* Z */
-                        /* Lambert: light from (0,0,1), normal z drives shade. */
-                        float nz = (ni[k]<ccount) ? *(float*)(rdram+cp+ni[k]*12+8) : 1.f;
+                        /* Lambert: light down the view axis, so the normal's
+                         * depth component drives the shade under any VIEW. */
+                        float nz = (ni[k]<ccount)
+                            ? vsg[2] * *(float*)(rdram+cp+ni[k]*12+vax[2]*4) : 1.f;
                         float l = 0.30f + 0.70f*(nz<0.f?-nz:nz);
                         if (l>1.f) l=1.f;
                         o[6]=235.f*l; o[7]=225.f*l; o[8]=215.f*l;
@@ -2216,6 +2247,7 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
                     fprintf(stderr,"[mesh3d] surface: %d tris drawn, %d skipped\n",drawn,skipped);}
             }
         }
+        #undef ZMC
     }
     /* Camera update: call func_800CADD4 */
     {
