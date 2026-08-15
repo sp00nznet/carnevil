@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Self-check for the .ZM model layout that CARNEVIL_MESH3D depends on.
 
-Layout was verified against the recompiled mesh walker func_800E1EF0, which
-strides its face pointer (r18) by 0x28 and reads six halfwords at +4..+0xF:
+The counts are not stored in the .ZM. The game passes them to its loader
+func_800CA724, whose allocation is verts*12 + normals*12 + faces*40; the call
+site at 0x80120070 passes BABY's 942/946/1706, summing to exactly the 90896
+byte content size. The face record layout was verified against the recompiled
+mesh walker func_800E1EF0, which strides its face pointer (r18) by 0x28 and
+reads six halfwords at +4..+0xF:
 
-    0x000  512B thumbnail header (same preview header .EXE files carry)
+    0x000  512B thumbnail prefix (not counted by the directory size field)
     0x200  vcount verts   x 12B float xyz
     ...    ccount normals x 12B float xyz
     ...    fcount faces   x 40B: u32 surfaceId
@@ -14,14 +18,16 @@ strides its face pointer (r18) by 0x28 and reads six halfwords at +4..+0xF:
 
 Reading from offset 0 instead of 0x200 puts every index 512B out of phase,
 which is what produced the old "46/1706 faces valid -> assets must be a
-different build" conclusion. Run: python tools/test_zm_layout.py
+different build" conclusion. Requires the seattle_fs.py thumbnail fix, without
+which the file is truncated 512 bytes short and only 1693 faces are present.
+Run: python tools/test_zm_layout.py
 """
 import os
 import struct
 import sys
 
 ZM = os.path.join(os.path.dirname(__file__), '..', 'extracted', 'files', 'BABY.ZM')
-HDR, VCOUNT, CCOUNT, FCOUNT = 512, 942, 946, 1693
+HDR, VCOUNT, CCOUNT, FCOUNT = 512, 942, 946, 1706
 
 
 def check(path=ZM):

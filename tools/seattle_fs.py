@@ -38,6 +38,7 @@ import sys
 BASE_OFFSET = 0x11400       # Data area starts here
 BLOCK_SIZE = 4096            # Bytes per block
 DIR_ENTRY_SIZE = 24          # Bytes per directory entry
+THUMB_SIZE = 512             # Per-file thumbnail prefix, not counted by `size`
 EXE_HEADER_SIZE = 0x208      # Header size in .EXE files
 EXE_LOADADDR_OFFSET = 0x204  # Load address location in .EXE header
 METADATA_SCAN_SIZE = 60 * 1024 * 1024  # Scan first 60MB for directory entries
@@ -197,10 +198,22 @@ def extract_files(img_path, output_dir):
         for entry in sorted(dir_entries, key=lambda e: e['block_ptr']):
             out_path = os.path.join(files_dir, entry['name'])
 
-            if entry['disk_offset'] + entry['size'] > file_size:
+            # The directory size field is the CONTENT size and does not count
+            # the 512-byte thumbnail each file is prefixed with on disk, so
+            # reading only `size` bytes from the block start truncates the last
+            # 512 bytes of every file. Verified against the game's own model
+            # loader (func_800CA724), whose allocation is
+            # verts*12 + normals*12 + faces*40 == the recorded size: with the
+            # counts its call sites pass, 62 of 63 .ZM files decode with 100%
+            # in-range face indices only when the content is taken from
+            # block_start + 512. Extracted files therefore keep the layout
+            # thumbnail(512) + content(size), which is what the .EXE path
+            # below already assumes (load address at 0x204, code at 0x208).
+            want = THUMB_SIZE + entry['size']
+            if entry['disk_offset'] + want > file_size:
                 read_size = max(0, file_size - entry['disk_offset'])
             else:
-                read_size = entry['size']
+                read_size = want
 
             if read_size > 0:
                 f.seek(entry['disk_offset'])

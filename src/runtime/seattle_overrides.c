@@ -2101,29 +2101,33 @@ RECOMP_FUNC void func_800CAE2C(uint8_t* rdram, recomp_context* ctx) {
      * projection (bypassing the game camera/T&L), driving the 3D emitter
      * sub_800D2654 per face. We read BABY.ZM ourselves.
      *
-     * .ZM layout (verified against the recompiled mesh walker func_800E1EF0,
-     * which strides r18 by 0x28 and reads six halfwords at +4..+0xF):
-     *   0x000  512B thumbnail header  -- same preview header .EXE files carry
+     * .ZM layout. The counts are NOT in the file -- the game passes them to
+     * its loader func_800CA724, whose allocation is verts*12 + normals*12 +
+     * faces*40. The call site at 0x80120070 passes BABY's: 942 verts, 946
+     * normals, 1706 faces, which sums to exactly 90896 -- the content size.
+     *   0x000  512B thumbnail prefix (not counted by the directory size)
      *   0x200  942 verts   x 12B float xyz
      *   0x2C48 946 normals x 12B float xyz
-     *   0x5A80 1693 faces  x 40B: u32 surfaceId, u16 vert idx @+4/+6/+8,
+     *   0x5A80 1706 faces  x 40B: u32 surfaceId, u16 vert idx @+4/+6/+8,
      *                             u16 normal idx @+0xA/+0xC/+0xE,
      *                             6x float S/T @+0x10
-     * 512 + 942*12 + 946*12 + 1693*40 = 90888, 8B slack in a 90896B file.
+     * Face record layout confirmed against the mesh walker func_800E1EF0,
+     * which strides r18 by 0x28 and reads six halfwords at +4..+0xF.
      *
-     * The earlier "assets are a different build" conclusion was wrong: the
-     * layout was simply being read from offset 0 instead of 0x200, which put
-     * every index 512B out of phase (46/1706 in-range). Read at the right
-     * offset, 1693/1693 faces and 942/942 verts validate, from the .ZM we
-     * already had. BABY.ZM is byte-identical on both the v1.0.1 and v1.0.3
-     * disks, which is what ruled out the wrong-revision theory. */
+     * The earlier "assets are a different build" conclusion was wrong -- the
+     * content simply starts 512B into each file, so reading from 0 put every
+     * index out of phase (46/1706 in-range). This holds for 62 of 63 .ZM
+     * files, and seattle_fs.py was truncating the last 512B of every file as
+     * a result; it now emits thumbnail(512) + content(size). BABY.ZM is
+     * byte-identical on both the v1.0.1 and v1.0.3 disks, which is what ruled
+     * out the wrong-revision theory. */
     if (getenv("CARNEVIL_MESH3D")) {
         extern recomp_func_t* get_function(int32_t);
         static int ready = 0;
         static float scale=1.f, cx=0.f, cy=0.f;
         static float dmin=0.f, drange=1.f;
-        const int vcount=942, fcount=1693, ccount=946;
-        const uint32_t zmhdr = 512;                     /* thumbnail header */
+        const int vcount=942, fcount=1706, ccount=946;
+        const uint32_t zmhdr = 512;                     /* thumbnail prefix */
         const uint32_t modbase = 0x00600000;            /* raw .ZM in RDRAM */
         const uint32_t vp = modbase + zmhdr;
         const uint32_t cp = vp + (uint32_t)vcount*12;

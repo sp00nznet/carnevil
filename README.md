@@ -45,17 +45,18 @@ software Voodoo now correctly samples the AI88 font, runs perspective-correct
 texturing with a Z-buffer, and emits depth-tested 3D triangles end-to-end.
 
 And the last missing piece -- a **solid 3D model** -- now draws. It was long
-blamed on mismatched assets, but the assets were never the problem: `.ZM` files
-carry a 512-byte thumbnail header the decoder wasn't skipping, which put every
-vertex index 512 bytes out of phase. With the right offset the BABY mesh decodes
-completely (1693/1693 faces) and renders as a shaded, depth-tested solid through
-the game's own emitter `sub_800D2654`:
+blamed on mismatched assets, but the assets were never the problem: every file's
+content starts 512 bytes into its disk allocation, and the extractor was reading
+from the block start -- shifting every vertex index out of phase and truncating
+the tail. With the offset corrected the BABY mesh decodes completely
+(**1706/1706 faces, zero slack**) and renders as a shaded, depth-tested solid
+through the game's own emitter `sub_800D2654`:
 
 ![solid mesh](docs/baby_zm_solid_mesh.png)
 
-(The model lies on its side because `CARNEVIL_MESH3D` drives a hand-rolled ortho
-projection rather than the game camera/T&L -- orientation comes with the real
-camera path.) See "The Model Wall -- SOLVED" below.
+`CARNEVIL_MESH3D` still drives a hand-rolled ortho projection rather than the
+game camera/T&L, so the view axis is a knob (`CARNEVIL_MESH3D_VIEW`, default
+`zyx`) rather than a derivation. See "The Model Wall -- SOLVED" below.
 
 ### What's Working
 
@@ -71,7 +72,7 @@ camera path.) See "The Model Wall -- SOLVED" below.
 - **Voodoo double-buffered emulation**: LFB writes, FastFill, SwapBuffers, AI88/RGB565 texture sampling from TMU memory
 - **Device I/O**: DCS2 (`0x69XX`), IOASIC (`0x74XX`), PIC handshake; CMOS/NVRAM; PCI config bridge; heap snapshot/restore
 
-### The Model Wall -- SOLVED (it was a 512-byte header, not bad assets)
+### The Model Wall -- SOLVED (a 512-byte extraction offset, not bad assets)
 
 The earlier conclusion on this page -- that the disk's model assets were a
 different build than `GAME.EXE` -- was **wrong**. The assets were fine all
@@ -79,30 +80,34 @@ along; the layout was being read from the wrong offset.
 
 - The pipeline is loader `sub_800CA724` (.ZM) -> drawer `sub_800DFF38` (T&L
   `sub_800CEFBC` + mesh walk `sub_800E1EF0`) -> emitter `sub_800D2654`.
-- **`.ZM` files carry the same 512-byte thumbnail header that `.EXE` files do**
-  (`seattle_fs.py` already documents it for `.EXE`: `0x000-0x1FF` preview). The
-  model decoder was reading verts from offset 0, which put every subsequent
-  index 512 bytes out of phase -- producing the "only 46/1706 faces have
-  in-range indices, so there must be no topology" reading.
+- **Every file is prefixed on disk with a 512-byte thumbnail** -- the same
+  preview header `seattle_fs.py` already documents for `.EXE`
+  (`0x000-0x1FF`) -- and the directory `size` field counts only the content
+  after it. The model decoder was reading verts from offset 0, which put every
+  subsequent index 512 bytes out of phase, producing the "only 46/1706 faces
+  have in-range indices, so there must be no topology" reading.
 - Read at the right offset, the record layout is exactly what was expected, and
   it validates completely:
 
   | Region | Offset | Contents |
   |--------|--------|----------|
-  | header | `0x000` | 512B thumbnail |
+  | thumbnail | `0x000` | 512B prefix, not counted by the directory size |
   | verts | `0x200` | 942 x 12B float xyz |
   | normals | `0x2C48` | 946 x 12B float xyz |
-  | faces | `0x5A80` | 1693 x 40B |
+  | faces | `0x5A80` | 1706 x 40B |
 
   Face record: `u32 surfaceId`, vertex indices `u16 @ +4/+6/+8`, **normal
   indices `u16 @ +0xA/+0xC/+0xE`**, six `float` S/T `@ +0x10`. Confirmed against
   the recompiled mesh walker `func_800E1EF0`, which strides `r18` by `0x28` and
   reads exactly those six halfwords.
-  `512 + 942*12 + 946*12 + 1693*40 = 90888` -- 8 bytes slack in a 90896B file.
-- Face count is **1693, not 1706**; the old figure came from fitting the layout
-  with no header.
-- **46/1706 -> 1693/1693 faces valid, 942/942 verts finite**, from the `.ZM`
-  already in `extracted/files/`. Checked by `tools/test_zm_layout.py`.
+- **The counts are not in the file.** The game passes them to its loader
+  `func_800CA724`, whose allocation is `verts*12 + normals*12 + faces*40`. The
+  call site at `0x80120070` passes BABY's **942 / 946 / 1706**, which sums to
+  exactly `90896` -- the recorded content size, zero slack. Scanning all 68
+  loader call sites yields the authoritative counts for every model, and the
+  size formula alone matches 63 of 73 `.ZM` files to their call site.
+- **46/1706 -> 1706/1706 faces valid, 942/942 verts finite.**
+  Checked by `tools/test_zm_layout.py`.
 
 What ruled out the wrong-revision theory: MAME ships two CarnEvil disks --
 `carnevi1.chd` (v1.0.1, 3.2 GB) and `carnevil.chd` (v1.0.3, 4.3 GB). Extracting
@@ -118,12 +123,18 @@ unsubstantiated -- the expected checksum more likely comes from the filesystem's
 own LFN32 directory entries (which `seattle_fs.py` documents as carrying a
 checksum). This no longer blocks rendering.
 
-**Not a general size bug:** a blanket "+512 bytes per file" rule is *wrong*.
-Across all 1,361 files, block-allocation gaps give 40 discriminating cases;
-`size*4` fits all 40 and `size*4+512` fits none. Nine `.ZM` files (JEST, SMIL,
-MIKE, DINO, BAT, MONK, HLTH) cannot hold +512 without overflowing into the next
-file. `seattle_fs.py` needs no patch -- but the BABY counts above are
-BABY-specific, and other models need their counts solved individually.
+**It was an extraction bug after all** (an earlier revision of this page said it
+wasn't). The directory `size` field is the *content* size and excludes the
+512-byte thumbnail each file is prefixed with, so reading `size` bytes from the
+block start captures the thumbnail plus all but the last 512 bytes of content --
+every file shifted *and* truncated. It is the **offset** that is wrong, not the
+size, which is why the earlier "+512 to every size" test correctly failed.
+
+Verified across the whole model set: using the counts from the loader call
+sites, **62 of 63 `.ZM` files decode with 100% in-range face indices only when
+the content is taken from `block_start + 512`** (one at offset 0, none
+failing). `seattle_fs.py` now emits `thumbnail(512) + content(size)`.
+`GAME.bin` is byte-identical before and after, so the recompile is unaffected.
 
 ### What's Next
 
@@ -132,7 +143,7 @@ BABY-specific, and other models need their counts solved individually.
 - [x] **Texture/font binding** -- DONE. AI88 font renders legible on-screen text.
 - [x] **Per-frame attract progression** -- DONE (partial). Zone parser advances each frame; intro assets load.
 - [x] **3D model render pipeline** -- DONE (validated via a hand-fed triangle + decoded vertex cloud); blocked only on matching assets.
-- [x] **Solid 3D model on screen** -- DONE. Root cause was a 512-byte `.ZM` thumbnail header, not mismatched assets. 1693/1693 faces valid; `CARNEVIL_MESH3D` emits one shaded triangle per face (`1693 tris drawn, 0 skipped`) through `sub_800D2654`.
+- [x] **Solid 3D model on screen** -- DONE. Root cause was a 512-byte extraction offset, not mismatched assets. 1706/1706 faces valid; `CARNEVIL_MESH3D` emits one shaded triangle per face (`1706 tris drawn, 0 skipped`) through `sub_800D2654`.
 - [ ] **Model orientation / real camera** -- `CARNEVIL_MESH3D` still uses a hand-rolled ortho projection; wire the mesh through the game's own T&L (`sub_800CEFBC`) + camera so models land upright and animated.
 - [ ] **Per-surface texture binding** -- faces carry a `surfaceId` at `+0` and S/T at `+0x10`; S/T currently pinned to a font texel, so the mesh renders untextured.
 - [ ] **Modern GPU Backend** -- Replace software Voodoo with Vulkan/OpenGL.
@@ -143,7 +154,7 @@ BABY-specific, and other models need their counts solved individually.
 
 | Commit | What it unlocked |
 |--------|------------------|
-| _(pending)_ | **Solid 3D model** -- `.ZM` has a 512B thumbnail header; skipping it takes faces from 46/1706 to 1693/1693 and draws the BABY mesh as shaded solid geometry. Assets were never mismatched. |
+| _(pending)_ | **Solid 3D model** -- `.ZM` content starts 512B in; correcting the extraction offset takes faces from 46/1706 to 1706/1706 and draws the BABY mesh as shaded solid geometry. Assets were never mismatched. |
 | `19a3505` | **Readable text** -- bind the AI88 font texture (fixed register layout, AI88 2-byte stride, per-glyph T un-flip) |
 | `fc08f35` | **Per-frame zone parser** -- unblock zone-config parsing (DCS gate + decouple setup from per-frame re-run) |
 | `875311d` | **3D pipeline validated** -- depth-tested + perspective triangle via `sub_800D2654`; model-render scaffold |
