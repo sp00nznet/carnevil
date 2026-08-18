@@ -80,7 +80,7 @@ def byteswap_filename(name_raw):
     return swapped.rstrip(b'\x00')
 
 
-def read_directory(f):
+def read_directory(f, scan_size=None):
     """Read all directory entries by scanning the metadata area for valid entries.
 
     Directory entries are 24 bytes each with a byte-swapped 12-byte filename,
@@ -89,7 +89,7 @@ def read_directory(f):
     positions within the byte-swapped filename field.
     """
     f.seek(0)
-    meta = f.read(METADATA_SCAN_SIZE)
+    meta = f.read(scan_size or METADATA_SCAN_SIZE)
 
     # Compute all possible raw byte positions for '.' in the filename
     # Original position P in the filename maps to raw position:
@@ -165,7 +165,16 @@ def extract_files(img_path, output_dir):
 
         # Step 2: Read directory
         print(f"\nScanning metadata area for directory entries...")
-        dir_entries = read_directory(f)
+        # The directory spans the whole metadata partition (TRAP entry 1),
+        # ~94 MB on CarnEvil. The old fixed 60 MB window cut it short and
+        # silently dropped every entry past it: BEAR.ZM, SKEL.ZM, WIGS.ZM,
+        # MISL.ZM and BTBONE.ZM all have entries at ~66 MB and so were absent
+        # from every extraction, even though the game loads them by name.
+        meta_part = next((e for e in trap_entries if e['index'] == 1), None)
+        scan_size = None
+        if meta_part:
+            scan_size = (meta_part['start_sector'] + meta_part['size_sectors']) * 512
+        dir_entries = read_directory(f, scan_size)
 
         print(f"\n{'=' * 70}")
         print(f"Phoenix Directory ({len(dir_entries)} files)")
