@@ -1,0 +1,37 @@
+Third-party code and references in this repository
+===================================================
+
+The project's own code is MIT (see LICENSE). The entries below record code
+ported from, or hardware facts taken from, other projects. Headers checked
+2026-10-26 against mamedev/mame master 6ec57cdad9 (6ec57cdad916c9879251f64dc20412304bb14e24).
+
+Path                              Upstream (mamedev/mame)                         License        Use
+--------------------------------  ----------------------------------------------  -------------  -------------------------------------------
+tools/chd_extract.py              src/lib/util/chd.cpp, chdcodec.cpp,              BSD-3-Clause   Python port of the CHD v5 reader (bitstream,
+                                  huffman.cpp/.h, bitstream.h, hashing.cpp         (Aaron Giles,  Huffman, LZMA props, CRC-16)
+                                                                                   Vas Crabb)
+src/runtime/hw.c                  src/mame/williams/seattle.cpp,                  BSD-3-Clause   Seattle memory map, board interrupt logic,
+                                  src/devices/machine/gt64xxx.cpp,                (Aaron Giles,  GT64010 DMA/timer/interrupt behaviour,
+                                  src/mame/williams/midwayic.cpp                  Ted Green)     I/O ASIC registers and shuffle, security
+                                                                                                 PIC protocol and serial-number generator
+src/runtime/voodoo_sst1.c         src/devices/video/voodoo.cpp, voodoo.h,         BSD-3-Clause   C port: Voodoo 1 register file, FIFO and
+                                  voodoo_regs.h, voodoo_render.cpp/.h,            (Aaron Giles)  swaps, LFB, texture units, pixel pipeline,
+                                  voodoo_pci.cpp (config only)                                   DAC behaviour
+                                  src/devices/video/poly.h                        BSD-3-Clause   triangle scan conversion and rounding
+                                                                                  (Ville Linde,
+                                                                                   Aaron Giles)
+                                  src/emu/video/rgbutil.h, rgbutil.cpp            BSD-3-Clause   colour scale/clamp, bilinear arithmetic
+                                                                                  (Vas Crabb,
+                                                                                   Ryan Holtz)
+src/runtime/adsp2100.h, .c        src/devices/cpu/adsp2100/adsp2100.cpp,          BSD-3-Clause   ADSP-2101/2115 core: instruction semantics,
+                                  adsp2100.h, 2100ops.hxx                         (Aaron Giles)  flags, stacks, DAGs, interrupt priorities
+src/runtime/dcs.c                 src/mame/shared/dcs.cpp, dcs.h,                 BSD-3-Clause   DCS2 board: SDRC map/security, boot,
+                                  src/mame/williams/midwayic.cpp                  (Aaron Giles)  latches, control regs, timer, SPORT audio
+
+MAME as a whole is GPL-2.0-or-later; only the files listed above, each of
+which carries "// license:BSD-3-Clause" at the top, were used. License text:
+LICENSES/BSD-3-Clause.txt. Copyright notices: Aaron Giles; Ted Green;
+Vas Crabb (hashing.cpp, rgbutil); Ville Linde (poly.h); Ryan Holtz (rgbutil).
+
+External tool invoked but not included: Ghidra (Apache-2.0), by the optional
+function-naming scripts in tools/.

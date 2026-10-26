@@ -1,0 +1,78 @@
+# Disk images and CHD files (too large for git)
+*.chd
+*.img
+*.tar
+*.iso
+
+# Extracted raw data (regenerable from tools)
+extracted/
+carnevil/
+
+# Recompilation output (generated from your own GAME.EXE / boot ROM; never committed)
+recomp_out*/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Build output
+build*/
+
+# Copyrighted ROM files (not redistributable)
+*.u95
+*.u96
+*.u32
+*.chd
+
+# Runtime artifacts
+framebuffer.png
+framebuffer.ppm
+stderr*.log
+
+# Misc local
+build_test.bat
+ghidra_*.log
+
+# Bulky regenerable Ghidra raw exports (keep name_map/report)
+ghidra_export/functions.json
+ghidra_export/symbols.json
+ghidra_export/decompiled.json
+ghidra_export/functions_full.json
+ghidra_export/full_run.log
+
+# session working artifacts
+hits_executed.txt
+overlay.log
+tree_funcs.txt
+test_recomp.toml
+stderr*.log
+ghidra_export/handwritten_refs.txt
+ghidra_export/runtime_refs.txt
+
+# m2c working artifacts
+m2c_asm/
+m2c_out.c
+m2c_err.log
+
+# m2c exploratory dumps (keep ghidra_export/entity_m2c.c + cc218_full_m2c.c as RE docs)
+ghidra_export/dispatchers_m2c.c
+ghidra_export/cb_reg.c
+ghidra_export/cb_register_m2c.c
+tools/_*.py
+
+# Local copies of game data and runtime state
+extracted_*/
+nvram*.bin
+*.ppm
+*.png
+!docs/*.png
+*.wav
+*.log
+rtos_resume_additions.toml
+ghidra_export/

@@ -1,0 +1,98 @@
+# CarnEvil GAME.EXE -> C.  Run: MidwayRecomp carnevil_recomp.toml
+[input]
+symbols_file_path = "carnevil_syms.toml"
+rom_file_path = "extracted/GAME_padded.bin"
+entrypoint = 0x800C4000
+output_func_path = "recomp_out/funcs"
+functions_per_output_file = 50
+uses_mips3_float_mode = true
+little_endian = true
+
+[patches]
+# Implemented in src/runtime instead of recompiled:
+#  - 80151618 / 80151718 swap stacks to switch between game processes
+#    (proc.c runs each process on its own host fiber).
+#  - 800C408C..800C42C4 are the RTOS jump-table slots entry_point copies in at
+#    boot; they are empty in GAME.EXE (rtos.c executes whatever was copied).
+ignored = [
+    "func_80151618",
+    "func_80151718",
+    "func_800C408C",
+    "func_800C4094",
+    "func_800C409C",
+    "func_800C40A4",
+    "func_800C40AC",
+    "func_800C40B4",
+    "func_800C40BC",
+    "func_800C40C4",
+    "func_800C40CC",
+    "func_800C40D4",
+    "func_800C40DC",
+    "func_800C40E4",
+    "func_800C40EC",
+    "func_800C40F4",
+    "func_800C40FC",
+    "func_800C4104",
+    "func_800C410C",
+    "func_800C4114",
+    "func_800C411C",
+    "func_800C4124",
+    "func_800C412C",
+    "func_800C4134",
+    "func_800C413C",
+    "func_800C4144",
+    "func_800C414C",
+    "func_800C4154",
+    "func_800C415C",
+    "func_800C4164",
+    "func_800C416C",
+    "func_800C4174",
+    "func_800C417C",
+    "func_800C4184",
+    "func_800C418C",
+    "func_800C4194",
+    "func_800C419C",
+    "func_800C41A4",
+    "func_800C41AC",
+    "func_800C41B4",
+    "func_800C41BC",
+    "func_800C41C4",
+    "func_800C41CC",
+    "func_800C41D4",
+    "func_800C41DC",
+    "func_800C41E4",
+    "func_800C41EC",
+    "func_800C41F4",
+    "func_800C41FC",
+    "func_800C4204",
+    "func_800C420C",
+    "func_800C4214",
+    "func_800C421C",
+    "func_800C4224",
+    "func_800C422C",
+    "func_800C4234",
+    "func_800C423C",
+    "func_800C4244",
+    "func_800C424C",
+    "func_800C4254",
+    "func_800C425C",
+    "func_800C4264",
+    "func_800C426C",
+    "func_800C4274",
+    "func_800C427C",
+    "func_800C4284",
+    "func_800C428C",
+    "func_800C4294",
+    "func_800C429C",
+    "func_800C42A4",
+    "func_800C42AC",
+    "func_800C42B4",
+    "func_800C42BC",
+    "func_800C42C4",
+]
+
+# Every process free goes through 80148FD4; drop the host fiber with it.
+[[patches.hook]]
+func = "func_80148FD4"
+before_vram = 0x80148FD4
+text = "proc_freed(rdram, ctx);"
