@@ -15,8 +15,10 @@ src/runtime/hw.c                  src/mame/williams/seattle.cpp,                
                                   src/mame/williams/midwayic.cpp                  Ted Green)     I/O ASIC registers and shuffle, security
                                                                                                  PIC protocol and serial-number generator
 src/runtime/voodoo_sst1.c         src/devices/video/voodoo.cpp, voodoo.h,         BSD-3-Clause   C port: Voodoo 1 register file, FIFO and
-                                  voodoo_regs.h, voodoo_render.cpp/.h,            (Aaron Giles)  swaps, LFB, texture units, pixel pipeline,
-                                  voodoo_pci.cpp (config only)                                   DAC behaviour
+                                  voodoo_regs.h, voodoo_render.cpp/.h             (Aaron Giles)  swaps, LFB, texture units, pixel pipeline,
+                                                                                                 DAC behaviour
+                                  src/devices/video/voodoo_pci.cpp                BSD-3-Clause   PCI config (init enable register)
+                                                                                  (Ted Green)
                                   src/devices/video/poly.h                        BSD-3-Clause   triangle scan conversion and rounding
                                                                                   (Ville Linde,
                                                                                    Aaron Giles)
@@ -29,9 +31,16 @@ src/runtime/dcs.c                 src/mame/shared/dcs.cpp, dcs.h,               
                                   src/mame/williams/midwayic.cpp                  (Aaron Giles)  latches, control regs, timer, SPORT audio
 
 MAME as a whole is GPL-2.0-or-later; only the files listed above, each of
-which carries "// license:BSD-3-Clause" at the top, were used. License text:
-LICENSES/BSD-3-Clause.txt. Copyright notices: Aaron Giles; Ted Green;
+which carries "// license:BSD-3-Clause" at the top, were used. Every file in
+this repository that is ported from them starts with
+"SPDX-License-Identifier: BSD-3-Clause" and the full notice: the MAME
+copyright holders, the three conditions and the disclaimer. Those files are
+distributed under BSD-3-Clause; the rest of the repository is MIT. License
+text: LICENSES/BSD-3-Clause.txt. Copyright notices: Aaron Giles; Ted Green;
 Vas Crabb (hashing.cpp, rgbutil); Ville Linde (poly.h); Ryan Holtz (rgbutil).
+
+src/runtime/netplay.c is adapted from model3recomp's src/netplay.c
+(https://github.com/sp00nznet/model3recomp, MIT, the same author).
 
 External tool invoked but not included: Ghidra (Apache-2.0), by the optional
 function-naming scripts in tools/.

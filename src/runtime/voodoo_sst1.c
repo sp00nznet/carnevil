@@ -1,3 +1,38 @@
+/* SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Ported from MAME (https://github.com/mamedev/mame):
+ * src/devices/video/voodoo.cpp, voodoo.h, voodoo_regs.h,
+ * voodoo_render.cpp/.h and voodoo_pci.cpp, src/devices/video/poly.h and
+ * src/emu/video/rgbutil.h/.cpp, which carry this licence:
+ *
+ *   license:BSD-3-Clause
+ *   copyright-holders:Aaron Giles, Ted Green (voodoo_pci), Ville Linde (poly.h), Vas Crabb and Ryan Holtz (rgbutil)
+ *
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are
+ *   met: (1) Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer. (2)
+ *   Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *   (3) Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *   IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ *   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ *   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *   HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ *   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The port and the changes made to it are distributed under the same terms.
+ */
 /*
  * 3dfx Voodoo Graphics (SST-1) emulation: register file, FIFO/swap timing,
  * triangle setup, pixel pipeline, texture units, LFB and video DAC.
@@ -339,6 +374,11 @@ struct voodoo_state {
 #define Q_NO_16_31 0x20000000u
 #define Q_NO_0_15  0x10000000u
 
+/* Emulated time (hw.c): the beam position must follow the emulation, not the
+ * host clock, or two runs of the same inputs would differ. */
+double hw_time(void);
+
+/* Host time, for the profiler only. */
 static double now_seconds(void) {
     struct timespec ts;
     timespec_get(&ts, TIME_UTC);
@@ -1468,7 +1508,7 @@ static uint32_t reg_read(voodoo_state_t* s, uint32_t regnum) {
         case R_VRETRACE:
             if (!s->vblank) {
                 uint32_t vt = s->vtotal ? s->vtotal : 400;
-                double line = (now_seconds() - s->last_vblank_end) * 57.0 * vt;
+                double line = (hw_time() - s->last_vblank_end) * 57.0 * vt;
                 v = line < 1 ? 1 : line >= vt ? vt - 1 : (uint32_t)line;
             }
             break;
@@ -1508,7 +1548,8 @@ voodoo_state_t* voodoo_create(void) {
     s->fbi.reg[r_fbiInit2] = (1 << 6) | (0x100u << 23);
     s->fbi.reg[r_fbiInit3] = (2 << 13) | (0xf << 17);
     s->fbi.reg[r_fbiInit4] = 1;
-    s->last_vblank_end = s->prof_t0 = now_seconds();
+    s->last_vblank_end = hw_time();
+    s->prof_t0 = now_seconds();
     s->prof = getenv("VOODOO_PROF") != NULL;
     return s;
 }
@@ -1576,7 +1617,7 @@ void voodoo_vblank(voodoo_state_t* s, int state) {
         s->vblank = 1;
     } else {
         s->vblank = 0;
-        s->last_vblank_end = now_seconds();
+        s->last_vblank_end = hw_time();
     }
 }
 

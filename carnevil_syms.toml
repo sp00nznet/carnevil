@@ -12409,3 +12409,33 @@ size = 0xDF504
   name = "func_8016D764"
   vram = 0x8016D764
   size = 0x40
+
+  [[section.functions]]
+  name = "func_801014C0"
+  vram = 0x801014C0
+  size = 0x2B8
+
+  [[section.functions]]
+  name = "func_800C42CC"
+  vram = 0x800C42CC
+  size = 0xC
+
+  [[section.functions]]
+  name = "func_800ECCA0"
+  vram = 0x800ECCA0
+  size = 0x1B0
+
+  [[section.functions]]
+  name = "func_800FA2D8"
+  vram = 0x800FA2D8
+  size = 0x168
+
+  [[section.functions]]
+  name = "func_80114F58"
+  vram = 0x80114F58
+  size = 0x160
+
+  [[section.functions]]
+  name = "func_80123B40"
+  vram = 0x80123B40
+  size = 0x12C

@@ -1,3 +1,37 @@
+/* SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Ported from MAME (https://github.com/mamedev/mame):
+ * src/mame/williams/seattle.cpp, src/devices/machine/gt64xxx.cpp and
+ * src/mame/williams/midwayic.cpp, which carry this licence:
+ *
+ *   license:BSD-3-Clause
+ *   copyright-holders:Aaron Giles, Ted Green
+ *
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are
+ *   met: (1) Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer. (2)
+ *   Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *   (3) Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *   IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ *   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ *   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *   HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ *   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The port and the changes made to it are distributed under the same terms.
+ */
 /*
  * Midway Seattle board: memory map, GT64010 system controller (PCI config,
  * DMA, timers, interrupt cause/mask), PCI IDE disk, I/O ASIC with its PIC,
@@ -21,6 +55,7 @@
 #include "hw.h"
 #include "voodoo.h"
 #include "dcs.h"
+#include "netplay.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <windows.h>
@@ -32,8 +67,7 @@ recomp_context* g_cur_ctx;
 /* Diagnostics, switched on by environment variables at startup. */
 static int g_trace_irq, g_trace_pci, g_trace_perf;
 
-uint16_t g_in_system = 0xFFFF, g_in_dips = 0xBDFE, g_in_p1 = 0xFFFF, g_in_p2 = 0xFFFF;
-uint16_t g_gun_x[2] = { 128, 128 }, g_gun_y[2] = { 128, 128 }, g_gun_buttons;
+cabinet_inputs g_inputs = { 0xFFFF, 0xBDFE, { { 32768, 32768, 0 }, { 32768, 32768, 0 } } };
 
 static voodoo_state_t* g_voodoo;
 
@@ -59,18 +93,38 @@ static void log_unmapped(const char* what, uint32_t paddr, uint32_t value) {
 /* ======================================================================
  * Time
  * ====================================================================== */
+/* Emulated time is counted in cycles of the CPU's Count register (half the
+ * 150 MHz pipeline clock) and advances with the work the recompiled code
+ * does: every HW_TICK_LOADS loads is one tick of TICK_CYCLES, and a read of
+ * Count itself costs COUNT_READ_CYCLES (timed waits spin on Count without
+ * touching memory). So time is a function of the program and its inputs
+ * alone -- two machines fed the same inputs stay identical, which is what
+ * netplay relies on, and a busy host can no longer make the game's timeouts
+ * expire. The wall clock is only used to hold the result to the board's real
+ * speed (see vblank_begin), and turbo skips that wait.
+ *
+ * TICK_CYCLES puts 4096 loads at about 55 us: a little faster than the
+ * R5000 runs the same code, so the game keeps up wherever the board did. */
+#define COUNT_HZ          75000000.0
+#define TICK_CYCLES       4096
+#define COUNT_READ_CYCLES 2
+static uint64_t g_cycles;
+
+double hw_time(void) { return (double)g_cycles / COUNT_HZ; }
+#define now_s hw_time
+
+uint32_t hw_cp0_count(void) {
+    g_cycles += COUNT_READ_CYCLES;
+    if (--g_hw_budget < 0) hw_tick();
+    return (uint32_t)g_cycles;
+}
+
+/* Host time, for pacing and the perf log only. */
 static LARGE_INTEGER g_qpf, g_qpc0;
-static double now_s(void) {
+static double wall_s(void) {
     LARGE_INTEGER t;
     QueryPerformanceCounter(&t);
     return (double)(t.QuadPart - g_qpc0.QuadPart) / (double)g_qpf.QuadPart;
-}
-
-/* Count runs at half the 150 MHz pipeline clock. Timed waits spin on it
- * without touching memory, so reading it advances the hardware too. */
-uint32_t hw_cp0_count(void) {
-    if (--g_hw_budget < 0) hw_tick();
-    return (uint32_t)(now_s() * 75000000.0);
 }
 
 /* ======================================================================
@@ -616,6 +670,24 @@ static void pic_generate_serial(int upper) {
 
 static int bcd(int v) { return ((v / 10) << 4) | (v % 10); }
 
+/* The PIC's real-time clock: the time the game first asks, then running on
+ * emulated time. In a netplay session both machines start from the same
+ * fixed date instead, so they read the same clock. */
+static void pic_clock(SYSTEMTIME* out) {
+    static ULONGLONG base;   /* FILETIME, 100 ns units */
+    if (!base) {
+        SYSTEMTIME st;
+        static const SYSTEMTIME fixed = { 1999, 1, 5, 1, 12, 0, 0, 0 };
+        if (netplay_active()) st = fixed; else GetLocalTime(&st);
+        FILETIME ft;
+        SystemTimeToFileTime(&st, &ft);
+        base = ((ULONGLONG)ft.dwHighDateTime << 32 | ft.dwLowDateTime) - (ULONGLONG)(hw_time() * 1e7);
+    }
+    ULONGLONG now = base + (ULONGLONG)(hw_time() * 1e7);
+    FILETIME ft = { (DWORD)now, (DWORD)(now >> 32) };
+    FileTimeToSystemTime(&ft, out);
+}
+
 static uint8_t pic_status(void) {
     if (g_pic.latch & 0xF00) {
         if (++g_pic.latch_reads >= 4) g_pic.latch &= 0xFF;
@@ -644,7 +716,7 @@ static void pic_write(uint8_t data) {
             break;
         case 3: {                                       /* read the clock */
             SYSTEMTIME st;
-            GetLocalTime(&st);
+            pic_clock(&st);
             g_pic.index = 0; g_pic.total = 0;
             g_pic.buffer[g_pic.total++] = (uint8_t)bcd(st.wSecond);
             g_pic.buffer[g_pic.total++] = (uint8_t)bcd(st.wMinute);
@@ -749,10 +821,10 @@ static void ioasic_reset(void) {
 static uint32_t ioasic_read(int r) {
     if (g_io.shuffle) r = k_carnevil_shuffle[r & 15];
     switch (r) {
-        case IO_PORT0:  return g_io.shuffle ? g_in_dips : 0x2001;
-        case IO_PORT1:  return g_in_system;
-        case IO_PORT2:  return g_in_p1;
-        case IO_PORT3:  return g_in_p2;
+        case IO_PORT0:  return g_io.shuffle ? g_inputs.dips : 0x2001;
+        case IO_PORT1:  return g_inputs.system;
+        case IO_PORT2:  return 0xFFFF;                  /* CarnEvil has no joysticks */
+        case IO_PORT3:  return 0xFFFF;
         case IO_UARTIN: { uint16_t v = g_io.reg[r]; g_io.reg[r] &= ~0x1000; ioasic_update_irq(); return v; }
         case IO_SOUNDSTAT:
             return (((dcs_control_r() >> 4) ^ 0x40) & 0xC0) | (fifo_status() & 0x38) | (dcs_data2_r() & 0xFF00);
@@ -809,13 +881,28 @@ static void vblank_edge(int state) {
     }
 }
 
+/* Light guns. The gun board reports where on the screen the gun saw the beam:
+ * a 12-bit X count and a 10-bit Y count, bit 0x40 when it saw light at all,
+ * and the trigger (0x10) and pump (0x20). The counts at the screen edges are
+ * the game's own factory calibration (what it writes to a blank CMOS):
+ *   pixel  = (x - 252.78) / 3.8611          over 400 pixels
+ *   line   = 256 - (y - y0) / 0.85185       y0 = 18.96, player 2: 39.11
+ * so a gun aimed at a point reports the counts the game turns back into it.
+ * Byte layout per MAME's seattle.cpp (carnevil_gun_r). */
 static uint32_t gun_read(int off) {
     int p = (off >> 2) & 1;
+    const gun_state* g = &g_inputs.gun[p];
+    int seen = !(g->buttons & GUN_OFFSCREEN);
+    uint32_t x = 0, y = 0;
+    if (seen) {
+        x = (uint32_t)(252.78 + 3.8611 * (g->x * 400.0 / 65536.0));
+        y = (uint32_t)((p ? 39.11 : 18.96) + 0.85185 * (256.0 - g->y * 256.0 / 65536.0));
+    }
     switch (off & 3) {
-        case 0: return (g_gun_x[p] << 4) & 0xFF;
-        case 1: return ((g_gun_x[p] >> 4) & 0x0F) | (((g_gun_buttons >> (p * 4)) & 3) << 4) | 0x40;
-        case 2: return (g_gun_y[p] << 2) & 0xFF;
-        default: return (g_gun_y[p] >> 6) & 0x03;
+        case 0: return x & 0xFF;
+        case 1: return ((x >> 8) & 0x0F) | ((g->buttons & (GUN_TRIGGER | GUN_PUMP)) << 4) | (seen ? 0x40 : 0);
+        case 2: return y & 0xFF;
+        default: return (y >> 8) & 0x03;
     }
 }
 
@@ -924,15 +1011,44 @@ static double g_vblank_end;
 
 static uint64_t g_ticks;
 
+static uint64_t g_frames;
+int g_turbo;
+uint64_t hw_frame(void) { return g_frames; }
+
+/* FNV-1a over main RAM, a word at a time: cheap enough every couple of seconds. */
+uint32_t hw_ram_hash(void) {
+    const uint32_t* w = (const uint32_t*)g_rdram;
+    uint32_t h = 2166136261u;
+    for (size_t i = 0; i < RAM_SIZE / 4; i++) h = (h ^ w[i]) * 16777619u;
+    return h;
+}
+/* Hold emulated time to the wall clock: wait until the wall has caught up
+ * with the frame about to start. A host that falls more than a quarter of a
+ * second behind (a stall, a debugger, turbo just released) is let off rather
+ * than made to race to catch up. */
+static double g_wall_base;      /* wall time at which emulated time 0 would have been */
+static void pace(double t) {
+    double now = wall_s();
+    if (g_turbo || now - (g_wall_base + t) > 0.25) { g_wall_base = now - t; return; }
+    for (;;) {
+        double ahead = g_wall_base + t - wall_s();
+        if (ahead <= 0) break;
+        if (ahead > 0.0015) Sleep(1);
+    }
+}
+
 static void vblank_begin(double t) {
+    g_frames++;
     static int n;
     static double last;
     static uint64_t last_ticks;
     if (++n % 57 == 0 && g_trace_perf) {
-        fprintf(stderr, "[perf] %d vblanks, %.2fs for the last 57, %llu ticks, %llu sectors read\n", n, t - last,
+        double w = wall_s();
+        fprintf(stderr, "[perf] %d vblanks, %.2fs wall for the last 57, %llu ticks, %llu sectors read\n", n, w - last,
                 (unsigned long long)(g_ticks - last_ticks), (unsigned long long)g_sectors_read);
-        last = t; last_ticks = g_ticks;
+        last = w; last_ticks = g_ticks;
     }
+    pace(t);
     int w, h, stride;
     const uint16_t* fb = voodoo_display(g_voodoo, &w, &h, &stride);
     video_present(fb, stride, w, h);
@@ -946,7 +1062,8 @@ static void vblank_begin(double t) {
 void hw_tick(void) {
     g_hw_budget = HW_TICK_LOADS;
     g_ticks++;
-    double t = now_s();
+    g_cycles += TICK_CYCLES;
+    double t = hw_time();
     dcs_run(t - g_last_tick);
     g_last_tick = t;
     if (g_vblank_end && t >= g_vblank_end) {
@@ -956,16 +1073,16 @@ void hw_tick(void) {
     }
     if (t >= g_next_vblank) {
         g_next_vblank += 1.0 / VBLANK_HZ;
-        if (t > g_next_vblank) g_next_vblank = t + 1.0 / VBLANK_HZ;
         vblank_begin(t);
     }
     gt_timers_update(t);
     deliver_irqs();
 }
 
+/* A host-side wait that runs no MIPS code (the process dispatcher with
+ * nothing to run): let a tick's worth of emulated time pass. */
 void hw_idle(void) {
     hw_tick();
-    if (g_next_vblank - now_s() > 0.002) Sleep(1);
 }
 
 /* ======================================================================
@@ -985,6 +1102,7 @@ void hw_init(const hw_config* cfg) {
     g_trace_irq = getenv("CARNEVIL_IRQ_TRACE") != NULL;
     g_trace_pci = getenv("CARNEVIL_PCI_TRACE") != NULL;
     g_trace_perf = getenv("CARNEVIL_PERF") != NULL;
+    if (getenv("CARNEVIL_TURBO")) g_turbo = 1;
     QueryPerformanceFrequency(&g_qpf);
     QueryPerformanceCounter(&g_qpc0);
     timeBeginPeriod(1);

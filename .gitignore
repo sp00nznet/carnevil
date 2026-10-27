@@ -76,3 +76,4 @@ nvram*.bin
 *.log
 rtos_resume_additions.toml
 ghidra_export/
+carnevil.ini

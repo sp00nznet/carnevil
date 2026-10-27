@@ -15,6 +15,9 @@ static WAVEHDR g_hdr[NBUF];
 static int16_t g_buf[NBUF][BUF_FRAMES * 2];
 static int g_cur, g_fill;         /* buffer being filled, frames in it */
 static int g_rate;
+static int g_gain = 256;          /* volume, 256 = 100% */
+
+void audio_set_volume(int percent) { g_gain = percent * 256 / 100; }
 
 static void open_device(int rate) {
     WAVEFORMATEX wf = { WAVE_FORMAT_PCM, 2, (DWORD)rate, (DWORD)rate * 4, 4, 16, 0 };
@@ -36,6 +39,8 @@ void audio_pump(int enabled) {
     int rate = 0;
     int n = dcs_audio(tmp, BUF_FRAMES, &rate);
     if (!enabled || n <= 0 || rate <= 0) return;
+    if (g_gain != 256)
+        for (int i = 0; i < n * 2; i++) tmp[i] = (int16_t)(tmp[i] * g_gain >> 8);
     if (!g_wo && !g_rate) open_device(rate);
     if (!g_wo) return;
     int pos = 0;

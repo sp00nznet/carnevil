@@ -17,6 +17,8 @@ set(RUNTIME
     src/runtime/proc.c
     src/runtime/profile.c
     src/runtime/audio.c
+    src/runtime/cheats.c
+    src/runtime/netplay.c
     src/runtime/voodoo_sst1.c
     src/runtime/dcs.c
     src/runtime/adsp2100.c)
@@ -33,7 +35,7 @@ target_include_directories(lookup_rtos PRIVATE src/runtime recomp_out/rtos_funcs
 
 add_executable(carnevil ${RUNTIME} $<TARGET_OBJECTS:lookup_game> $<TARGET_OBJECTS:lookup_rtos>)
 target_include_directories(carnevil PRIVATE src/runtime)
-target_link_libraries(carnevil PRIVATE game_recomp rtos_recomp winmm)
+target_link_libraries(carnevil PRIVATE game_recomp rtos_recomp winmm ws2_32 xinput)
 
 if(MSVC)
     foreach(t game_recomp rtos_recomp lookup_game lookup_rtos carnevil)

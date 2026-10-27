@@ -27,23 +27,27 @@ check.
 
 ![Power-up screen and attract mode, first boot from a blank CMOS](docs/attract.png)
 
-From power-on the game runs its attract mode by itself, in real time:
+**Playable, one or two players, locally or over the network.** From power-on
+the game boots and runs by itself; coin up and it plays.
 
-- The BIOS ("Phoenix Seattle R5000 BIOS for Carnevil") boots, configures PCI
-  and the IDE controller, and loads `GAME.EXE` from the disk by DMA.
-- The game starts its runtime ("Mother GOOSE - R5000"). On a blank CMOS it
-  restores factory settings itself, and the CMOS is kept for the next boot.
-- Glide initialises the Voodoo 1, textures load, and the power-up screen shows
-  the version, serial number, coinage, gun and DCS2 status.
-- The game boots the DCS2 sound board, downloads its sound program and banks,
-  and checks its version (0223).
-- Attract mode cycles through the legend, Spooky Sam's Ghost Tour, the logo,
-  the AAMA warning and the 3D demo scenes, waiting for coins.
+| | |
+|---|---|
+| Boots from the boot ROM: BIOS, PCI, IDE, `GAME.EXE` loaded from disk by DMA | yes |
+| CMOS factory restore on a blank board, settings kept between runs | yes |
+| Glide on the emulated Voodoo 1; DCS2 sound board booted and streaming | yes |
+| Attract mode, complete | yes |
+| Coin, start, ride select, gameplay, reload, continue, game over | yes |
+| Light gun aim matches the game's factory calibration out of the box | yes |
+| Two players on one machine (mouse and a gamepad) | yes |
+| **Two players over the network** -- LAN, Tailscale, forwarded port | yes |
+| Deterministic: the same inputs give the same run, frame for frame | yes |
+| Menu bar: video, sound, controls, cheats, multiplayer | yes |
+| Cheats: infinite health, endless ammo, either player; add credits; start at any ride | yes |
+| Operator settings: free play, difficulty, starting health, monster strength, violence | yes |
 
-Not checked yet: gameplay (coin up with `5`, start with `1`, mouse is the gun),
-audio playback in attract mode, and performance with heavy in-game overdraw.
-The game's sound-board timeouts are wall-clock, as on the board, so a heavily
-loaded host can make its sound init take one retry.
+Not checked yet: a physical gamepad and a Sinden gun on real hardware, and
+how the audio sounds through speakers (it is produced and played, but nobody
+has listened to it here).
 
 ## How it works
 
@@ -55,13 +59,17 @@ loaded host can make its sound init take one retry.
 | `src/runtime/proc.c` | The game's cooperative processes. Midway's dispatcher switches processes by swapping the stack pointer, which C cannot do, so each process runs on a host fiber. The process list, sleep counts, creation and killing are still the game's own code. |
 | `src/runtime/voodoo_sst1.c` | The 3dfx Voodoo 1: register file, FIFO and vsync'd swaps, LFB, texture units, pixel pipeline and the DAC behaviour Glide probes. |
 | `src/runtime/dcs.c`, `adsp2100.c` | The DCS2 sound board: an ADSP-2115 core booting from the board ROM, the board memory map, host latches, the I/O ASIC FIFO and audio output. |
-| `src/runtime/main.c`, `audio.c` | Boot, a native window, keyboard and mouse, sound output. |
+| `src/runtime/main.c`, `audio.c` | Boot, the window and its menus, mouse, keyboard and gamepad, settings, sound output. |
+| `src/runtime/netplay.c` | Two-player lockstep over TCP. |
+| `src/runtime/cheats.c` | The Cheats menu: where the game keeps health, ammo, credits and its operator settings, and how each was confirmed. |
 
 Time is driven by the recompiled code itself: every few thousand memory
 accesses (and on every COP0 `Count` read) the hardware gets a tick, which
 advances the 57 Hz video timing and delivers pending interrupts through the
 BIOS's own interrupt dispatcher. That is what lets the game's waits on its
 vblank counter, disk flags and timers finish the way they do on the board.
+Emulated time never reads the host clock, so a run is a pure function of its
+inputs; the wall clock is only used to hold it to the board's 57 Hz.
 
 ## Building
 
@@ -86,19 +94,77 @@ Run from the repository root, with `carnevil1_9.u32`, `sound102.u95` and
 `carnevil/carnevi1.img` in place:
 
 ```sh
-build/Release/carnevil.exe                  # window: 5 coin, 1 start, F2 test switch, mouse = gun
-build/Release/carnevil.exe --headless --frames 600 --shot out.ppm
+build/Release/carnevil.exe
 ```
 
-The game's own debug console (the BIOS banner, Glide messages, the developers'
-error messages) prints to stderr. Writes to the disk stay in memory; the CMOS is
-kept in `nvram.bin`.
+| Input | Does |
+|---|---|
+| mouse | aim (player 1) |
+| left click, or Space | fire |
+| right click, or Shift | reload -- the trigger pulled with the gun off the screen, as on the cabinet |
+| middle click | the shotgun pump |
+| gamepad (XInput) | player 2 by default: left stick aims, A or RT fires, B or LT reloads, X pumps, Start, Back for a coin |
+| **5** / **6** | coin 1 / coin 2 (the factory coinage is two coins a credit) |
+| **1** / **2** | start 1 / start 2 |
+| **9** | service credit |
+| **F2** | test switch (the game's operator menu) |
+| **F9** | mute |
+| **F11**, Alt+Enter | fullscreen |
+| Tab (held) | fast forward |
+| Escape | leave fullscreen, or quit |
 
-`python tools/smoke_test.py build/Release/carnevil.exe` boots from a blank CMOS
-headless and checks the BIOS and game milestones.
+The menu bar has the rest:
+
+| Menu | |
+|---|---|
+| File | reset, quit |
+| Video | window size, fullscreen, sharp or smooth, scanlines, 4:3 or stretch, fast boot (runs flat out to attract mode) |
+| Sound | mute, volume |
+| Controls | mouse, gamepad as player 1 or 2, cursor hidden / crosshair / pointer, a white border for a **Sinden** light gun |
+| Cheats | infinite health and endless ammo for either player, add credits; and the operator settings: **Free play**, **Difficulty**, **Starting health**, **Monster strength**, **Violence** (power-on only, it restarts the game), **Start at ride** (Haunted House, Rickety Town, Freak Show, or straight to the Big Top) |
+| Multiplayer | host, join, disconnect, input delay |
+
+Settings live in `carnevil.ini`, the CMOS (high scores, audits, the
+operator's settings) in `nvram.bin`. Disk writes stay in memory. The game's
+own debug console (the BIOS banner, Glide, the developers' messages) prints
+to stderr.
+
+### Two players over the network
+
+One machine hosts and plays player 1; the other joins as player 2. Use the
+Multiplayer menu, or the command line:
+
+```sh
+build/Release/carnevil.exe --host 7777
+build/Release/carnevil.exe --join 192.168.1.20:7777     # or a Tailscale name or address
+```
+
+The host's port has to be reachable: on a LAN it is, over Tailscale it is,
+and across the internet it needs forwarding (TCP). A session starts at
+power-on: the joiner boots with the host's CMOS and settings, and the two
+run in lockstep, trading only inputs. That works because the runtime is
+deterministic -- emulated time comes from the work the recompiled code does,
+not from the host's clock -- so the two machines stay identical; they
+compare RAM every two seconds and the title bar says so if they ever stop
+being. Input delay (Multiplayer > Input delay) trades latency for
+smoothness: 1-2 frames on a LAN, more over distance.
+
+### Testing without a person
+
+```sh
+build/Release/carnevil.exe --headless --frames 600 --shot out.ppm
+build/Release/carnevil.exe --headless --script play.txt --nvram test_nvram.bin
+```
+
+`--headless` runs flat out with default settings. A script is lines of
+`frame action [args]`: `coin1`, `start1`, `gun P X Y` (0..255), `fire P`,
+`reload P`, `pump P`, `shot FILE.ppm`, `dump FILE`, `quit` (see the top of
+`src/runtime/main.c`). `python tools/smoke_test.py build/Release/carnevil.exe`
+boots from a blank CMOS and checks the BIOS and game milestones.
 
 Diagnostics: `CARNEVIL_PERF=1` (frame timing), `CARNEVIL_PROFILE=1` (sampling
-profiler), `CARNEVIL_IDE_TRACE`, `CARNEVIL_IRQ_TRACE`, `CARNEVIL_PCI_TRACE`.
+profiler), `CARNEVIL_TURBO=1`, `CARNEVIL_IDE_TRACE`, `CARNEVIL_IRQ_TRACE`,
+`CARNEVIL_PCI_TRACE`.
 
 ## Symbol files
 
@@ -111,8 +177,11 @@ A jump to an address that is still missing stops the runtime with the address.
 
 ## License
 
-The code in this repository is MIT (see `LICENSE`); third-party code it draws
-on is listed in `NOTICE`. The MIT grant covers this project's tools, runtime,
+The code in this repository is MIT (see `LICENSE`), except the files ported
+from MAME's BSD-3-Clause sources (the Voodoo, the DCS2 board and its DSP, the
+board logic in `hw.c`, the CHD reader), which are BSD-3-Clause and carry the
+full notice at the top; `NOTICE` lists them and `python tools/check_notices.py`
+checks that each one still has it. The MIT grant covers this project's tools, runtime,
 build files and documentation. It does not and cannot cover CarnEvil itself:
 the game's code, art, audio and data belong to their rights holders, are not
 distributed here, and you need your own legitimate copy. Code the tools

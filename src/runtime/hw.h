@@ -32,9 +32,36 @@ uint32_t hw_cp0_count(void);
 /* Called from host-side wait loops that execute no MIPS loads. */
 void hw_idle(void);
 
-/* Inputs, set by the window (main.c); active-low like the IOASIC ports. */
-extern uint16_t g_in_system, g_in_dips, g_in_p1, g_in_p2;
-extern uint16_t g_gun_x[2], g_gun_y[2], g_gun_buttons;
+/* What the cabinet's controls feed the board. main.c changes it only between
+ * frames (in video_pump), so a run is a pure function of these per frame --
+ * which is what lets two machines play in lockstep. */
+enum { GUN_TRIGGER = 1, GUN_PUMP = 2, GUN_OFFSCREEN = 4 };
+typedef struct {
+    uint16_t x, y;           /* aim, 0..65535 across the screen, left/top = 0 */
+    uint8_t buttons;         /* GUN_* */
+} gun_state;
+typedef struct {
+    uint16_t system;         /* I/O ASIC port 1, active low: coins, starts, service */
+    uint16_t dips;           /* port 0, active low */
+    gun_state gun[2];
+    uint32_t cheats;         /* CHEAT_* bits (cheats.h), applied once a frame */
+} cabinet_inputs;
+extern cabinet_inputs g_inputs;
+
+/* Frames (vblanks) since power-on. */
+uint64_t hw_frame(void);
+
+/* A hash of main RAM, for netplay's desync check (about 2 ms). */
+uint32_t hw_ram_hash(void);
+
+/* Run flat out instead of at the board's 57 Hz (fast forward). Emulated time
+ * is unaffected; only the wait for the wall clock is skipped. */
+extern int g_turbo;
+
+/* System port bits */
+enum { SYS_COIN1 = 0x0001, SYS_COIN2 = 0x0002, SYS_START1 = 0x0004, SYS_TILT = 0x0008,
+       SYS_TEST = 0x0010, SYS_START2 = 0x0020, SYS_SERVICE = 0x0040 };
+#define DIP_TEST_SWITCH 0x8000   /* active low: clear = test mode */
 
 /* Video: called by hw.c on every vblank with the displayed buffer. */
 void video_present(const uint16_t* fb, int stride, int width, int height);
