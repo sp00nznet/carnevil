@@ -71,6 +71,21 @@ vblank counter, disk flags and timers finish the way they do on the board.
 Emulated time never reads the host clock, so a run is a pure function of its
 inputs; the wall clock is only used to hold it to the board's 57 Hz.
 
+## Installing (Windows)
+
+Download `CarnEvil-Installer` from the [latest release](https://github.com/sp00nznet/carnevil/releases/latest)
+and point it at the folder with your CarnEvil v1.0.1 files: MAME's `carnevil.zip`
+(or loose `carnevil1_9.u32` and `sound102.u95`) and `carnevi1.chd`, as in a MAME
+`roms` folder. It installs what the build needs, builds the game from your files
+on your machine and leaves a **Play** button. Nothing from the game is downloaded.
+
+Without the installer: put the files in this folder (or anywhere) and run
+`Setup.cmd`, or `powershell -File tools\setup.ps1 -Yes -Game <folder>`.
+It does the steps under Building below and makes `CarnEvil (recomp).cmd`.
+
+The installer isn't signed: Windows SmartScreen asks (**More info**, **Run anyway**).
+Linux and macOS aren't supported yet (the runtime uses Win32 for its window and menus).
+
 ## Building
 
 You need your own CarnEvil v1.0.1 dumps: the boot ROM `carnevil1_9.u32`, the

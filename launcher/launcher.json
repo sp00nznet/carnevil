@@ -1,0 +1,17 @@
+{
+  "title": "CarnEvil",
+  "repo": "sp00nznet/carnevil",
+  "accent": "#b3121e",
+  "note": {
+    "windows": "Needs your own CarnEvil v1.0.1 files (MAME's carnevil1): carnevil1_9.u32 and sound102.u95, loose or in the zip, and the disk carnevi1.chd. The first build takes 15 to 30 minutes and about 2 GB; Git, Python, CMake and the Visual Studio Build Tools (about 3 GB) are installed if they are missing.",
+    "default": "Windows only for now."
+  },
+  "game": {
+    "name": "CarnEvil v1.0.1 (MAME set and CHD)",
+    "files": ["carnevi1.chd|carnevil/carnevi1.chd|carnevil1/carnevi1.chd|carnevi1.img"]
+  },
+  "setup": {
+    "windows": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools\setup.ps1", "-Yes", "-Game", "{game}"]
+  },
+  "play": "* (recomp).cmd"
+}

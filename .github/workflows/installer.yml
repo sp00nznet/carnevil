@@ -1,0 +1,11 @@
+# Builds the recomp-launcher installer for CarnEvil: an artifact on every push to main, a release
+# file on a v* tag. It downloads this repo and runs tools/setup.ps1 on the player's machine against
+# their own files; nothing from the game is involved here.
+on:
+  push: { branches: [main], tags: ["v*"] }
+  workflow_dispatch:
+permissions: { contents: write }
+jobs:
+  installer:
+    uses: sp00nznet/recomp-launcher/.github/workflows/installer.yml@v0.6.0
+    with: { launcher-ref: v0.6.0, name: CarnEvil-Installer, platforms: windows }
