@@ -11,7 +11,7 @@
     "files": ["carnevi1.chd|carnevil/carnevi1.chd|carnevil1/carnevi1.chd|carnevi1.img"]
   },
   "setup": {
-    "windows": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools\setup.ps1", "-Yes", "-Game", "{game}"]
+    "windows": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools/setup.ps1", "-Yes", "-Game", "{game}"]
   },
   "play": "* (recomp).cmd"
 }
